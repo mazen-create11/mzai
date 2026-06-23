@@ -612,6 +612,12 @@
   a.src .sd{flex:1;min-width:0;font-size:12.5px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   a.src .su{flex-shrink:0;font-size:11px;color:var(--c1);font-weight:500}
 
+  /* activité (stats réelles) */
+  .usage{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 2px;border-top:1px solid var(--line)}
+  .usage:first-child{border-top:none}
+  .usage-l{font-size:13.5px;color:var(--txt-dim)}
+  .usage-v{font-size:14px;font-weight:700;color:var(--txt)}
+
   /* nouveautés / feuille de route */
   #newsLog{display:flex;flex-direction:column;gap:18px}
   .nw-rel-h{display:flex;align-items:baseline;gap:9px;margin-bottom:9px}
@@ -1321,13 +1327,13 @@
   $('#pfCancel').addEventListener('click',()=>$('#profileModal').classList.remove('show'));
   $('#profileModal').addEventListener('click',e=>{if(e.target.id==='profileModal')$('#profileModal').classList.remove('show')});
   $('#pfSave').addEventListener('click',()=>{USER.name=$('#pfName').value.trim()||'Mazen';USER.email=$('#pfEmail').value.trim();USER.role=$('#pfRole').value.trim()||'Compte';USER.avColor=pfColor;DB.set('user',USER);applyUser();$('#profileModal').classList.remove('show');toast('Profil enregistré')});
-  /* facturation */
-  const USAGE=[['Messages ce mois','1 240','5 000',25],['Tokens traités','2,1 M','10 M',21],['Stockage','340 Mo','2 Go',17]];
-  const INVOICES=[['1 juin 2026','29,00 €'],['1 mai 2026','29,00 €'],['1 avril 2026','29,00 €']];
+  /* activité — données réelles locales (pas de quota/facture fictifs) */
   function openBilling(){
-    $('#usageList').innerHTML=USAGE.map(([l,u,t,p])=>`<div class="usage"><div class="usage-top"><span>${l}</span><b>${u} / ${t}</b></div><div class="usage-bar"><div class="usage-fill" style="width:${p}%"></div></div></div>`).join('');
-    $('#invList').innerHTML=INVOICES.map(([d,a])=>`<div class="inv-row"><div style="flex:1"><div class="inv-d">${a}</div><div class="inv-s">${d}</div></div><span class="inv-dl" data-tip="Télécharger"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg></span></div>`).join('');
-    $$('#invList .inv-dl').forEach(x=>x.onclick=()=>toast('Facture téléchargée'));
+    let msgTotal=0; CONVOS.forEach(c=>msgTotal+=(c.msgs?c.msgs.length:0));
+    let bytes=0; try{for(const k in localStorage){if(Object.prototype.hasOwnProperty.call(localStorage,k)&&k.indexOf('mzai:')===0)bytes+=(localStorage[k]||'').length+k.length;}}catch(e){}
+    const ko=bytes>1048576?(bytes/1048576).toFixed(1)+' Mo':(bytes/1024).toFixed(0)+' Ko';
+    const stats=[['Conversations',CONVOS.length.toLocaleString('fr-FR')],['Messages échangés',msgTotal.toLocaleString('fr-FR')],['Modèle par défaut',currentModel],['Stockage local',ko]];
+    $('#usageList').innerHTML=stats.map(([l,v])=>`<div class="usage"><span class="usage-l">${l}</span><b class="usage-v">${esc(String(v))}</b></div>`).join('');
     $('#billingModal').classList.add('show');
   }
   $('#blClose').addEventListener('click',()=>$('#billingModal').classList.remove('show'));
