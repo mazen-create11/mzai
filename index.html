@@ -564,6 +564,25 @@
   .api-st{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:var(--txt-faint);transition:.2s}
   .api-st.on{background:#34d399;box-shadow:0 0 8px #34d399}
 
+  /* stats d'usage réel sous chaque réponse */
+  .msg-stats{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:7px;padding-left:2px;font-size:11px;color:var(--txt-faint);letter-spacing:.02em;user-select:none}
+  .msg-stats .ms-dot{width:3px;height:3px;border-radius:50%;background:var(--txt-faint);opacity:.6}
+  .msg-stats b{font-weight:600;color:var(--txt-dim)}
+  /* raisonnement réel en flux */
+  .reason.live .rc{max-height:none}
+  .rc-in.real{white-space:pre-wrap;font-size:12.5px;line-height:1.65;color:var(--txt-dim);opacity:.92}
+  .reason .rt-lbl{display:inline-flex;align-items:center;gap:6px}
+  .rt-spin{width:11px;height:11px;border-radius:50%;border:1.6px solid var(--line-2);border-top-color:var(--c1);animation:rtspin .7s linear infinite}
+  @keyframes rtspin{to{transform:rotate(360deg)}}
+  /* sources web réelles (cartes cliquables) */
+  .sources{margin-top:11px;display:flex;flex-direction:column;gap:6px}
+  .sources .src-h{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--txt-faint);margin-bottom:3px}
+  a.src{display:flex;align-items:center;gap:11px;text-decoration:none;cursor:pointer;padding:9px 12px;border-radius:11px;background:var(--elev);border:1px solid var(--line-2);transition:.18s var(--ease)}
+  a.src:hover{border-color:color-mix(in srgb,var(--c2) 45%,transparent);transform:translateX(2px)}
+  a.src .sn{flex-shrink:0;width:19px;height:19px;border-radius:6px;display:grid;place-items:center;font-size:11px;font-weight:700;color:#081225;background:var(--grad)}
+  a.src .sd{flex:1;min-width:0;font-size:12.5px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  a.src .su{flex-shrink:0;font-size:11px;color:var(--c1);font-weight:500}
+
   /* responsive */
   .topbar-left{display:flex;align-items:center;gap:10px;min-width:0}
   .menu-btn{width:38px;height:38px;border-radius:11px;border:1px solid var(--line-2);background:var(--elev);color:var(--txt-dim);display:none;place-items:center;cursor:pointer;transition:.2s var(--ease);flex-shrink:0}
@@ -1517,16 +1536,24 @@
       genReply(c);
     };
   }
-  function genReply(c){const reason=isOn('Réflexion'),search=isOn('Recherche'),model=currentModel,node=addAINode(model);runGen(node,REPLIES[ri++%REPLIES.length],{reason,search,model,onDone:t=>{c.msgs.push({role:'ai',text:t,model,reason,search});c.ts=now();saveConvos();renderRecents()}})}
+  function genReply(c){const reason=isOn('Réflexion'),search=isOn('Recherche'),model=currentModel,node=addAINode(model);runGen(node,REPLIES[ri++%REPLIES.length],{reason,search,model,onDone:(t,meta)=>{c.msgs.push({role:'ai',text:t,model,reason,search,reasonText:meta.reasonText||'',sources:meta.sources||[],usage:meta.usage||null,ms:meta.ms||0});c.ts=now();saveConvos();renderRecents()}})}
   function addAINode(modelId){const m=modelById(modelId||currentModel),ac=acOf(m),n=document.createElement('div');n.className='msg ai';n.innerHTML='<div class="av" style="background:linear-gradient(135deg,'+ac+',var(--c3))">'+MARK+'</div><div class="col"><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>';chat.appendChild(n);scrollDown();return n}
-  function reasoningBlock(modelId){
-    const m=modelById(modelId||currentModel),len=PERSONA.length.toLowerCase();
-    const pc=projContextOf(convoById(activeId));
-    const steps=[...(pc?['Je charge le contexte du projet « '+pc.name+' » et ses contraintes.']:[]),'Je décompose la demande et j\'isole l\'objectif réel.','J\'écarte les pistes faibles, je garde l\'angle le plus utile.','Je calibre le ton « '+PERSONA.tone+' » et un format '+len+'.','Je vérifie la cohérence avant de répondre.'];
-    return `<div class="reason"><div class="rt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.brain}</svg>${m.id} a réfléchi quelques secondes<svg class="cv" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></div><div class="rc"><div class="rc-in">${steps.map(s=>'<p>'+s+'</p>').join('')}</div></div></div>`;
+  function reasoningBlock(modelId,content,live){
+    const m=modelById(modelId||currentModel);
+    const lbl=live?`<span class="rt-spin"></span>${m.id} réfléchit…`:`${m.id} a réfléchi`;
+    return `<div class="reason${live?' live open':''}"><div class="rt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.brain}</svg><span class="rt-lbl">${lbl}</span><svg class="cv" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></div><div class="rc"><div class="rc-in real">${content!=null?esc(content):''}</div></div></div>`;
   }
-  const SRC=[['perplexity.ai','Synthèse multi-sources 2026'],['statista.com','Données marché & tendances'],['arxiv.org','Référence technique récente']];
-  function sourcesBlock(modelId){return `<div class="sources"><div class="src-h">Sources · ${modelId||currentModel}</div>${SRC.map((s,i)=>`<div class="src" data-tip="Ouvrir la source"><span class="sn">${i+1}</span><span class="sd">${s[1]}</span><span class="su">${s[0]}</span></div>`).join('')}</div>`}
+  function statsEl(modelId,ms,usage){
+    const m=modelById(modelId),parts=['<b>'+esc(m.id)+'</b>'];
+    if(ms)parts.push((ms/1000).toFixed(1)+'s');
+    if(usage){const tot=usage.total_tokens||((usage.prompt_tokens||0)+(usage.completion_tokens||0));if(tot)parts.push(tot.toLocaleString('fr-FR')+' tokens');if(usage.cost!=null)parts.push('$'+Number(usage.cost).toFixed(4));}
+    if(parts.length<2)return null;
+    const d=document.createElement('div');d.className='msg-stats';d.innerHTML=parts.join('<span class="ms-dot"></span>');return d;
+  }
+  function sourcesBlock(modelId,srcs){
+    if(!srcs||!srcs.length)return '';
+    return `<div class="sources"><div class="src-h">Sources web · ${srcs.length}</div>${srcs.map((s,i)=>{let host=s.url||'';try{host=new URL(s.url).hostname.replace(/^www\./,'')}catch(e){}return `<a class="src" href="${esc(s.url||'#')}" target="_blank" rel="noopener" data-tip="Ouvrir la source"><span class="sn">${i+1}</span><span class="sd">${esc(s.title||host)}</span><span class="su">${esc(host)}</span></a>`}).join('')}</div>`;
+  }
   function wireBubble(b){b.querySelectorAll('.cb-copy').forEach(x=>x.addEventListener('click',()=>{navigator.clipboard?.writeText(decodeURIComponent(x.dataset.code));toast('Code copié')}));b.querySelectorAll('.cb-prev').forEach(x=>x.addEventListener('click',()=>openArtifact(decodeURIComponent(x.dataset.code))));b.querySelectorAll('.src').forEach(s=>s.addEventListener('click',()=>toast('Ouverture de la source')))}
   /* ===== aperçu d'artifact ===== */
   let artCodeStr='';
@@ -1543,7 +1570,7 @@
   $('#artOpen').addEventListener('click',()=>{const doc=/<html[\s>]/i.test(artCodeStr)?artCodeStr:'<!doctype html><meta charset="utf-8"><body>'+artCodeStr;const blob=new Blob([doc],{type:'text/html'}),u=URL.createObjectURL(blob);window.open(u,'_blank');setTimeout(()=>URL.revokeObjectURL(u),4000)});
   $('#artClose').addEventListener('click',()=>$('#artifactModal').classList.remove('show'));
   $('#artifactModal').addEventListener('click',e=>{if(e.target.id==='artifactModal')$('#artifactModal').classList.remove('show')});
-  function insertReason(col,modelId){const r=document.createElement('div');r.innerHTML=reasoningBlock(modelId);const rb=r.firstChild;col.insertBefore(rb,col.firstChild);rb.querySelector('.rt').addEventListener('click',()=>rb.classList.toggle('open'))}
+  function insertReason(col,modelId,content,live){const r=document.createElement('div');r.innerHTML=reasoningBlock(modelId,content,live);const rb=r.firstChild;col.insertBefore(rb,col.firstChild);rb.querySelector('.rt').addEventListener('click',()=>rb.classList.toggle('open'));return rb}
 
   /* contrôleur de génération (avec arrêt) */
   let curStop=null;
@@ -1563,11 +1590,16 @@
   async function runGen(node, _, opts){
     setGenerating(true);
     const col=node.querySelector('.col'),bubble=node.querySelector('.bubble');
-    let stopped=false,fin=false;
-    const finish=(text)=>{if(fin)return;fin=true;if(opts.reason&&!col.querySelector('.reason'))insertReason(col,opts.model);bubble.classList.add('md');bubble.innerHTML=renderMD(text)+(opts.search?sourcesBlock(opts.model):'');wireBubble(bubble);addActions(col,text,node);scrollDown();setGenerating(false);curStop=null;opts.onDone&&opts.onDone(text)};
+    let stopped=false,fin=false,reasonText="",reasonBox=null;const t0=performance.now();
+    const finish=(text,meta)=>{
+      if(fin)return;fin=true;meta=meta||{};
+      if(reasonBox){const ri=reasonBox.querySelector('.rc-in');if(reasonText)ri.textContent=reasonText;reasonBox.classList.remove('open','live');const lbl=reasonBox.querySelector('.rt-lbl');if(lbl)lbl.textContent=modelById(opts.model).id+' a réfléchi'+(meta.ms?' · '+(meta.ms/1000).toFixed(1)+'s':'');}
+      bubble.classList.add('md');bubble.innerHTML=renderMD(text)+sourcesBlock(opts.model,meta.sources);wireBubble(bubble);addActions(col,text,node);
+      if(meta.usage||meta.ms){const s=statsEl(opts.model,meta.ms,meta.usage);if(s)col.appendChild(s);}
+      scrollDown();setGenerating(false);curStop=null;
+      opts.onDone&&opts.onDone(text,{reasonText,sources:meta.sources,usage:meta.usage,ms:meta.ms});
+    };
     curStop=()=>{stopped=true;};
-    
-    if(opts.reason)insertReason(col,opts.model);
     bubble.innerHTML='<div class="gen-loading"><div class="gl-ring"></div>Génération en cours…</div>';
     
     try {
@@ -1595,7 +1627,13 @@
       const headers={'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'};
       if(isOR){headers['HTTP-Referer']=location.origin||'https://mzai.app';headers['X-Title']='MZai';}
       bubble.innerHTML='<span class="caret"></span>';
-      const res = await fetch(endpoint, { method:'POST', headers, body: JSON.stringify({model: mData.api||opts.model, messages, stream: SETTINGS.stream, max_tokens: 4096}) });
+      let modelId = mData.api||opts.model;
+      if(opts.search && isOR) modelId += ':online';  // plugin web réel d'OpenRouter
+      const body = {model:modelId, messages, stream:SETTINGS.stream, max_tokens:4096};
+      if(opts.reason && isOR) body.reasoning={enabled:true};  // chaîne de raisonnement réelle
+      if(isOR) body.usage={include:true};                      // tokens + coût réels
+      else if(SETTINGS.stream) body.stream_options={include_usage:true};
+      const res = await fetch(endpoint, { method:'POST', headers, body: JSON.stringify(body) });
 
       if(!res.ok){
         const raw = await res.text(); let msg;
@@ -1606,14 +1644,18 @@
         bubble.classList.remove('md'); return finish(msg);
       }
       
+      const collectSources=(arr)=>(arr||[]).filter(a=>a&&a.url_citation).map(a=>({url:a.url_citation.url,title:a.url_citation.title}));
+
       if(!SETTINGS.stream) {
         const data = await res.json();
-        return finish(data.choices[0].message.content);
+        const m0 = data.choices[0].message;
+        if(m0.reasoning||m0.reasoning_content){reasonText=m0.reasoning||m0.reasoning_content;insertReason(col,opts.model,reasonText,false);}
+        return finish(m0.content,{ms:performance.now()-t0,usage:data.usage,sources:collectSources(m0.annotations)});
       }
-      
+
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
-      let fullText = "", buffer = "";
+      let fullText = "", buffer = "", usage=null, sources=[];
 
       while(!stopped) {
         const {done, value} = await reader.read();
@@ -1626,16 +1668,20 @@
           if(!t.startsWith('data:') || t === 'data: [DONE]') continue;
           try {
             const data = JSON.parse(t.slice(t.indexOf(':')+1).trim());
-            const delta = data.choices?.[0]?.delta?.content;
-            if(delta) {
-              fullText += delta;
+            if(data.usage) usage = data.usage;
+            const d = data.choices?.[0]?.delta || {};
+            const rd = d.reasoning ?? d.reasoning_content;
+            if(rd){ reasonText += rd; if(!reasonBox)reasonBox=insertReason(col,opts.model,'',true); reasonBox.querySelector('.rc-in').textContent=reasonText; scrollDown(); }
+            if(d.annotations) sources = sources.concat(collectSources(d.annotations));
+            if(d.content) {
+              fullText += d.content;
               bubble.innerHTML = esc(fullText) + '<span class="caret"></span>';
               scrollDown();
             }
           } catch(e) {}
         }
       }
-      finish(fullText);
+      finish(fullText,{ms:performance.now()-t0,usage,sources});
     } catch(err) {
       finish("**Erreur de connexion** : " + err.message);
     }
@@ -1643,8 +1689,9 @@
   function renderAIStored(msg){
     const node=addAINode(msg.model),col=node.querySelector('.col'),bubble=node.querySelector('.bubble');
     if(msg.media){bubble.classList.add('media-b');bubble.innerHTML=mediaBubbleHTML(msg.media);wireMedia(bubble,msg.media,node);return}
-    if(msg.reason)insertReason(col,msg.model);
-    bubble.classList.add('md');bubble.innerHTML=renderMD(msg.text)+(msg.search?sourcesBlock(msg.model):'');wireBubble(bubble);addActions(col,msg.text,node);
+    if(msg.reasonText)insertReason(col,msg.model,msg.reasonText,false);
+    bubble.classList.add('md');bubble.innerHTML=renderMD(msg.text)+sourcesBlock(msg.model,msg.sources);wireBubble(bubble);addActions(col,msg.text,node);
+    if(msg.usage||msg.ms){const s=statsEl(msg.model,msg.ms,msg.usage);if(s)col.appendChild(s);}
   }
   /* ===== génération média (image / vidéo) ===== */
   let mediaUID=0;
@@ -1749,7 +1796,7 @@
       if(generating||!node)return;const c=convoById(activeId);if(!c)return;
       for(let k=c.msgs.length-1;k>=0;k--){if(c.msgs[k].role==='ai'){c.msgs.splice(k,1);break}}
       node.remove();const model=currentModel,reason=isOn('Réflexion'),search=isOn('Recherche'),nn=addAINode(model);
-      runGen(nn,REPLIES[ri++%REPLIES.length],{reason,search,model,onDone:t=>{c.msgs.push({role:'ai',text:t,model,reason,search});c.model=model;c.ts=now();saveConvos();renderRecents()}});
+      runGen(nn,REPLIES[ri++%REPLIES.length],{reason,search,model,onDone:(t,meta)=>{c.msgs.push({role:'ai',text:t,model,reason,search,reasonText:meta.reasonText||'',sources:meta.sources||[],usage:meta.usage||null,ms:meta.ms||0});c.model=model;c.ts=now();saveConvos();renderRecents()}});
       toast('Régénéré avec '+model);
     });
     a.querySelector('[data-a=like]').addEventListener('click',e=>{e.currentTarget.classList.toggle('on');toast('Merci pour le retour')});
