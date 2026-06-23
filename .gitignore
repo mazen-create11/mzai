@@ -1,0 +1,11 @@
+# Secrets — jamais versionnés
+keys.local.js
+
+# Sauvegardes et résidus
+.backup-pre-refacto/
+*.orig
+test*.js
+
+# Système
+.DS_Store
+node_modules/
