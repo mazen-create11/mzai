@@ -1810,7 +1810,7 @@
   const scrollDown=()=>{chat.scrollTop=chat.scrollHeight};
   const isOn=name=>{const t=[...document.querySelectorAll('.tool[data-toggle]')].find(x=>x.dataset.toggle===name);return t&&t.classList.contains('on')};
   function attHTML(f,removable,idx){
-    const name=typeof f==='string'?f:f.name,isImg=typeof f==='object'&&f.isImg,url=typeof f==='object'?f.url:null;
+    const name=typeof f==='string'?f:f.name,isImg=typeof f==='object'&&f.isImg,url=typeof f==='object'?(f.b64||f.url):null;
     const rm=removable?`<span class="ax" data-ax="${idx}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span>`:'';
     if(isImg&&url)return `<span class="attach-chip img" data-tip="${esc(name)}"><img src="${url}" alt="${esc(name)}">${rm}</span>`;
     return `<span class="attach-chip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--c2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${fileIcon(name)}</svg>${esc(name)}${rm}</span>`;
@@ -1931,7 +1931,11 @@
       if(!apiKey){ bubble.classList.remove('md'); return finish('⚠️ Clé API manquante pour '+(isOR?'OpenRouter':'SiliconFlow')+'. Ajoute-la dans Paramètres › Connexions API.'); }
 
       const messages=[{role:'system',content:buildSystem(c)}].concat(
-        c.msgs.filter(m=>m.text).map(m=>({role:m.role==='ai'?'assistant':'user',content:m.text}))
+        c.msgs.filter(m=>m.text).map(m=>{
+          const imgs=(m.files||[]).filter(f=>f.isImg&&f.b64);
+          if(imgs.length)return{role:m.role==='ai'?'assistant':'user',content:[{type:'text',text:m.text},...imgs.map(f=>({type:'image_url',image_url:{url:f.b64}}))]};
+          return{role:m.role==='ai'?'assistant':'user',content:m.text};
+        })
       );
       const endpoint = isOR ? "https://openrouter.ai/api/v1/chat/completions" : SF_HOST+"/v1/chat/completions";
       const headers={'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'};
@@ -2202,11 +2206,16 @@
   $('#trClose').addEventListener('click',()=>$('#trashModal').classList.remove('show'));
   $('#trEmpty').addEventListener('click',emptyTrash);
   $('#trashModal').addEventListener('click',e=>{if(e.target.id==='trashModal')$('#trashModal').classList.remove('show')});
-  function send(){
+  async function send(){
     if(generating)return;const v=prompt.value.trim();if(!v&&!ATTACH.length)return toast('Écris un message');
-    const files=[...ATTACH];ATTACH=[];renderAttach();
+    const rawFiles=[...ATTACH];ATTACH=[];renderAttach();
+    // Convertir les images en base64 persistant avant de sauvegarder le message
+    const files=await Promise.all(rawFiles.map(async f=>{
+      if(f.isImg&&f.url){try{const b64=await blobToB64(f.url);URL.revokeObjectURL(f.url);return{name:f.name,isImg:true,b64};}catch(e){return{name:f.name,isImg:false};}}
+      return{name:f.name,isImg:false};
+    }));
     if(!activeId)createConvo();const c=convoById(activeId);
-    const ut=v||'(fichiers joints)';c.msgs.push({role:'user',text:ut,files:files.map(f=>({name:f.name,isImg:f.isImg}))});
+    const ut=v||'(fichiers joints)';c.msgs.push({role:'user',text:ut,files});
     if(c.msgs.filter(m=>m.role==='user').length===1)c.title=makeTitle(ut);
     c.model=currentModel;c.ts=now();saveConvos();renderRecents();
     showView('chat');addUser(ut,files);refreshCtxBanner();renderChatHead(c);prompt.value='';autoGrow();updateCount();
