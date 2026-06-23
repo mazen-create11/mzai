@@ -685,7 +685,7 @@
   .mc-mlbl{font-size:9.5px;color:var(--txt-faint);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
   .mc-mrow{display:flex;align-items:center;gap:6px}
   .mc-mtrack{flex:1;height:3px;border-radius:3px;background:var(--elev)}
-  .mc-mfill{height:100%;border-radius:3px;background:var(--cac)}
+  .mc-mfill{height:100%;border-radius:3px;background:var(--cac);transition:width .7s cubic-bezier(.4,0,.2,1)}
   .mc-mval{font-size:10px;color:var(--txt-dim);font-weight:700;flex-shrink:0;min-width:14px;text-align:right}
   .mc-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--line-2)}
   .mc-cost{font-size:11px;color:var(--txt-faint)}
@@ -697,7 +697,12 @@
   .mc-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
   .mc-rcard{background:var(--panel-2);border:1px solid var(--line-2);border-radius:14px;padding:15px;display:flex;flex-direction:column;gap:8px;position:relative;transition:.15s var(--ease)}
   .mc-rcard:hover{background:var(--elev);border-color:var(--line)}
-  .mc-rcard.mc-top1{border-color:color-mix(in srgb,var(--c1) 38%,transparent)}
+  @keyframes mcIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+  @keyframes mcPulse{0%,100%{box-shadow:0 0 0 1px color-mix(in srgb,var(--c1) 36%,transparent),0 0 18px color-mix(in srgb,var(--c1) 9%,transparent)}50%{box-shadow:0 0 0 1px color-mix(in srgb,var(--c1) 65%,transparent),0 0 30px color-mix(in srgb,var(--c1) 17%,transparent)}}
+  .mc-card{animation:mcIn .32s var(--ease) both;animation-delay:var(--stg,0ms)}
+  .mc-rcard{animation:mcIn .32s var(--ease) both;animation-delay:var(--stg,0ms)}
+  .mc-rcard.mc-top1{border-color:color-mix(in srgb,var(--c1) 38%,transparent);animation:mcIn .32s var(--ease) both,mcPulse 3s ease-in-out infinite;animation-delay:var(--stg,0ms),calc(var(--stg,0ms) + .6s)}
+  .mc-app-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:color-mix(in srgb,var(--c1) 12%,transparent);color:var(--c1);border:1px solid color-mix(in srgb,var(--c1) 25%,transparent)}
   .mc-rnum{position:absolute;top:13px;right:14px;font-size:10.5px;font-weight:800;color:var(--txt-faint);letter-spacing:.07em}
   .mc-rcard.mc-top1 .mc-rnum{color:var(--c1)}
   .mc-rname{font-size:13.5px;font-weight:700;color:var(--txt);padding-right:36px;line-height:1.2}
@@ -1531,17 +1536,18 @@
   const mcStars=n=>{const pct=(n/5*100).toFixed(0);return `<div class="mc-stars-row"><div style="position:relative;display:inline-block;white-space:nowrap;flex-shrink:0"><span class="mc-stars-txt" style="color:var(--line-2)">★★★★★</span><span class="mc-stars-txt" style="position:absolute;left:0;top:0;overflow:hidden;width:${pct}%;color:var(--c1)">★★★★★</span></div><span class="mc-stars-score">${n}/5</span></div>`};
 
   function renderMCText(){
-    return MC_TEXT.map(m=>{
+    return MC_TEXT.map((m,i)=>{
       const bars=[['Puissance',m.power],['Vitesse',m.speed],['Contexte',m.ctxv],['Économie',m.eco]];
-      return `<div class="mc-card" style="--cac:${m.ac}">
+      return `<div class="mc-card" style="--cac:${m.ac};--stg:${i*55}ms">
         <div class="mc-top">
           <div class="mc-ico">${m.maker.slice(0,2).toUpperCase()}</div>
           <div class="mc-name">${m.id}</div>
           <span class="mc-badge-t">${m.tag}</span>
           <span class="mc-maker">${m.maker}</span>
+          <span class="mc-app-badge">Dans MZai</span>
         </div>
         <div class="mc-strs">${m.strengths.map(s=>`<span class="mc-str">${s}</span>`).join('')}</div>
-        <div class="mc-metrics">${bars.map(([l,v])=>`<div class="mc-metric"><div class="mc-mlbl">${l}</div><div class="mc-mrow"><div class="mc-mtrack"><div class="mc-mfill" style="width:${v*20}%"></div></div><span class="mc-mval">${v}/5</span></div></div>`).join('')}</div>
+        <div class="mc-metrics">${bars.map(([l,v])=>`<div class="mc-metric"><div class="mc-mlbl">${l}</div><div class="mc-mrow"><div class="mc-mtrack"><div class="mc-mfill" data-w="${v*20}" style="width:0"></div></div><span class="mc-mval">${v}/5</span></div></div>`).join('')}</div>
         <div class="mc-foot">
           <span class="mc-cost">in <b>$${m.costIn}</b> · out <b>$${m.costOut}</b> / M tokens</span>
           ${m.bench?`<span class="mc-bench">${m.bench}</span>`:''}
@@ -1552,17 +1558,18 @@
     }).join('');
   }
   function renderMCGrid(items){
-    return `<div class="mc-grid">${items.map((m,i)=>`<div class="mc-rcard${i===0?' mc-top1':''}">
+    return `<div class="mc-grid">${items.map((m,i)=>`<div class="mc-rcard${i===0?' mc-top1':''}" style="--stg:${i*80}ms">
       <div class="mc-rnum">#${i+1}</div>
       <div class="mc-rname">${m.id}</div>
       <div class="mc-rprov">${m.maker}</div>
       ${mcStars(m.stars)}
-      <div class="mc-qbar"><div class="mc-qbar-fill" style="width:${m.quality*20}%"></div></div>
+      <div class="mc-qbar"><div class="mc-qbar-fill" data-w="${m.quality*20}" style="width:0"></div></div>
       <div class="mc-rdist">${m.distinct}</div>
       <div class="mc-rtags">${m.tags.map(t=>`<span class="mc-rtag">${t}</span>`).join('')}</div>
-      <div class="mc-rmeta"><span class="mc-rprice">${m.price}</span><span class="mc-rcap">${m.cap}</span></div>
+      <div class="mc-rmeta"><span class="mc-rprice">${m.price}</span><span class="mc-app-badge" style="margin-left:auto">Dans MZai</span></div>
     </div>`).join('')}</div>`;
   }
+  function triggerMCAnims(){requestAnimationFrame(()=>setTimeout(()=>{$$('#mcBody [data-w]').forEach(el=>{el.style.width=el.dataset.w+'%'})},40))}
   let mcTab='text';
   function openModels(){
     mcTab='text';
@@ -1574,6 +1581,7 @@
     if(mcTab==='text')$('#mcBody').innerHTML=renderMCText();
     else if(mcTab==='image')$('#mcBody').innerHTML=renderMCGrid(MC_IMAGE);
     else $('#mcBody').innerHTML=renderMCGrid(MC_VIDEO);
+    triggerMCAnims();
   }
   $$('#mcTabs .mc-tab').forEach(t=>t.addEventListener('click',()=>{mcTab=t.dataset.mct;renderMCPanel()}));
   $('#mcClose').addEventListener('click',()=>$('#modelsModal').classList.remove('show'));
