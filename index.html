@@ -1846,7 +1846,22 @@
       genReply(c);
     };
   }
-  function genReply(c){const reason=isOn('Réflexion'),search=isOn('Recherche'),model=currentModel,node=addAINode(model);runGen(node,REPLIES[ri++%REPLIES.length],{reason,search,model,onDone:(t,meta)=>{c.msgs.push({role:'ai',text:t,model,reason,search,reasonText:meta.reasonText||'',sources:meta.sources||[],usage:meta.usage||null,ms:meta.ms||0});c.ts=now();saveConvos();renderRecents()}})}
+  async function autoTitle(c){
+    if(!KEYS.openrouter)return;
+    const userMsg=(c.msgs.find(m=>m.role==='user')||{}).text||'';
+    const aiMsg=(c.msgs.find(m=>m.role==='ai')||{}).text||'';
+    try{
+      const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',
+        headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MZai'},
+        body:JSON.stringify({model:'deepseek/deepseek-v4-flash',max_tokens:20,temperature:0.3,
+          messages:[{role:'system',content:'Génère un titre de 3-5 mots (sans ponctuation ni guillemets) qui résume cette conversation. Réponds UNIQUEMENT avec le titre.'},
+            {role:'user',content:'Question : '+userMsg.slice(0,200)+'\nRéponse : '+aiMsg.slice(0,200)}]})});
+      if(!res.ok)return;
+      const d=await res.json();const t=(d.choices?.[0]?.message?.content||'').trim().replace(/^["'«»]+|["'»«]+$/g,'').trim();
+      if(t&&t.length>2&&t.length<60){c.title=t;saveConvos();renderRecents();renderChatHead(c);}
+    }catch(e){}
+  }
+  function genReply(c){const reason=isOn('Réflexion'),search=isOn('Recherche'),model=currentModel,node=addAINode(model);runGen(node,REPLIES[ri++%REPLIES.length],{reason,search,model,onDone:(t,meta)=>{c.msgs.push({role:'ai',text:t,model,reason,search,reasonText:meta.reasonText||'',sources:meta.sources||[],usage:meta.usage||null,ms:meta.ms||0});c.ts=now();saveConvos();renderRecents();if(c.msgs.filter(m=>m.role==='user').length===1)autoTitle(c);}})}
   function addAINode(modelId){const m=modelById(modelId||currentModel),ac=acOf(m),n=document.createElement('div');n.className='msg ai';n.innerHTML='<div class="av" style="background:linear-gradient(135deg,'+ac+',var(--c3))">'+MARK+'</div><div class="col"><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>';chat.appendChild(n);scrollDown();return n}
   function reasoningBlock(modelId,content,live){
     const m=modelById(modelId||currentModel);
