@@ -958,7 +958,7 @@
     anthropic:{name:'Anthropic',ac:'#d97757',site:'console.anthropic.com',logo:'<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M13.827 3.52h3.603L24 20h-3.603l-6.57-16.48zm-7.258 0h3.767L16.906 20h-3.674l-1.343-3.461H5.017l-1.344 3.46H0L6.57 3.522zm4.132 9.959L8.453 7.687 6.205 13.48H10.7z"/></svg>'},
     mistral:{name:'Mistral AI',ac:'#fa520f',site:'console.mistral.ai',logo:'<svg viewBox="0 0 256 233" width="17" height="17" fill="currentColor"><path d="M186.18 0h46.55v46.55h-46.55z"/><path fill="#F7D046" d="M209.45 0H256v46.55h-46.55z"/><path d="M0 0h46.55v46.55H0zM0 46.55h46.55V93.09H0zM0 93.09h46.55v46.55H0zM0 139.64h46.55v46.55H0zM0 186.18h46.55v46.55H0z"/><path fill="#F7D046" d="M23.27 0h46.55v46.55H23.27z"/><path fill="#F2A73B" d="M209.45 46.55H256v46.54h-46.55zM23.27 46.55h46.55v46.54H23.27z"/><path d="M139.64 46.55h46.54v46.54h-46.54z"/><path fill="#F2A73B" d="M162.91 46.55h46.54v46.54h-46.54zM69.82 46.55h46.54v46.54H69.82z"/><path fill="#EE792F" d="M116.36 93.09h46.55v46.55h-46.55zM162.91 93.09h46.54v46.55h-46.54zM69.82 93.09h46.54v46.55H69.82z"/><path d="M93.09 139.64h46.55v46.54H93.09z"/><path fill="#EB5829" d="M116.36 139.64h46.55v46.54h-46.55z"/><path fill="#EE792F" d="M209.45 93.09H256v46.55h-46.55zM23.27 93.09h46.55v46.55H23.27z"/><path d="M186.18 139.64h46.55v46.54h-46.55z"/><path fill="#EB5829" d="M209.45 139.64H256v46.54h-46.55z"/><path d="M186.18 186.18h46.55v46.55h-46.55z"/><path fill="#EB5829" d="M23.27 139.64h46.55v46.54H23.27z"/><path fill="#EA3326" d="M209.45 186.18H256v46.55h-46.55zM23.27 186.18h46.55v46.55H23.27z"/></svg>'},
     openrouter:{name:'OpenRouter',ac:'#3b82f6',site:'openrouter.ai',logo:'<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>'},
-    siliconflow:{name:'SiliconFlow',ac:'#8b5cf6',site:'siliconflow.cn',logo:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242M12 12v9"/></svg>'}
+    siliconflow:{name:'SiliconFlow',ac:'#8b5cf6',site:'siliconflow.com',logo:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242M12 12v9"/></svg>'}
   };
   const MODELS=[
     {id:'MZ Auto',provider:'mz',d:'Routeur intelligent · choisit le meilleur modèle',tag:'Smart',spd:3,ctx:'Auto',use:'Laisse MZai router selon la tâche.'},
@@ -1554,7 +1554,14 @@
     try {
       const c = convoById(activeId);
       let mData = modelById(opts.model);
-      if(mData.provider==='mz' && KEYS.openrouter) mData={...mData,provider:'openrouter',api:'deepseek/deepseek-v4-flash'};  // MZ Auto → vrai modèle rapide
+      if(mData.provider==='mz' && KEYS.openrouter){  // MZ Auto → routage selon la demande
+        const lastUser=((c.msgs.filter(m=>m.role==='user').pop())||{}).text||'';
+        const t=lastUser.toLowerCase();
+        const isCode=/```/.test(lastUser)||/\b(code|coder|fonction|function|bug|debug|refactor|déboguer|sql|regex|python|javascript|typescript|css|html|react|component)\b/.test(t);
+        const isHard=lastUser.length>600||/\b(analyse|raisonne|démontre|prouve|stratégie|compare|optimise|architecture|explique en détail)\b/.test(t);
+        const api=isCode?'moonshotai/kimi-k2.7-code':isHard?'deepseek/deepseek-v4-pro':'deepseek/deepseek-v4-flash';
+        mData={...mData,provider:'openrouter',api};
+      }
       const isOR = mData.provider === 'openrouter';
       const isSF = mData.provider === 'siliconflow' && mData.kind!=='image' && mData.kind!=='video' && mData.kind!=='audio';
       if(!isOR && !isSF){ return finish(REPLIES[ri++%REPLIES.length]); }  // pas de clé chinoise pour ce modèle → simulation propre
@@ -1569,9 +1576,16 @@
       const headers={'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'};
       if(isOR){headers['HTTP-Referer']=location.origin||'https://mzai.app';headers['X-Title']='MZai';}
       bubble.innerHTML='<span class="caret"></span>';
-      const res = await fetch(endpoint, { method:'POST', headers, body: JSON.stringify({model: mData.api||opts.model, messages, stream: SETTINGS.stream}) });
-      
-      if(!res.ok) return finish("**Erreur API** : " + res.status + " " + await res.text());
+      const res = await fetch(endpoint, { method:'POST', headers, body: JSON.stringify({model: mData.api||opts.model, messages, stream: SETTINGS.stream, max_tokens: 4096}) });
+
+      if(!res.ok){
+        const raw = await res.text(); let msg;
+        if(res.status===402) msg="💳 **Crédits insuffisants** sur "+(isOR?'OpenRouter':'SiliconFlow')+". Recharge ton compte, ou choisis un modèle plus économique (ex. DeepSeek Flash).";
+        else if(res.status===401) msg="🔑 **Clé API refusée.** Vérifie-la dans Paramètres › Connexions API.";
+        else if(res.status===429) msg="⏳ **Trop de requêtes.** Attends quelques secondes puis réessaie.";
+        else { let d=''; try{ d=((JSON.parse(raw).error)||{}).message||''; }catch(e){} msg="**Erreur API "+res.status+"** — "+(d||raw.slice(0,160)); }
+        bubble.classList.remove('md'); return finish(msg);
+      }
       
       if(!SETTINGS.stream) {
         const data = await res.json();
@@ -1580,25 +1594,26 @@
       
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
-      let fullText = "";
-      
+      let fullText = "", buffer = "";
+
       while(!stopped) {
         const {done, value} = await reader.read();
         if(done) break;
-        const chunk = decoder.decode(value, {stream: true});
-        const lines = chunk.split('\n');
+        buffer += decoder.decode(value, {stream: true});
+        const lines = buffer.split('\n');
+        buffer = lines.pop();  // dernière ligne potentiellement incomplète → on la garde pour le prochain chunk
         for(const line of lines) {
-          if(line.startsWith('data: ') && line.trim() !== 'data: [DONE]') {
-            try {
-              const data = JSON.parse(line.slice(6));
-              const delta = data.choices[0].delta.content;
-              if(delta) {
-                fullText += delta;
-                bubble.innerHTML = esc(fullText) + '<span class="caret"></span>';
-                scrollDown();
-              }
-            } catch(e) {}
-          }
+          const t = line.trim();
+          if(!t.startsWith('data:') || t === 'data: [DONE]') continue;
+          try {
+            const data = JSON.parse(t.slice(t.indexOf(':')+1).trim());
+            const delta = data.choices?.[0]?.delta?.content;
+            if(delta) {
+              fullText += delta;
+              bubble.innerHTML = esc(fullText) + '<span class="caret"></span>';
+              scrollDown();
+            }
+          } catch(e) {}
         }
       }
       finish(fullText);
