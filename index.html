@@ -586,6 +586,8 @@
   .api-in::placeholder{color:var(--txt-faint);letter-spacing:0}
   .api-st{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:var(--txt-faint);transition:.2s}
   .api-st.on{background:#34d399;box-shadow:0 0 8px #34d399}
+  .api-kling{align-items:flex-start}
+  .kling-fields{display:flex;flex-direction:column;gap:5px;flex:1;min-width:0}
 
   /* stats d'usage réel sous chaque réponse */
   .msg-stats{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:4px;font-size:10.5px;color:var(--txt-faint);letter-spacing:.02em;user-select:none;opacity:.78}
@@ -1073,7 +1075,8 @@
     anthropic:{name:'Anthropic',ac:'#d97757',site:'console.anthropic.com',logo:'<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M13.827 3.52h3.603L24 20h-3.603l-6.57-16.48zm-7.258 0h3.767L16.906 20h-3.674l-1.343-3.461H5.017l-1.344 3.46H0L6.57 3.522zm4.132 9.959L8.453 7.687 6.205 13.48H10.7z"/></svg>'},
     mistral:{name:'Mistral AI',ac:'#fa520f',site:'console.mistral.ai',logo:'<svg viewBox="0 0 256 233" width="17" height="17" fill="currentColor"><path d="M186.18 0h46.55v46.55h-46.55z"/><path fill="#F7D046" d="M209.45 0H256v46.55h-46.55z"/><path d="M0 0h46.55v46.55H0zM0 46.55h46.55V93.09H0zM0 93.09h46.55v46.55H0zM0 139.64h46.55v46.55H0zM0 186.18h46.55v46.55H0z"/><path fill="#F7D046" d="M23.27 0h46.55v46.55H23.27z"/><path fill="#F2A73B" d="M209.45 46.55H256v46.54h-46.55zM23.27 46.55h46.55v46.54H23.27z"/><path d="M139.64 46.55h46.54v46.54h-46.54z"/><path fill="#F2A73B" d="M162.91 46.55h46.54v46.54h-46.54zM69.82 46.55h46.54v46.54H69.82z"/><path fill="#EE792F" d="M116.36 93.09h46.55v46.55h-46.55zM162.91 93.09h46.54v46.55h-46.54zM69.82 93.09h46.54v46.55H69.82z"/><path d="M93.09 139.64h46.55v46.54H93.09z"/><path fill="#EB5829" d="M116.36 139.64h46.55v46.54h-46.55z"/><path fill="#EE792F" d="M209.45 93.09H256v46.55h-46.55zM23.27 93.09h46.55v46.55H23.27z"/><path d="M186.18 139.64h46.55v46.54h-46.55z"/><path fill="#EB5829" d="M209.45 139.64H256v46.54h-46.55z"/><path d="M186.18 186.18h46.55v46.55h-46.55z"/><path fill="#EB5829" d="M23.27 139.64h46.55v46.54H23.27z"/><path fill="#EA3326" d="M209.45 186.18H256v46.55h-46.55zM23.27 186.18h46.55v46.55H23.27z"/></svg>'},
     openrouter:{name:'OpenRouter',ac:'#3b82f6',site:'openrouter.ai',logo:'<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>'},
-    siliconflow:{name:'SiliconFlow',ac:'#8b5cf6',site:'siliconflow.com',logo:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242M12 12v9"/></svg>'}
+    siliconflow:{name:'SiliconFlow',ac:'#8b5cf6',site:'siliconflow.com',logo:'<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242M12 12v9"/></svg>'},
+    kling:{name:'Kling AI',ac:'#ff5c28',site:'kling.ai',logo:'<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2L4 7v10l8 5 8-5V7L12 2zm0 2.5l5.5 3.4v6.8L12 18l-5.5-3.3V7.9L12 4.5z"/></svg>'}
   };
   const MODELS=[
     {id:'MZ Auto',provider:'mz',d:'Routeur intelligent · choisit le meilleur modèle',tag:'Smart',spd:3,ctx:'Auto',use:'Laisse MZai router selon la tâche.'},
@@ -1086,10 +1089,14 @@
     {id:'MiniMax M3',provider:'openrouter',api:'minimax/minimax-m3',d:'Ultra rapide & polyvalent · 1M',tag:'M3',spd:4,ctx:'1M',use:'Vitesse, polyvalence, coût réduit.'},
     {id:'FLUX.2 Pro',provider:'siliconflow',api:'black-forest-labs/FLUX.2-pro',kind:'image',d:'Flagship image dernière génération',tag:'Top',spd:2,ctx:'-',use:'Visuels premium, le meilleur rendu.'},
     {id:'FLUX 1.1 Pro Ultra',provider:'siliconflow',api:'black-forest-labs/FLUX-1.1-pro-Ultra',kind:'image',d:'Haute résolution ~4 MP',tag:'4K',spd:2,ctx:'-',use:'Visuels quasi-4K, packshots détaillés.'},
-    {id:'FLUX.1 Kontext Max',provider:'siliconflow',api:'black-forest-labs/FLUX.1-Kontext-max',kind:'image',d:'Édite une image existante',tag:'Edit',spd:3,ctx:'-',use:'Retoucher/modifier un visuel sans le refaire.'},
+    {id:'FLUX.1 Kontext Max',provider:'siliconflow',api:'black-forest-labs/FLUX.1-Kontext-max',kind:'image',editImg:true,d:'Édite une image existante',tag:'Edit',spd:3,ctx:'-',use:'Retoucher/modifier un visuel sans le refaire. Attache une image source.'},
+    {id:'FLUX.1 Schnell',provider:'siliconflow',api:'black-forest-labs/FLUX.1-schnell',kind:'image',d:'Image ultra-rapide · gratuit',tag:'Free',spd:5,ctx:'-',use:'Générations rapides sans coût — idéal pour itérer.'},
     {id:'Qwen-Image',provider:'siliconflow',api:'Qwen/Qwen-Image',kind:'image',d:'Image Alibaba · texte net dans l\'image',tag:'Img',spd:3,ctx:'-',use:'Visuels réalistes, affiches, texte intégré.'},
     {id:'Z-Image Turbo',provider:'siliconflow',api:'Tongyi-MAI/Z-Image-Turbo',kind:'image',d:'Image ultra-rapide Alibaba',tag:'Fast',spd:5,ctx:'-',use:'Itérations visuelles rapides.'},
-    {id:'Wan 2.2 Vidéo',provider:'siliconflow',api:'Wan-AI/Wan2.2-T2V-A14B',kind:'video',d:'Texte→vidéo Alibaba Wan',tag:'Vid',spd:2,ctx:'-',use:'Clips vidéo génératifs.'},
+    {id:'Wan 2.2 Vidéo',provider:'siliconflow',api:'Wan-AI/Wan2.2-T2V-A14B',kind:'video',d:'Texte→vidéo Alibaba Wan',tag:'T2V',spd:2,ctx:'-',use:'Clips vidéo génératifs depuis un texte.'},
+    {id:'Wan 2.2 I2V',provider:'siliconflow',api:'Wan-AI/Wan2.2-I2V-A14B',kind:'video',needImg:true,d:'Image→vidéo Alibaba Wan',tag:'I2V',spd:2,ctx:'-',use:'Transforme une image en clip vidéo. Attache une image source.'},
+    {id:'Kling 2.0 Vidéo',provider:'kling',api:'kling-v2-master',kind:'video',d:'Meilleur T2V chinois · qualité cinématique',tag:'Pro',spd:2,ctx:'-',use:'Clips vidéo haute qualité, mouvement naturel.'},
+    {id:'Kling 2.0 I2V',provider:'kling',api:'kling-v2-master',kind:'video',needImg:true,d:'Image→vidéo Kling 2.0',tag:'I2V',spd:2,ctx:'-',use:'Anime une image avec la qualité Kling. Attache une image source.'},
     {id:'Fish Speech 1.5',provider:'siliconflow',api:'fishaudio/fish-speech-1.5',kind:'audio',d:'Clonage de voix · multilingue FR',tag:'Clone',spd:4,ctx:'-',use:'Voix de marque, clonage, narration FR premium.'},
     {id:'CosyVoice 2',provider:'siliconflow',api:'FunAudioLLM/CosyVoice2-0.5B',kind:'audio',d:'Voix off naturelle Alibaba',tag:'Voix',spd:4,ctx:'-',use:'Voix off, narration, doublage.'}
   ];
@@ -1101,7 +1108,7 @@
   const SETTINGS=DB.get('settings',{anim:true,stream:true,enter:true,showReason:false,webSearch:false,density:'cozy'});
   /* Clés chargées depuis keys.local.js (gitignored) → "toujours connecté" en local,
      sans aucun secret dans index.html. Fichier absent (ex: hébergé) → saisie dans Paramètres. */
-  const DEFAULT_KEYS=Object.assign({openrouter:'',siliconflow:'',google:'',openai:'',anthropic:'',mistral:''},window.MZAI_KEYS||{});
+  const DEFAULT_KEYS=Object.assign({openrouter:'',siliconflow:'',kling_ak:'',kling_sk:''},window.MZAI_KEYS||{});
   const KEYS=Object.assign({},DEFAULT_KEYS,DB.get('apikeys',{}));
   Object.keys(DEFAULT_KEYS).forEach(k=>{if(DEFAULT_KEYS[k]&&!KEYS[k])KEYS[k]=DEFAULT_KEYS[k]});
   DB.set('apikeys',KEYS);
@@ -1111,7 +1118,7 @@
   const modelById=id=>MODELS.find(m=>m.id===id)||MODELS[0];
   const provOf=m=>PROVIDERS[(typeof m==='string'?modelById(m):m||{}).provider||'mz'];
   const acOf=m=>provOf(m).ac;
-  const hasKey=p=>p==='mz'||!!(KEYS[p]&&KEYS[p].trim());
+  const hasKey=p=>p==='mz'||(p==='kling'?(!!(KEYS.kling_ak&&KEYS.kling_ak.trim())&&!!(KEYS.kling_sk&&KEYS.kling_sk.trim())):!!(KEYS[p]&&KEYS[p].trim()));
 
   const LIC={chat:'<path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/>',code:'<path d="m8 6-6 6 6 6M16 6l6 6-6 6"/>',doc:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>',img:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>'};
   /* jeu d'icônes vectorielles (remplace les emojis) */
@@ -1392,7 +1399,7 @@
       {tag:'imp',t:'Usage réel',d:'Temps, tokens et coût affichés sous chaque réponse.'}
     ]}
   ];
-  const ROADMAP=[['bolt','Application mobile','Planifié'],['brain','Mémoire longue durée','Exploré'],['chip','Plus de modèles chinois','Bientôt']];
+  const ROADMAP=[['bolt','Application mobile','Planifié'],['brain','Mémoire longue durée','Exploré'],['chip','Kling I2V · Wan I2V · FLUX edit','Branché']];
   function openNews(){
     $('#newsLog').innerHTML=NEWS.map(r=>`<div class="nw-rel"><div class="nw-rel-h"><span class="nw-rel-v">Version ${r.v}</span><span class="nw-rel-d">${r.d}</span></div>${r.items.map(it=>`<div class="nw-item"><span class="nw-tag ${it.tag}">${it.tag==='new'?'Nouveau':it.tag==='imp'?'Amélioré':'Corrigé'}</span><div style="min-width:0"><div class="nw-it-t">${it.t}</div><div class="nw-it-d">${it.d}</div></div></div>`).join('')}</div>`).join('');
     $('#newsRoad').innerHTML=ROADMAP.map(([g,t,s])=>`<div class="nw-road"><span class="nr-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH[g]}</svg></span>${t}<span class="nr-soon">${s}</span></div>`).join('');
@@ -1450,11 +1457,15 @@
 
   /* connexions API */
   function renderApiList(){
-    const order=['openrouter','siliconflow'];  // MZai = modèles chinois uniquement (OpenRouter + SiliconFlow)
-    $('#apiList').innerHTML=order.map(pk=>{const pr=PROVIDERS[pk],ok=hasKey(pk);return `<div class="api-row" data-key="${pk}"><span class="api-logo" style="color:${pr.ac}">${pr.logo}</span><div class="api-meta"><div class="api-name">${pr.name}</div><div class="api-sub">${pr.site}</div></div><input class="api-in" name="api-${pk}" aria-label="Clé API ${pr.name}" type="password" autocomplete="off" spellcheck="false" placeholder="Coller la clé API…" value="${esc(KEYS[pk]||'')}"><span class="api-st${ok?' on':''}" data-tip="${ok?'Connecté':'Non connecté'}"></span></div>`}).join('');
-    $$('#apiList .api-row').forEach(row=>{const pk=row.dataset.key,inp=row.querySelector('.api-in'),st=row.querySelector('.api-st');
+    const order=['openrouter','siliconflow'];
+    let rows=order.map(pk=>{const pr=PROVIDERS[pk],ok=hasKey(pk);return `<div class="api-row" data-key="${pk}"><span class="api-logo" style="color:${pr.ac}">${pr.logo}</span><div class="api-meta"><div class="api-name">${pr.name}</div><div class="api-sub">${pr.site}</div></div><input class="api-in" name="api-${pk}" type="password" autocomplete="off" spellcheck="false" placeholder="Coller la clé API…" value="${esc(KEYS[pk]||'')}"><span class="api-st${ok?' on':''}" data-tip="${ok?'Connecté':'Non connecté'}"></span></div>`}).join('');
+    const klingOk=hasKey('kling');
+    rows+=`<div class="api-row api-kling" data-key="kling"><span class="api-logo" style="color:#ff5c28">${PROVIDERS.kling.logo}</span><div class="api-meta"><div class="api-name">Kling AI</div><div class="api-sub">kling.ai · vidéo</div></div><div class="kling-fields"><input class="api-in" data-kf="kling_ak" type="password" autocomplete="off" placeholder="Access Key…" value="${esc(KEYS.kling_ak||'')}"><input class="api-in" data-kf="kling_sk" type="password" autocomplete="off" placeholder="Secret Key…" value="${esc(KEYS.kling_sk||'')}"></div><span class="api-st${klingOk?' on':''}" data-tip="${klingOk?'Connecté':'2 clés requises'}"></span></div>`;
+    $('#apiList').innerHTML=rows;
+    $$('#apiList .api-row:not(.api-kling)').forEach(row=>{const pk=row.dataset.key,inp=row.querySelector('.api-in'),st=row.querySelector('.api-st');
       inp.addEventListener('input',()=>{KEYS[pk]=inp.value.trim();DB.set('apikeys',KEYS);st.classList.toggle('on',hasKey(pk));st.setAttribute('data-tip',hasKey(pk)?'Connecté':'Non connecté');renderModelPicker();syncModel()});
     });
+    $$('#apiList [data-kf]').forEach(inp=>{inp.addEventListener('input',()=>{KEYS[inp.dataset.kf]=inp.value.trim();DB.set('apikeys',KEYS);const st=$('#apiList .api-kling .api-st'),ok=hasKey('kling');if(st){st.classList.toggle('on',ok);st.setAttribute('data-tip',ok?'Connecté':'2 clés requises')}renderModelPicker();syncModel()})});
   }
   renderApiList();
   $('#setExport').addEventListener('click',()=>{const data={model:currentModel,persona:PERSONA,settings:SETTINGS,conversations:CONVOS,exportedAt:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='mzai-export.json';a.click();URL.revokeObjectURL(u);toast('Données exportées')});
@@ -1773,6 +1784,18 @@
     bubble.classList.add('md');bubble.innerHTML=renderMD(msg.text)+sourcesBlock(msg.model,msg.sources);wireBubble(bubble);addActions(col,msg.text,node);
     if(msg.usage||msg.ms){const s=statsEl(msg.model,msg.ms,msg.usage);if(s)col.appendChild(s);}
   }
+  /* ===== helpers media ===== */
+  async function blobToB64(blobUrl){const r=await fetch(blobUrl),b=await r.blob();return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(b)})}
+  async function klingJWT(){
+    const ak=KEYS.kling_ak||'',sk=KEYS.kling_sk||'';
+    if(!ak||!sk)throw new Error('Clés Kling manquantes — configure Access Key + Secret Key dans Paramètres › Connexions API (kling.ai)');
+    const now=Math.floor(Date.now()/1000);
+    const b64u=obj=>btoa(JSON.stringify(obj)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    const hdr=b64u({alg:'HS256',typ:'JWT'}),pay=b64u({iss:ak,exp:now+1800,nbf:now-5}),data=hdr+'.'+pay;
+    const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(sk),{name:'HMAC',hash:'SHA-256'},false,['sign']);
+    const sig=await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(data));
+    return data+'.'+btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
   /* ===== génération média (image / vidéo) ===== */
   let mediaUID=0;
   function hashColors(str){let h=0;for(let i=0;i<str.length;i++)h=(h*31+str.charCodeAt(i))>>>0;const hue=h%360;return[`hsl(${hue} 78% 62%)`,`hsl(${(hue+38)%360} 72% 46%)`,`hsl(${(hue+205)%360} 68% 52%)`,`hsl(${(hue+150)%360} 70% 40%)`]}
@@ -1808,15 +1831,46 @@
       const mm=modelById(model);
       if(type==='image' && hasKey('siliconflow')){
         const imgModel=(mm.provider==='siliconflow'&&mm.kind==='image')?mm.api:'Qwen/Qwen-Image';
-        const res = await fetch(SF_HOST+'/v1/images/generations',{method:'POST',headers:H,body:JSON.stringify({model:imgModel,prompt:promptText,image_size:'1024x1024',batch_size:1})});
+        const body={model:imgModel,prompt:promptText,image_size:'1024x1024',batch_size:1};
+        if(mm.editImg){const imgA=ATTACH.find(a=>a.isImg);if(imgA){body.image=await blobToB64(imgA.url)}else throw new Error('Ce modèle édite une image existante.\nAttache une image source via le trombone 📎 avant de générer.')}
+        const res = await fetch(SF_HOST+'/v1/images/generations',{method:'POST',headers:H,body:JSON.stringify(body)});
         if(!res.ok) throw new Error('HTTP '+res.status+' · '+(await res.text().catch(()=>'')).slice(0,200));
         const data = await res.json();const url = data.images?.[0]?.url || data.data?.[0]?.url;
         if(!url) throw new Error("Aucune image renvoyée par l'API");
         if(done)return;place({type,prompt:promptText,seed:seed(),model:imgModel.split('/').pop(),url});return;
       }
+      if(type==='video' && mm.provider==='kling'){
+        if(!hasKey('kling'))throw new Error('Clés Kling manquantes — configure Access Key + Secret Key dans Paramètres › Connexions API (inscription gratuite sur kling.ai)');
+        if(mm.needImg){const imgA=ATTACH.find(a=>a.isImg);if(!imgA)throw new Error('Kling I2V nécessite une image source.\nAttache une image via le trombone 📎')}
+        const jwt=await klingJWT();
+        const kH={'Authorization':'Bearer '+jwt,'Content-Type':'application/json'};
+        const isI2V=mm.needImg;
+        const kBody={model_name:mm.api,prompt:promptText,duration:'5',aspect_ratio:'16:9',mode:'std'};
+        if(isI2V){const imgA=ATTACH.find(a=>a.isImg);kBody.image=await blobToB64(imgA.url)}
+        const kUrl='https://api.klingai.com/v1/videos/'+(isI2V?'image2video':'text2video');
+        const sub=await fetch(kUrl,{method:'POST',headers:kH,body:JSON.stringify(kBody)});
+        if(!sub.ok)throw new Error('Kling HTTP '+sub.status+' · '+(await sub.text().catch(()=>'')).slice(0,200));
+        const sj=await sub.json();
+        const taskId=sj.data?.task_id;if(!taskId)throw new Error('Kling: pas de task_id → '+JSON.stringify(sj).slice(0,200));
+        let url=null;
+        for(let i=0;i<120 && !done;i++){
+          await new Promise(r=>setTimeout(r,3000));if(done)return;
+          bubble.innerHTML='<div class="gen-loading"><div class="gl-ring"></div>Kling génère… '+((i+1)*3)+'s <span style="opacity:.6">(2-4 min)</span></div>';
+          const jwt2=await klingJWT();
+          const stRes=await fetch(kUrl+'/'+taskId,{headers:{'Authorization':'Bearer '+jwt2}});
+          const stj=await stRes.json().catch(()=>({}));
+          if(stj.data?.task_status==='succeed'){url=stj.data.task_result?.videos?.[0]?.url;break}
+          if(stj.data?.task_status==='failed')throw new Error('Kling: génération échouée — '+( stj.data?.task_status_msg||'erreur serveur'));
+        }
+        if(!url){if(done)return;throw new Error('Kling: délai dépassé — réessaie')}
+        if(done)return;place({type,prompt:promptText,seed:seed(),model:'Kling 2.0',url});return;
+      }
       if(type==='video' && hasKey('siliconflow')){
         const vidModel=(mm.provider==='siliconflow'&&mm.kind==='video')?mm.api:'Wan-AI/Wan2.2-T2V-A14B';
-        const sub=await fetch(SF_HOST+'/v1/video/submit',{method:'POST',headers:H,body:JSON.stringify({model:vidModel,prompt:promptText,image_size:'1280x720'})});
+        if(mm.needImg){const imgA=ATTACH.find(a=>a.isImg);if(!imgA)throw new Error('Wan I2V nécessite une image source.\nAttache une image via le trombone 📎')}
+        const vBody={model:vidModel,prompt:promptText,image_size:'1280x720'};
+        if(mm.needImg){const imgA=ATTACH.find(a=>a.isImg);vBody.image=await blobToB64(imgA.url)}
+        const sub=await fetch(SF_HOST+'/v1/video/submit',{method:'POST',headers:H,body:JSON.stringify(vBody)});
         if(!sub.ok) throw new Error('HTTP '+sub.status+' · '+(await sub.text().catch(()=>'')).slice(0,200));
         const reqId=(await sub.json()).requestId;if(!reqId)throw new Error('Pas de requestId renvoyé');
         let url=null;
