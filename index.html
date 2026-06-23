@@ -2317,7 +2317,27 @@
   $('#attachBtn').addEventListener('click',()=>{importMode=false;$('#fileInput').multiple=true;$('#fileInput').click()});
   $('#fileInput').addEventListener('change',e=>{const fs=[...e.target.files];if(!fs.length){e.target.value='';return}
     if(prjFileMode){prjFileMode=false;const p=projById(activeProject);if(p){p.files=p.files||[];fs.forEach(f=>p.files.push({name:f.name,isImg:/^image\//.test(f.type)}));saveProjects();openProject(p.id);toast(fs.length>1?fs.length+' fichiers ajoutés':'Fichier ajouté au projet')}}
-    else if(importMode){toast('Conversation importée : '+fs[0].name);importMode=false}
+    else if(importMode){
+      importMode=false;
+      const file=fs[0];
+      const fr=new FileReader();
+      fr.onload=ev=>{
+        try{
+          const data=JSON.parse(ev.target.result);
+          const convos=data.conversations||data.convos||(Array.isArray(data)?data:[]);
+          if(!convos.length)return toast('Fichier vide ou format inconnu');
+          let added=0;
+          convos.forEach(c=>{
+            if(c&&c.msgs&&c.msgs.length&&!CONVOS.find(x=>x.id===c.id)){
+              CONVOS.push({...c,id:c.id||newId(),ts:c.ts||now()});added++;
+            }
+          });
+          saveConvos();renderRecents();renderLibrary('');
+          toast(added?added+' conversation'+(added>1?'s':'')+' importée'+(added>1?'s':''):'Déjà à jour (aucun doublon)');
+        }catch(e){toast('Fichier invalide — JSON attendu');}
+      };
+      fr.readAsText(file);
+    }
     else{
       if(fs.reduce((a,b)=>a+b.size,0)>20*1024*1024){toast('Taille totale limitée à 20 Mo');e.target.value='';return}
       fs.forEach(f=>{const isImg=/^image\//.test(f.type);ATTACH.push({name:f.name,isImg,url:isImg?URL.createObjectURL(f):null,file:f})});renderAttach();toast(fs.length>1?fs.length+' fichiers joints':'Fichier joint')
