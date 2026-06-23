@@ -606,6 +606,23 @@
   a.src .sd{flex:1;min-width:0;font-size:12.5px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   a.src .su{flex-shrink:0;font-size:11px;color:var(--c1);font-weight:500}
 
+  /* nouveautés / feuille de route */
+  #newsLog{display:flex;flex-direction:column;gap:18px}
+  .nw-rel-h{display:flex;align-items:baseline;gap:9px;margin-bottom:9px}
+  .nw-rel-v{font-size:14px;font-weight:700;color:var(--txt)}
+  .nw-rel-d{font-size:11.5px;color:var(--txt-faint)}
+  .nw-item{display:flex;gap:11px;padding:11px 0;border-top:1px solid var(--line)}
+  .nw-item:first-of-type{border-top:none;padding-top:2px}
+  .nw-tag{flex-shrink:0;align-self:flex-start;font-size:9.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;padding:3px 8px;border-radius:6px;margin-top:1px}
+  .nw-tag.new{color:#7ee0b8;background:rgba(126,224,184,.12)}
+  .nw-tag.imp{color:#7ca8ff;background:rgba(124,168,255,.12)}
+  .nw-tag.fix{color:#e0a86a;background:rgba(224,168,106,.12)}
+  .nw-it-t{font-size:13.5px;font-weight:600;color:var(--txt)}
+  .nw-it-d{font-size:12.5px;color:var(--txt-dim);line-height:1.55;margin-top:2px}
+  .nw-road{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;background:var(--panel-2);border:1px solid var(--line-2);font-size:13px;color:var(--txt);margin-bottom:7px}
+  .nr-ic{flex-shrink:0;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--elev);color:var(--c1)}
+  .nr-soon{margin-left:auto;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--txt-faint);background:var(--elev);padding:3px 8px;border-radius:6px}
+
   /* responsive */
   .topbar-left{display:flex;align-items:center;gap:10px;min-width:0}
   .menu-btn{width:38px;height:38px;border-radius:11px;border:1px solid var(--line-2);background:var(--elev);color:var(--txt-dim);display:none;place-items:center;cursor:pointer;transition:.2s var(--ease);flex-shrink:0}
@@ -1327,15 +1344,17 @@
   /* nouveautés */
   const NEWS=[
     {v:'1.0',d:'Juin 2026',items:[
-      {tag:'new',t:'Multi-modèles réels',d:'Gemini 2.5, GPT-5.1, Codex, Claude Opus 4.8 et Mistral — un seul endroit, avec routeur intelligent MZ Auto.'},
-      {tag:'new',t:'Mon IA — Persona Studio',d:'Définis nom, ton, longueur, traits et instructions système. 12 presets prêts à l\'emploi.'},
+      {tag:'new',t:'Modèles chinois en direct',d:'DeepSeek V4 Pro/Flash, Qwen3, Kimi K2.7 et GLM-5.2 via OpenRouter & SiliconFlow. MZ Auto choisit le bon modèle selon ta tâche.'},
+      {tag:'new',t:'Raisonnement visible',d:'La chaîne de pensée du modèle s\'affiche en direct dans un bloc dépliable.'},
+      {tag:'new',t:'Recherche web réelle',d:'Réponses sourcées avec citations cliquables quand la recherche est activée.'},
+      {tag:'new',t:'Mon IA — Persona Studio',d:'Définis nom, ton, longueur, traits et instructions système.'},
       {tag:'new',t:'Projets & Bibliothèque',d:'Organise tes conversations par espace de travail, avec type et contexte dédiés.'},
-      {tag:'new',t:'Intégrations',d:'Connecte Shopify, Drive, GitHub, Figma, Notion, Slack, Stripe et Gmail.'},
-      {tag:'imp',t:'Thèmes premium',d:'Six palettes joaillerie : azur, platine, or, émeraude, rubis, améthyste.'},
-      {tag:'imp',t:'Recherche universelle ⌘K',d:'Navigation, actions et conversations accessibles au clavier en une frappe.'}
+      {tag:'imp',t:'Blocs de code',d:'Coloration syntaxique, copie en un clic et aperçu live des artefacts HTML.'},
+      {tag:'imp',t:'Recherche universelle ⌘K',d:'Navigation, actions et conversations au clavier en une frappe.'},
+      {tag:'imp',t:'Usage réel',d:'Temps, tokens et coût affichés sous chaque réponse.'}
     ]}
   ];
-  const ROADMAP=[['chip','Connexion API en direct','Bientôt'],['eye','Génération d\'images intégrée','Bientôt'],['brain','Mémoire longue durée','Exploré'],['bolt','Application mobile','Planifié']];
+  const ROADMAP=[['bolt','Application mobile','Planifié'],['brain','Mémoire longue durée','Exploré'],['chip','Plus de modèles chinois','Bientôt']];
   function openNews(){
     $('#newsLog').innerHTML=NEWS.map(r=>`<div class="nw-rel"><div class="nw-rel-h"><span class="nw-rel-v">Version ${r.v}</span><span class="nw-rel-d">${r.d}</span></div>${r.items.map(it=>`<div class="nw-item"><span class="nw-tag ${it.tag}">${it.tag==='new'?'Nouveau':it.tag==='imp'?'Amélioré':'Corrigé'}</span><div style="min-width:0"><div class="nw-it-t">${it.t}</div><div class="nw-it-d">${it.d}</div></div></div>`).join('')}</div>`).join('');
     $('#newsRoad').innerHTML=ROADMAP.map(([g,t,s])=>`<div class="nw-road"><span class="nr-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH[g]}</svg></span>${t}<span class="nr-soon">${s}</span></div>`).join('');
