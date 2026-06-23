@@ -461,12 +461,19 @@
   .bubble.md ul li{position:relative;padding-left:18px}
   .bubble.md ul li::before{content:"";position:absolute;left:2px;top:8px;width:5px;height:5px;border-radius:50%;background:var(--c2)}
   .bubble.md code.inl{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:12.5px;background:var(--elev);border:1px solid var(--line-2);border-radius:6px;padding:1.5px 6px;color:#aee4ff}
-  .bubble.md pre{margin:4px 0 11px;border-radius:13px;border:1px solid var(--line-2);background:#070b14;overflow:hidden}
-  .bubble.md pre .codehead{display:flex;align-items:center;gap:8px;padding:8px 13px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.02);font-size:11px;color:var(--txt-faint)}
-  .bubble.md pre .codehead .lang{font-weight:600;letter-spacing:.4px;text-transform:uppercase}
-  .bubble.md pre .codehead .cp{margin-left:auto;display:flex;align-items:center;gap:5px;cursor:pointer;color:var(--txt-faint);transition:.15s;padding:3px 8px;border-radius:7px}
-  .bubble.md pre .codehead .cp:hover{color:var(--c2);background:var(--elev)}
+  .bubble.md .codeblock{margin:4px 0 11px;border-radius:13px;border:1px solid var(--line-2);background:#070b14;overflow:hidden}
+  .bubble.md .cb-top{display:flex;align-items:center;gap:8px;padding:7px 9px 7px 14px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.02)}
+  .bubble.md .cb-lang{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--txt-faint)}
+  .bubble.md .cb-btns{margin-left:auto;display:flex;gap:6px}
+  .bubble.md .cb-btns button{display:flex;align-items:center;gap:5px;font-family:inherit;font-size:11px;font-weight:500;color:var(--txt-faint);background:transparent;border:1px solid transparent;border-radius:8px;padding:4px 9px;cursor:pointer;transition:.15s var(--ease)}
+  .bubble.md .cb-btns button:hover{color:var(--c2);background:var(--elev);border-color:var(--line-2)}
+  .bubble.md .cb-btns button svg{opacity:.85}
+  .bubble.md pre{margin:0;border:none;border-radius:0;background:transparent;overflow:hidden}
   .bubble.md pre code{display:block;padding:13px 15px;overflow-x:auto;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:12.8px;line-height:1.7;color:#d6e6fb;white-space:pre}
+  .bubble.md .t-kw{color:#7ca8ff;font-weight:600}
+  .bubble.md .t-str{color:#7ee0b8}
+  .bubble.md .t-com{color:#5b6b85;font-style:italic}
+  .bubble.md .t-num{color:#e0a86a}
   .bubble.md blockquote{border-left:3px solid var(--c2);padding:2px 0 2px 14px;margin:4px 0 11px;color:var(--txt-dim);font-style:italic}
   .bubble.md hr{border:none;border-top:1px solid var(--line);margin:14px 0}
   .bubble.md ol{margin:0 0 9px;padding-left:20px;display:flex;flex-direction:column;gap:5px}
