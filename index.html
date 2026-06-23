@@ -900,6 +900,7 @@
             <div class="tool rip" data-mode="voice" data-tip="Voix off (texte → audio)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/></svg>Voix</div>
             <div class="tb-spacer"></div>
             <span class="counter" id="counter">0 mots</span>
+            <button class="tool ghost rip" id="magicWand" data-tip="Améliorer le prompt avec l'IA"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 4-1 1M4 15l1-1M5 5l14 14M5 19l9-9-3-3 9-9"/></svg></button>
             <button class="tool ghost rip" data-tip="Dictée"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
           </div>
         </div>
@@ -1086,9 +1087,9 @@
   const now=()=>Date.now();
   let CONVOS=DB.get('convos',null);
   if(!CONVOS){const t=now();CONVOS=[
-    {id:'seed3',title:'Design landing page Luméra',model:'Claude Opus 4.8',ts:t-7200e3,msgs:[{role:'user',text:'Aide-moi à structurer la landing page de mon masque LED.'},{role:'ai',text:"Voici une structure qui convertit :\n\n- **Hero** : promesse + visuel produit + CTA.\n- **Preuve** : avant/après, avis, badges.\n- **Mécanisme** : les 3 longueurs d'onde expliquées simplement.\n- **Offre** : coffret, garantie, paiement 3×.\n\nJe peux générer le HTML complet si tu veux.",model:'Vendetta 2.6'}]},
-    {id:'seed2',title:'Audit SEO Luméra',model:'Gemini 2.5 Pro',ts:t-86400e3,msgs:[{role:'user',text:'Fais un audit SEO rapide de lumera-skincare.'},{role:'ai',text:"### Points prioritaires\n- Title & meta description par page.\n- Balises `H1` uniques et descriptives.\n- Maillage interne vers les fiches produit.\n- Vitesse mobile (LCP < 2,5 s).\n\nJe détaille chaque point si tu me donnes l'URL.",model:'Vendetta Atlas',search:true}]},
-    {id:'seed1',title:'Script TikTok produit',model:'Claude Sonnet 4.6',ts:t-2*86400e3,msgs:[{role:'user',text:'Un script TikTok de 30s pour le coffret.'},{role:'ai',text:"Hook (0-3s) : « J'ai testé ce masque LED 14 jours. »\n\n- Problème : teint terne, points noirs.\n- Démo : application, 10 min, routine du soir.\n- Preuve : avant/après.\n- CTA : « Lien en bio, coffret en édition limitée. »",model:'Vendetta 2.6'}]}
+    {id:'seed3',title:'Design landing page Luméra',model:'DeepSeek V4 Pro',ts:t-7200e3,msgs:[{role:'user',text:'Aide-moi à structurer la landing page de mon masque LED.'},{role:'ai',text:"Voici une structure qui convertit :\n\n- **Hero** : promesse + visuel produit + CTA.\n- **Preuve** : avant/après, avis, badges.\n- **Mécanisme** : les 3 longueurs d'onde expliquées simplement.\n- **Offre** : coffret, garantie, paiement 3×.\n\nJe peux générer le HTML complet si tu veux.",model:'DeepSeek V4 Pro'}]},
+    {id:'seed2',title:'Audit SEO Luméra',model:'DeepSeek V4 Flash',ts:t-86400e3,msgs:[{role:'user',text:'Fais un audit SEO rapide de lumera-skincare.'},{role:'ai',text:"### Points prioritaires\n- Title & meta description par page.\n- Balises `H1` uniques et descriptives.\n- Maillage interne vers les fiches produit.\n- Vitesse mobile (LCP < 2,5 s).\n\nJe détaille chaque point si tu me donnes l'URL.",model:'DeepSeek V4 Flash',search:true}]},
+    {id:'seed1',title:'Script TikTok produit',model:'Kimi K2.7',ts:t-2*86400e3,msgs:[{role:'user',text:'Un script TikTok de 30s pour le coffret.'},{role:'ai',text:"Hook (0-3s) : « J'ai testé ce masque LED 14 jours. »\n\n- Problème : teint terne, points noirs.\n- Démo : application, 10 min, routine du soir.\n- Preuve : avant/après.\n- CTA : « Lien en bio, coffret en édition limitée. »",model:'Kimi K2.7'}]}
   ];DB.set('convos',CONVOS)}
   let activeId=null,generating=false;
   let _saveT = null;
@@ -2393,6 +2394,26 @@
     e.target.value=''});
 
   /* baguette magique */
+  const magicHandler=async()=>{
+    const p=prompt.value.trim();if(!p)return toast("Écris une idée d'abord !");
+    if(generating)return toast('Génération déjà en cours');
+    const mBtn=$('#magicWand');mBtn.classList.add('on');
+    toast('Amélioration du prompt...');
+    try {
+      const msgs=[{role:'system',content:"Tu es un expert mondial en Prompt Engineering. Ta tâche est de réécrire le brouillon de l'utilisateur pour en faire un prompt clair, détaillé, avec du contexte, des contraintes et un format de sortie attendu. Renvoie UNIQUEMENT le prompt amélioré, sans introduction ni conclusion."},{role:'user',content:p}];
+      const apiKey=KEYS['openrouter']||KEYS['siliconflow'];
+      if(!apiKey)throw new Error('no key');
+      const provider=KEYS['openrouter']?'openrouter':'siliconflow';
+      const endpoint=provider==='openrouter'?'https://openrouter.ai/api/v1/chat/completions':SF_HOST+'/v1/chat/completions';
+      const model=provider==='openrouter'?'deepseek/deepseek-v4-flash':'deepseek-ai/DeepSeek-V2.5';
+      const res=await fetch(endpoint,{method:'POST',headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({model,messages:msgs,temperature:0.3,max_tokens:600})});
+      if(!res.ok)throw new Error('api');
+      const data=await res.json();const txt=(data.choices?.[0]?.message?.content||'').trim();
+      if(txt){prompt.value=txt;autoGrow();updateCount();toast('Prompt amélioré ✦');}
+    }catch(e){toast(e.message==='no key'?"Ajoute ta clé API dans Réglages":"Impossible d'améliorer le prompt");}
+    finally{mBtn.classList.remove('on');}
+  };
+  $('#magicWand').addEventListener('click',magicHandler);
   $('#magicBtn').addEventListener('click',async ()=>{
     const p=prompt.value.trim();if(!p)return toast("Tapez une idée d'abord !");
     if(generating)return toast('Génération déjà en cours');
