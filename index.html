@@ -612,6 +612,15 @@
   a.src .sd{flex:1;min-width:0;font-size:12.5px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   a.src .su{flex-shrink:0;font-size:11px;color:var(--c1);font-weight:500}
 
+  /* Mon IA — presets de personnalité (cartes) */
+  #psPresets{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:none;border:none;padding:0}
+  .ps-preset{display:flex;flex-direction:column;gap:2px;padding:11px 12px;border-radius:11px;background:var(--panel-2);border:1px solid var(--line-2);cursor:pointer;transition:.15s var(--ease)}
+  .ps-preset:hover{border-color:color-mix(in srgb,var(--c2) 45%,transparent);background:var(--elev);transform:translateY(-1px)}
+  .pp-ic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:var(--elev);color:var(--c1);margin-bottom:5px}
+  .ps-preset:hover .pp-ic{background:var(--panel-2)}
+  .pp-t{font-size:13px;font-weight:600;color:var(--txt)}
+  .pp-d{font-size:11px;color:var(--txt-faint);line-height:1.4}
+
   /* aide — liens + FAQ accordéon */
   #helpLinks{display:flex;flex-direction:column;gap:7px;margin-bottom:14px}
   .help-link{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:11px;background:var(--panel-2);border:1px solid var(--line-2);cursor:pointer;transition:.15s var(--ease)}
