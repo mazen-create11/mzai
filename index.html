@@ -1347,6 +1347,8 @@
 
   /* ===== view router ===== */
   function showView(v){
+    // Mettre à jour la mémoire quand on quitte le chat
+    if(v!=='chat'&&activeId){const c=convoById(activeId);if(c&&c.msgs.length>=4)updateMemory(c);}
     $$('.view').forEach(s=>s.classList.remove('active'));
     $('#view-'+v).classList.add('active');
     const navv=v==='project'?'projects':v;
@@ -1900,6 +1902,23 @@
   /* contrôleur de génération (avec arrêt) */
   let curStop=null;
   function setGenerating(g){generating=g;const b=$('#sendBtn');if(g){b.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>';b.setAttribute('data-tip','Arrêter')}else{b.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>';b.setAttribute('data-tip','Envoyer')}}
+  const MEMORY_KEY='mzai:memory';
+  function getMemory(){try{return localStorage.getItem(MEMORY_KEY)||''}catch(e){return''}}
+  function setMemory(txt){try{localStorage.setItem(MEMORY_KEY,txt)}catch(e){}}
+  async function updateMemory(c){
+    if(!KEYS.openrouter||c.msgs.length<4)return;
+    const recent=c.msgs.slice(-6).map(m=>(m.role==='user'?'User: ':'IA: ')+m.text.slice(0,300)).join('\n');
+    try{
+      const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',
+        headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MZai'},
+        body:JSON.stringify({model:'deepseek/deepseek-v4-flash',max_tokens:120,temperature:0.2,
+          messages:[{role:'system',content:"Synthétise en 2-3 phrases les préférences, style et besoins clés de l'utilisateur à retenir pour les prochaines sessions. Concis, factuel, sans intro."},
+            {role:'user',content:recent}]})});
+      if(!res.ok)return;
+      const d=await res.json();const mem=(d.choices?.[0]?.message?.content||'').trim();
+      if(mem)setMemory(mem);
+    }catch(e){}
+  }
   function buildSystem(c){
     const p=PERSONA;let s='Tu es '+(p.name||'MZai')+', un assistant IA premium et utile.';
     if(c.assistant){const a=ASSISTANTS.find(x=>x.id===c.assistant);if(a)s=a.prompt;}
@@ -1910,6 +1929,7 @@
       s+=' Réponds en français sauf demande contraire.';
     }
     const pc=projContextOf(c);if(pc&&pc.context)s+='\n\nContexte du projet « '+pc.name+' » : '+pc.context;
+    const mem=getMemory();if(mem)s+='\n\nMémoire utilisateur (sessions précédentes) : '+mem;
     return s;
   }
   async function runGen(node, _, opts){
