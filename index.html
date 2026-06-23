@@ -603,13 +603,13 @@
       </div>
 
       <div class="sb-foot">
-        <div class="upgrade" id="upgradeBtn">
-          <div><div class="u-t"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.1L20.5 10l-6.1 2.4L12 18.5l-2.4-6.1L3.5 10l6.1-1.9z"/></svg> Passer à Pro</div><div class="u-s">Modèles avancés</div></div>
-          <div class="u-btn">Upgrade</div>
+        <div class="upgrade" id="upgradeBtn" data-tip="Tous les modèles sont débloqués">
+          <div><div class="u-t"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.1L20.5 10l-6.1 2.4L12 18.5l-2.4-6.1L3.5 10l6.1-1.9z"/></svg> MZai Premium</div><div class="u-s">Accès complet</div></div>
+          <div class="u-btn">Actif</div>
         </div>
         <div class="profile" id="profileBtn">
           <div class="avatar" id="navAv">M</div>
-          <div><div class="name" id="navName">Mazen</div><div class="sub" id="navSub">Compte gratuit</div></div>
+          <div><div class="name" id="navName">Mazen</div><div class="sub" id="navSub">Premium · local</div></div>
           <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
         </div>
       </div>
@@ -741,7 +741,7 @@
     <div class="row"><div><div class="rl">Exporter mes données</div><div class="rd">Conversations & réglages (JSON)</div></div><div class="mini-btn" id="setExport">Exporter</div></div>
     <div class="row"><div><div class="rl">Effacer tout</div><div class="rd">Supprime conversations & mémoire</div></div><div class="mini-btn danger" id="setClear">Effacer</div></div>
   </div>
-  <div class="m-foot"><div class="btn primary" id="setUpgrade">Passer à Pro</div></div>
+  <div class="m-foot"><div class="btn primary" id="setUpgrade">Terminé</div></div>
 </div></div>
 
 <!-- PROFILE -->
@@ -817,9 +817,9 @@
 
 <!-- BILLING -->
 <div class="ov" id="billingModal"><div class="modal sm">
-  <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.1L20.5 10l-6.1 2.4L12 18.5l-2.4-6.1L3.5 10l6.1-1.9z"/></svg></div><div class="m-tt"><div class="m-t">MZai Pro</div><div class="m-s">Débloque tout le potentiel</div></div><div class="m-x" id="blClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
+  <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.1L20.5 10l-6.1 2.4L12 18.5l-2.4-6.1L3.5 10l6.1-1.9z"/></svg></div><div class="m-tt"><div class="m-t">Activité</div><div class="m-s">Aperçu de ton usage</div></div><div class="m-x" id="blClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
   <div class="m-body"><div id="usageList"></div></div>
-  <div class="m-foot"><div class="btn" id="blUpgrade">Voir les offres</div><div class="btn primary" id="blPay">Passer à Pro</div></div>
+  <div class="m-foot"><div class="btn primary" id="blUpgrade">Fermer</div></div>
 </div></div>
 
 <!-- TRASH -->
@@ -1195,13 +1195,13 @@
 
   /* profile popover */
   $('#popProfile').innerHTML='<div class="pi sel"><div class="pi-i" style="background:var(--grad);color:#04101f">M</div><div class="pi-main"><div class="pi-t">Mazen</div><div class="pi-d">mazenchaban09@gmail.com</div></div></div><div class="sep"></div>'+
-    [['Profil','M9 7a4 4 0 1 1 8 0 4 4 0 0 1-8 0M5 21a7 7 0 0 1 14 0'],['Paramètres','settings'],['Facturation','M3 10h18M3 6h18v12H3z'],['Aide & support','M12 17h.01M12 13a3 3 0 1 0-3-3M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0']]
+    [['Profil','M9 7a4 4 0 1 1 8 0 4 4 0 0 1-8 0M5 21a7 7 0 0 1 14 0'],['Paramètres','settings'],['Activité','M22 12h-4l-3 9L9 3l-3 9H2'],['Aide & support','M12 17h.01M12 13a3 3 0 1 0-3-3M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0']]
     .map(([t,p])=>`<div class="pi" data-pf="${t}"><div class="pi-i"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p==='settings'?'<circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M5 12H3M21 12h-2"/>':`<path d="${p}"/>`}</svg></div><div class="pi-main"><div class="pi-t">${t}</div></div></div>`).join('')
     +'<div class="sep"></div><div class="pi danger" data-pf="logout"><div class="pi-i"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></div><div class="pi-main"><div class="pi-t">Déconnexion</div></div></div>';
   $('#profileBtn').setAttribute('data-popanchor','');
   $('#profileBtn').addEventListener('click',()=>openPop===$('#popProfile')?closePop():showPop($('#popProfile'),$('#profileBtn'),'left',$('#profileBtn')));
   $$('#popProfile .pi[data-pf]').forEach(p=>p.addEventListener('click',()=>{const a=p.dataset.pf;closePop();
-    if(a==='Paramètres')openSettings();else if(a==='Profil')openProfile();else if(a==='Facturation')openBilling();else if(a==='Aide & support')openHelp();else if(a==='logout')logout()}));
+    if(a==='Paramètres')openSettings();else if(a==='Profil')openProfile();else if(a==='Activité')openBilling();else if(a==='Aide & support')openHelp();else if(a==='logout')logout()}));
 
   /* ===== utilisateur ===== */
   function applyUser(){
@@ -1239,7 +1239,7 @@
   }
   $('#blClose').addEventListener('click',()=>$('#billingModal').classList.remove('show'));
   $('#billingModal').addEventListener('click',e=>{if(e.target.id==='billingModal')$('#billingModal').classList.remove('show')});
-  $('#blUpgrade').addEventListener('click',()=>{$('#billingModal').classList.remove('show');toast('Mise à niveau Ultra')});
+  $('#blUpgrade').addEventListener('click',()=>$('#billingModal').classList.remove('show'));
   $('#blPay').addEventListener('click',()=>toast('Gérer le moyen de paiement'));
   /* aide */
   const HELP_LINKS=[['Documentation','Guides & référence','note'],['Raccourcis clavier','Toutes les touches','keyboard'],['Nous contacter','support@mzai.app','mail'],['Statut','Tous systèmes OK','shield']];
@@ -1300,7 +1300,7 @@
   $('#installBtn').addEventListener('click',installApp);
   $('#setClose').addEventListener('click',()=>$('#settings').classList.remove('show'));
   $('#settings').addEventListener('click',e=>{if(e.target.id==='settings')$('#settings').classList.remove('show')});
-  $('#setUpgrade').addEventListener('click',()=>{$('#settings').classList.remove('show');toast('Mise à niveau Ultra')});
+  $('#setUpgrade').addEventListener('click',()=>$('#settings').classList.remove('show'));
   $$('#segTheme button').forEach(b=>b.addEventListener('click',()=>{$$('#segTheme button').forEach(x=>x.classList.remove('on'));b.classList.add('on');applyTheme(b.dataset.c)}));
   $$('#segDensity button').forEach(b=>b.addEventListener('click',()=>{$$('#segDensity button').forEach(x=>x.classList.remove('on'));b.classList.add('on');SETTINGS.density=b.dataset.d;DB.set('settings',SETTINGS);applyDensity();toast('Densité : '+b.textContent)}));
   function applyDensity(){document.body.classList.toggle('dense',SETTINGS.density==='dense')}
@@ -1891,7 +1891,7 @@
     rec.onend=()=>{listening=false;micBtn.classList.remove('on')};
     rec.start();
   });
-  $('#upgradeBtn').addEventListener('click',()=>toast('Mise à niveau Ultra'));
+  $('#upgradeBtn').addEventListener('click',openSettings);
   $('#addProject').addEventListener('click',openProjModal);
   $('#libSearch').addEventListener('input',e=>renderLibrary(e.target.value));
   $('#intSearch').addEventListener('input',e=>renderIntegrations(e.target.value));
