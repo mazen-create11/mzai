@@ -552,6 +552,18 @@
   #artCode{width:100%;height:100%;min-height:300px;background:#070b14;color:#d6e6fb;border:none;outline:none;font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:12.8px;line-height:1.7;padding:15px;resize:none}
   .art-tabs{display:flex;gap:6px}
 
+  /* clés API (réglages) */
+  .api-row{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:12px;border:1px solid var(--line-2);background:var(--panel-2);margin-bottom:8px}
+  .api-logo{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex-shrink:0;background:var(--elev);border:1px solid var(--line)}
+  .api-meta{flex-shrink:0;min-width:104px}
+  .api-name{font-size:13px;font-weight:600;color:var(--txt)}
+  .api-sub{font-size:11px;color:var(--txt-faint)}
+  .api-in{flex:1;min-width:0;background:var(--elev);border:1px solid var(--line-2);border-radius:9px;padding:8px 11px;color:var(--txt);font-family:inherit;font-size:12.5px;letter-spacing:.02em;outline:none;transition:.15s var(--ease)}
+  .api-in:focus{border-color:color-mix(in srgb,var(--c2) 45%,transparent)}
+  .api-in::placeholder{color:var(--txt-faint);letter-spacing:0}
+  .api-st{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:var(--txt-faint);transition:.2s}
+  .api-st.on{background:#34d399;box-shadow:0 0 8px #34d399}
+
   /* responsive */
   .topbar-left{display:flex;align-items:center;gap:10px;min-width:0}
   .menu-btn{width:38px;height:38px;border-radius:11px;border:1px solid var(--line-2);background:var(--elev);color:var(--txt-dim);display:none;place-items:center;cursor:pointer;transition:.2s var(--ease);flex-shrink:0}
@@ -750,7 +762,7 @@
 <div class="ov" id="settings"><div class="modal">
   <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82M4.6 9a1.65 1.65 0 0 0-.33-1.82"/></svg></div><div class="m-tt"><div class="m-t">Réglages</div><div class="m-s">Modèle, clés API et préférences</div></div><div class="m-x" id="setClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
   <div class="m-body set-body">
-    <div class="field"><label>Modèle par défaut</label><div id="setModel"></div></div>
+    <div class="field"><label>Modèle par défaut</label><select id="setModel" class="inp"></select></div>
     <div class="field"><label>Clés API</label><div id="apiList"></div></div>
     <div class="row"><div><div class="rl">Animations</div><div class="rd">Effets et transitions</div></div><div class="toggle on" data-set="anim"></div></div>
     <div class="row"><div><div class="rl">Densité</div><div class="rd">Espacement de l'interface</div></div><div class="seg"><div class="sg" data-d="cozy">Cozy</div><div class="sg" data-d="dense">Dense</div></div></div>
