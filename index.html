@@ -12,7 +12,7 @@
 <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22MZai%22%2C%22short_name%22%3A%22MZai%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23080d16%22%2C%22theme_color%22%3A%22%23080d16%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%253D%2527http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2527%2520viewBox%253D%25270%25200%2520180%2520180%2527%253E%253Crect%2520width%253D%2527180%2527%2520height%253D%2527180%2527%2520rx%253D%252740%2527%2520fill%253D%2527%2523080d16%2527%252F%253E%253Cpath%2520d%253D%2527M90%252034l16%252040%252040%252016-40%252016-16%252040-16-40-40-16%252040-16z%2527%2520fill%253D%2527%252338bdf8%2527%252F%253E%253C%252Fsvg%253E%22%2C%22sizes%22%3A%22any%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;450;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;450;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#04070e;
@@ -25,9 +25,16 @@
     --txt:#EAF1FB;
     --txt-dim:#9fb4d2;
     --txt-faint:#5f7491;
-    --c1:#60a5fa;--c2:#38bdf8;--c3:#22d3ee;--c-deep:#0c3a6b;
+    --c1:#6ba3ff;--c2:#3b82f6;--c3:#38bdf8;--c-deep:#0c3a6b;
     --grad:linear-gradient(135deg,var(--c1),var(--c2) 55%,var(--c3));
-    --glow:rgba(56,189,248,.42);
+    --glow:rgba(59,130,246,.40);
+    /* signature premium — or champagne (marque uniquement) */
+    --gold-1:#F4DEA4;--gold-2:#D9A94E;--gold-3:#B07F2C;
+    --grad-gold:linear-gradient(135deg,var(--gold-1),var(--gold-2) 58%,var(--gold-3));
+    --glow-gold:rgba(217,169,78,.32);
+    /* profondeur premium */
+    --shadow-soft:0 10px 30px rgba(0,0,0,.34);
+    --shadow-deep:0 26px 74px rgba(0,0,0,.56);
     --r:22px;--r-sm:13px;
     --ease:cubic-bezier(.22,.61,.36,1);
   }
@@ -37,7 +44,7 @@
   html,body{height:100%}
   ::selection{background:rgba(56,189,248,.3);color:#fff}
   :focus-visible{outline:2px solid var(--c2);outline-offset:2px;border-radius:8px}
-  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--txt);-webkit-font-smoothing:antialiased;overflow:hidden;letter-spacing:-.01em}
+  body{font-family:'Hanken Grotesk',system-ui,sans-serif;background:var(--bg);color:var(--txt);-webkit-font-smoothing:antialiased;overflow:hidden;letter-spacing:-.01em}
 
   /* mesh bg */
   .mesh{position:fixed;inset:-20%;z-index:0;pointer-events:none;filter:blur(60px);opacity:.9}
@@ -70,11 +77,12 @@
   .topbar{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-radius:18px;overflow:visible}
   .topbar::after{content:"";position:absolute;top:0;left:5%;right:5%;height:1px;background:linear-gradient(90deg,transparent,rgba(125,211,252,.55),transparent)}
   .brand{display:flex;align-items:center;gap:12px;cursor:pointer}
-  .mark{display:grid;place-items:center;color:var(--c2)}
-  .mark svg{filter:drop-shadow(0 0 10px var(--glow))}
+  .mark{position:relative;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:var(--grad);box-shadow:0 6px 18px var(--glow),inset 0 1px 0 rgba(255,255,255,.45);overflow:hidden}
+  .mark::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(140deg,var(--gold-1),transparent 55%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:.55;pointer-events:none}
+  .mz-glyph{font-family:'Space Grotesk';font-weight:700;color:#081225;line-height:1;letter-spacing:-.04em;-webkit-font-smoothing:antialiased}
   .wordmark{font-family:'Space Grotesk';font-weight:700;font-size:18px;letter-spacing:-.4px}
-  .wordmark .ai{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-  .badge{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#04101f;background:var(--grad);padding:3px 8px;border-radius:6px;box-shadow:0 2px 10px var(--glow)}
+  .wordmark .ai{background:var(--grad-gold);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .badge{font-size:9px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#1a1206;background:var(--grad-gold);padding:3px 8px;border-radius:6px;box-shadow:0 2px 12px var(--glow-gold)}
   .top-right{display:flex;align-items:center;gap:9px}
   .model-pill{display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:500;color:var(--txt-dim);padding:8px 13px;border:1px solid var(--line-2);border-radius:11px;background:var(--elev);cursor:pointer;transition:.2s var(--ease)}
   .model-pill:hover{border-color:rgba(56,189,248,.4);color:var(--txt)}
@@ -568,7 +576,7 @@
   <!-- brand bar -->
   <div class="topbar gborder">
     <div class="brand" id="brandHome" data-tip="Accueil" data-tip-down>
-      <span class="mark"><svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 6.1L20.5 10l-6.1 2.4L12 18.5l-2.4-6.1L3.5 10l6.1-1.9z"/></svg></span>
+      <span class="mark"><span class="mz-glyph" style="font-size:19px">M</span></span>
       <span class="wordmark">MZ<span class="ai">ai</span></span>
       <span class="badge">Intelligence</span>
     </div>
@@ -623,7 +631,7 @@
         <div class="canvas">
           <div class="home-inner">
             <div class="hero-eyebrow"><span class="he-dot"></span>MZai · Intelligence</div>
-            <div class="hero-mark"><svg width="38" height="38" viewBox="0 0 24 24" fill="#04101f"><path d="M12 2l2.4 6.1L20.5 10l-6.1 2.4L12 18.5l-2.4-6.1L3.5 10l6.1-1.9z"/></svg></div>
+            <div class="hero-mark"><span class="mz-glyph" style="font-size:42px">M</span></div>
             <h1 class="hero-title" id="greet">Bonjour, <b>Mazen</b></h1>
             <p class="hero-sub">Pose ta question — <b>MZai</b> s'occupe du reste.</p>
             <div class="cards">
@@ -1240,7 +1248,6 @@
   $('#blClose').addEventListener('click',()=>$('#billingModal').classList.remove('show'));
   $('#billingModal').addEventListener('click',e=>{if(e.target.id==='billingModal')$('#billingModal').classList.remove('show')});
   $('#blUpgrade').addEventListener('click',()=>$('#billingModal').classList.remove('show'));
-  $('#blPay').addEventListener('click',()=>toast('Gérer le moyen de paiement'));
   /* aide */
   const HELP_LINKS=[['Documentation','Guides & référence','note'],['Raccourcis clavier','Toutes les touches','keyboard'],['Nous contacter','support@mzai.app','mail'],['Statut','Tous systèmes OK','shield']];
   const FAQ=[['Comment changer de modèle ?','Clique sur le sélecteur en haut à droite, ou « Modèles & API » dans le menu Plus, puis choisis ton modèle.'],['Mes données sont-elles privées ?','Tout est stocké en local sur ton appareil. Rien n\'est envoyé tant qu\'une clé API n\'est pas branchée.'],['Comment personnaliser mon IA ?','Ouvre « Mon IA » (⌘J) pour définir le nom, le ton, les traits et les instructions système.'],['Comment créer un projet ?','Projets → Nouveau projet : donne un nom, choisis un type et un contexte. Les conversations s\'y rattachent automatiquement.']];
