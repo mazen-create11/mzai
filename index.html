@@ -2104,7 +2104,7 @@
           if(stj.data?.task_status==='failed')throw new Error('Kling: génération échouée — '+( stj.data?.task_status_msg||'erreur serveur'));
         }
         if(!url){if(done)return;throw new Error('Kling: délai dépassé — réessaie')}
-        if(done)return;place({type,prompt:promptText,seed:seed(),model:'Kling 2.0',url});return;
+        if(done)return;place({type,prompt:promptText,seed:seed(),model:mm.id||'Kling',url});return;
       }
       if(type==='video' && hasKey('siliconflow')){
         const vidModel=(mm.provider==='siliconflow'&&mm.kind==='video')?mm.api:'Wan-AI/Wan2.2-T2V-A14B';
