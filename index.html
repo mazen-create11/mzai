@@ -553,6 +553,18 @@
   .pal-search{display:flex;align-items:center;gap:11px;padding:16px 20px;border-bottom:1px solid var(--line)}
   .pal-search input{flex:1;background:none;border:none;outline:none;color:var(--txt);font-size:16px;font-family:inherit}
   .pal-search svg{color:var(--txt-faint)}
+  #cpList{max-height:54vh;overflow-y:auto;padding:8px}
+  .cp-sec{font-size:10.5px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--txt-faint);padding:12px 12px 5px}
+  .cp-item{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:11px;cursor:pointer;transition:.12s var(--ease)}
+  .cp-item:hover,.cp-item.k{background:var(--elev)}
+  .cp-item.k{box-shadow:inset 0 0 0 1px var(--line-2)}
+  .cp-item>div:nth-child(2){flex:1;min-width:0}
+  .cp-item .ci2{flex-shrink:0;width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:var(--panel-2);border:1px solid var(--line-2);color:var(--c1)}
+  .cp-item .ct2{font-size:13.5px;font-weight:500;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cp-item .cd2{font-size:11.5px;color:var(--txt-faint);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cp-item .cgo{flex-shrink:0;font-size:12px;color:var(--txt-dim);opacity:0;width:22px;height:22px;display:grid;place-items:center;border:1px solid var(--line-2);border-radius:6px;transition:.12s}
+  .cp-item:hover .cgo,.cp-item.k .cgo{opacity:1}
+  .cp-empty{padding:32px;text-align:center;color:var(--txt-faint);font-size:13px}
 
   /* artifact / canvas */
   #artifactModal .modal{max-width:min(960px,94vw);width:100%;height:86vh;max-height:86vh}
