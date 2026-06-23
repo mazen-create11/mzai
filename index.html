@@ -1945,11 +1945,14 @@
       const apiKey = isOR ? KEYS['openrouter'] : KEYS['siliconflow'];
       if(!apiKey){ bubble.classList.remove('md'); return finish('⚠️ Clé API manquante pour '+(isOR?'OpenRouter':'SiliconFlow')+'. Ajoute-la dans Paramètres › Connexions API.'); }
 
+      // Truncation intelligente : garde les 24 derniers messages, tronque les longs
+      const allMsgs=c.msgs.filter(m=>m.text);
+      const trimmedMsgs=allMsgs.length>24?allMsgs.slice(-24):allMsgs;
       const messages=[{role:'system',content:buildSystem(c)}].concat(
-        c.msgs.filter(m=>m.text).map(m=>{
+        trimmedMsgs.map(m=>{
           const imgs=(m.files||[]).filter(f=>f.isImg&&f.b64);
           const docs=(m.files||[]).filter(f=>!f.isImg&&f.textContent);
-          let txt=m.text;
+          let txt=m.text.length>4000?m.text.slice(0,4000)+'…[tronqué]':m.text;
           if(docs.length)txt+='\n\n'+docs.map(f=>'**Fichier : '+f.name+'**\n```\n'+f.textContent.slice(0,8000)+'\n```').join('\n\n');
           if(imgs.length)return{role:m.role==='ai'?'assistant':'user',content:[{type:'text',text:txt},...imgs.map(f=>({type:'image_url',image_url:{url:f.b64}}))]};
           return{role:m.role==='ai'?'assistant':'user',content:txt};
