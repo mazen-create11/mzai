@@ -354,7 +354,10 @@
   .tool.ghost.on{background:rgba(56,189,248,.16);color:var(--c2);box-shadow:0 0 0 1px rgba(56,189,248,.35)}
   .tb-spacer{flex:1}
   .counter{font-size:11.5px;color:var(--txt-faint)}
-  .hint{text-align:center;font-size:11px;color:var(--txt-faint);margin-top:12px}
+  .hint{display:flex;align-items:center;justify-content:space-between;font-size:11px;color:var(--txt-faint);margin-top:12px;gap:8px}
+  .hint-msg{flex:1;text-align:center}
+  .tok-count{font-size:11px;font-weight:500;color:var(--txt-faint);font-variant-numeric:tabular-nums;letter-spacing:.02em;white-space:nowrap;opacity:.7;transition:opacity .3s}
+  .tok-count.pulse{opacity:1}
   .hint b{color:var(--txt-dim);font-weight:500}
   .composer{position:relative}
   .slash-pop{position:absolute;left:50%;transform:translateX(-50%) translateY(8px);bottom:calc(100% - 10px);width:min(880px,calc(100% - 36px));max-height:330px;overflow-y:auto;background:rgba(12,18,30,.97);backdrop-filter:blur(16px);border:1px solid var(--line-2);border-radius:16px;box-shadow:0 -10px 40px rgba(0,0,0,.5);padding:7px;opacity:0;visibility:hidden;transition:.18s var(--ease);z-index:40}
@@ -897,7 +900,7 @@
             <button class="tool ghost rip" data-tip="Dictée"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
           </div>
         </div>
-        <div class="hint">MZai peut se tromper. <b>Vérifie les informations importantes.</b></div>
+        <div class="hint"><span class="hint-msg">MZai peut se tromper. <b>Vérifie les informations importantes.</b></span><span class="tok-count" id="tokCount" data-tip="Tokens utilisés cette session">0 tokens</span></div>
       </div><!-- /composer -->
 
     </main>
@@ -1870,10 +1873,12 @@
     const lbl=live?`<span class="rt-spin"></span>${m.id} réfléchit…`:`${m.id} a réfléchi`;
     return `<div class="reason${live?' live':''}"><div class="rt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.brain}</svg><span class="rt-lbl">${lbl}</span><svg class="cv" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></div><div class="rc"><div class="rc-in real">${content!=null?esc(content):''}</div></div></div>`;
   }
+  let SESSION_TOKENS=parseInt(localStorage.getItem('mzai:stok')||'0',10);
+  function addSessionTokens(n){if(!n)return;SESSION_TOKENS+=n;localStorage.setItem('mzai:stok',SESSION_TOKENS);const el=$('#tokCount');if(!el)return;el.textContent=SESSION_TOKENS.toLocaleString('fr-FR')+' tokens';el.classList.remove('pulse');void el.offsetWidth;el.classList.add('pulse');setTimeout(()=>el.classList.remove('pulse'),600);}
   function statsEl(modelId,ms,usage){
     const m=modelById(modelId),parts=['<b>'+esc(m.id)+'</b>'];
     if(ms)parts.push((ms/1000).toFixed(1)+'s');
-    if(usage){const tot=usage.total_tokens||((usage.prompt_tokens||0)+(usage.completion_tokens||0));if(tot)parts.push(tot.toLocaleString('fr-FR')+' tokens');if(usage.cost!=null)parts.push('$'+Number(usage.cost).toFixed(4));}
+    if(usage){const tot=usage.total_tokens||((usage.prompt_tokens||0)+(usage.completion_tokens||0));if(tot){parts.push(tot.toLocaleString('fr-FR')+' tokens');addSessionTokens(tot);}}
     if(parts.length<2)return null;
     const d=document.createElement('div');d.className='msg-stats';d.innerHTML=parts.join('<span class="ms-dot"></span>');return d;
   }
@@ -2421,6 +2426,7 @@
     $$('.set-body .toggle[data-set]').forEach(t=>t.classList.toggle('on',!!SETTINGS[t.dataset.set]));
     $$('.tool[data-toggle]').forEach(t=>{const def=t.dataset.toggle==='Recherche'?SETTINGS.webSearch:t.dataset.toggle==='Réflexion'?SETTINGS.showReason:false;t.classList.toggle('on',!!def)});
     applyAnim();applyDensity();applyUser();applyPersona();syncModel();
+    const _tc=$('#tokCount');if(_tc&&SESSION_TOKENS>0)_tc.textContent=SESSION_TOKENS.toLocaleString('fr-FR')+' tokens';
     if(!DB.get('onboarded',false))setTimeout(startOnboarding,400);
   })();
 
