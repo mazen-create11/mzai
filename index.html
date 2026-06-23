@@ -1933,8 +1933,11 @@
       const messages=[{role:'system',content:buildSystem(c)}].concat(
         c.msgs.filter(m=>m.text).map(m=>{
           const imgs=(m.files||[]).filter(f=>f.isImg&&f.b64);
-          if(imgs.length)return{role:m.role==='ai'?'assistant':'user',content:[{type:'text',text:m.text},...imgs.map(f=>({type:'image_url',image_url:{url:f.b64}}))]};
-          return{role:m.role==='ai'?'assistant':'user',content:m.text};
+          const docs=(m.files||[]).filter(f=>!f.isImg&&f.textContent);
+          let txt=m.text;
+          if(docs.length)txt+='\n\n'+docs.map(f=>'**Fichier : '+f.name+'**\n```\n'+f.textContent.slice(0,8000)+'\n```').join('\n\n');
+          if(imgs.length)return{role:m.role==='ai'?'assistant':'user',content:[{type:'text',text:txt},...imgs.map(f=>({type:'image_url',image_url:{url:f.b64}}))]};
+          return{role:m.role==='ai'?'assistant':'user',content:txt};
         })
       );
       const endpoint = isOR ? "https://openrouter.ai/api/v1/chat/completions" : SF_HOST+"/v1/chat/completions";
@@ -2210,8 +2213,10 @@
     if(generating)return;const v=prompt.value.trim();if(!v&&!ATTACH.length)return toast('Écris un message');
     const rawFiles=[...ATTACH];ATTACH=[];renderAttach();
     // Convertir les images en base64 persistant avant de sauvegarder le message
+    const TEXT_EXT=/\.(txt|md|js|ts|jsx|tsx|css|html|json|py|sql|yaml|yml|sh|xml|csv|env|toml|rs|go|java|c|cpp|php|rb|kt|swift)$/i;
     const files=await Promise.all(rawFiles.map(async f=>{
       if(f.isImg&&f.url){try{const b64=await blobToB64(f.url);URL.revokeObjectURL(f.url);return{name:f.name,isImg:true,b64};}catch(e){return{name:f.name,isImg:false};}}
+      if(!f.isImg&&f.file&&TEXT_EXT.test(f.name)&&f.file.size<500*1024){try{const textContent=await f.file.text();return{name:f.name,isImg:false,textContent};}catch(e){}}
       return{name:f.name,isImg:false};
     }));
     if(!activeId)createConvo();const c=convoById(activeId);
@@ -2300,7 +2305,7 @@
     else if(importMode){toast('Conversation importée : '+fs[0].name);importMode=false}
     else{
       if(fs.reduce((a,b)=>a+b.size,0)>20*1024*1024){toast('Taille totale limitée à 20 Mo');e.target.value='';return}
-      fs.forEach(f=>{const isImg=/^image\//.test(f.type);ATTACH.push({name:f.name,isImg,url:isImg?URL.createObjectURL(f):null})});renderAttach();toast(fs.length>1?fs.length+' fichiers joints':'Fichier joint')
+      fs.forEach(f=>{const isImg=/^image\//.test(f.type);ATTACH.push({name:f.name,isImg,url:isImg?URL.createObjectURL(f):null,file:f})});renderAttach();toast(fs.length>1?fs.length+' fichiers joints':'Fichier joint')
     }
     e.target.value=''});
 
