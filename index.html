@@ -662,6 +662,58 @@
   .nr-ic{flex-shrink:0;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--elev);color:var(--c1)}
   .nr-soon{margin-left:auto;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--txt-faint);background:var(--elev);padding:3px 8px;border-radius:6px}
 
+  /* ===== comparatif modèles ===== */
+  #modelsModal .modal{max-width:820px;width:min(96vw,820px)}
+  .mc-tabs{display:flex;gap:5px;padding:0 20px 16px}
+  .mc-tab{padding:6px 18px;border-radius:20px;font-size:13px;font-weight:500;color:var(--txt-dim);cursor:pointer;transition:.15s var(--ease);border:1px solid transparent;background:transparent;font-family:inherit}
+  .mc-tab.on{background:var(--elev);border-color:var(--line);color:var(--txt)}
+  .mc-tab:hover:not(.on){color:var(--txt)}
+  .mc-body{padding:0 20px 20px;max-height:62vh;overflow-y:auto;display:flex;flex-direction:column;gap:9px}
+  .mc-body::-webkit-scrollbar{width:4px}.mc-body::-webkit-scrollbar-track{background:transparent}.mc-body::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+  /* text cards */
+  .mc-card{background:var(--panel-2);border:1px solid var(--line-2);border-left:3px solid var(--cac);border-radius:14px;padding:15px 17px;display:flex;flex-direction:column;gap:11px;transition:.15s var(--ease)}
+  .mc-card:hover{background:var(--elev);border-color:var(--line);border-left-color:var(--cac)}
+  .mc-top{display:flex;align-items:center;gap:10px}
+  .mc-ico{width:30px;height:30px;border-radius:9px;background:color-mix(in srgb,var(--cac) 15%,var(--elev));display:grid;place-items:center;flex-shrink:0;color:var(--cac);font-size:10px;font-weight:800;letter-spacing:-.5px}
+  .mc-name{font-size:13.5px;font-weight:700;color:var(--txt);flex:1;min-width:0}
+  .mc-badge-t{font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:20px;background:color-mix(in srgb,var(--cac) 16%,transparent);color:var(--cac);flex-shrink:0}
+  .mc-maker{font-size:11px;color:var(--txt-faint);flex-shrink:0}
+  .mc-strs{display:flex;flex-wrap:wrap;gap:5px}
+  .mc-str{font-size:11.5px;padding:3px 9px;border-radius:20px;background:var(--elev);border:1px solid var(--line-2);color:var(--txt-dim)}
+  .mc-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+  .mc-metric{display:flex;flex-direction:column;gap:5px}
+  .mc-mlbl{font-size:9.5px;color:var(--txt-faint);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+  .mc-mrow{display:flex;align-items:center;gap:6px}
+  .mc-mtrack{flex:1;height:3px;border-radius:3px;background:var(--elev)}
+  .mc-mfill{height:100%;border-radius:3px;background:var(--cac)}
+  .mc-mval{font-size:10px;color:var(--txt-dim);font-weight:700;flex-shrink:0;min-width:14px;text-align:right}
+  .mc-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:10px;border-top:1px solid var(--line-2)}
+  .mc-cost{font-size:11px;color:var(--txt-faint)}
+  .mc-cost b{color:var(--txt-dim);font-weight:600}
+  .mc-bench{font-size:10.5px;padding:2px 8px;border-radius:10px;background:color-mix(in srgb,var(--cac) 12%,var(--elev));color:var(--cac);border:1px solid color-mix(in srgb,var(--cac) 22%,transparent);flex-shrink:0}
+  .mc-bestfor{font-size:11px;color:var(--txt-faint);font-style:italic;flex:1;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mc-note{font-size:10.5px;color:var(--txt-faint);width:100%;padding:5px 9px;background:var(--elev);border-radius:8px;line-height:1.5}
+  /* ranked grid image / vidéo */
+  .mc-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .mc-rcard{background:var(--panel-2);border:1px solid var(--line-2);border-radius:14px;padding:15px;display:flex;flex-direction:column;gap:8px;position:relative;transition:.15s var(--ease)}
+  .mc-rcard:hover{background:var(--elev);border-color:var(--line)}
+  .mc-rcard.mc-top1{border-color:color-mix(in srgb,var(--c1) 38%,transparent)}
+  .mc-rnum{position:absolute;top:13px;right:14px;font-size:10.5px;font-weight:800;color:var(--txt-faint);letter-spacing:.07em}
+  .mc-rcard.mc-top1 .mc-rnum{color:var(--c1)}
+  .mc-rname{font-size:13.5px;font-weight:700;color:var(--txt);padding-right:36px;line-height:1.2}
+  .mc-rprov{font-size:11px;color:var(--txt-faint)}
+  .mc-stars-row{display:flex;align-items:center;gap:8px;margin:1px 0}
+  .mc-stars-txt{font-size:16px;letter-spacing:1.5px;line-height:1}
+  .mc-stars-score{font-size:11px;font-weight:700;color:var(--c1)}
+  .mc-qbar{height:3px;border-radius:3px;background:var(--elev)}
+  .mc-qbar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--c2),var(--c1))}
+  .mc-rdist{font-size:11.5px;color:var(--txt-dim);line-height:1.55}
+  .mc-rtags{display:flex;flex-wrap:wrap;gap:4px}
+  .mc-rtag{font-size:10px;padding:2px 7px;border-radius:12px;background:var(--elev);border:1px solid var(--line-2);color:var(--txt-faint)}
+  .mc-rmeta{display:flex;justify-content:space-between;align-items:center;padding-top:9px;border-top:1px solid var(--line-2);margin-top:auto}
+  .mc-rprice{font-size:12.5px;font-weight:700;color:var(--txt-dim)}
+  .mc-rcap{font-size:10.5px;color:var(--txt-faint)}
+  @media(max-width:640px){.mc-grid{grid-template-columns:1fr}.mc-metrics{grid-template-columns:1fr 1fr}}
   /* responsive */
   .topbar-left{display:flex;align-items:center;gap:10px;min-width:0}
   .menu-btn{width:38px;height:38px;border-radius:11px;border:1px solid var(--line-2);background:var(--elev);color:var(--txt-dim);display:none;place-items:center;cursor:pointer;transition:.2s var(--ease);flex-shrink:0}
@@ -722,6 +774,7 @@
         <div class="nav-item" data-view="library" data-tip="Bibliothèque"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19V6a2 2 0 0 1 2-2h9l5 5v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M14 4v5h5"/></svg><span class="lbl">Bibliothèque</span></div>
         <div class="nav-item" data-view="projects" data-tip="Projets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4.5 16.5 12 21l7.5-4.5M4.5 12 12 16.5 19.5 12M12 3 4.5 7.5 12 12l7.5-4.5L12 3z"/></svg><span class="lbl">Projets</span></div>
         <div class="nav-item" data-view="integrations" data-tip="Intégrations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></svg><span class="lbl">Intégrations</span></div>
+        <div class="nav-item" data-act="models" data-tip="Comparatif modèles"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2l2.4 6.1 6.1 2.4-6.1 2.4L12 19.5l-2.4-6.1L3.5 11l6.1-2.4z"/></svg><span class="lbl">Modèles</span></div>
         <div class="nav-item" data-act="persona" data-tip="Mon IA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 1 5 5c0 1.6-.7 2.6-1.5 3.5C16.3 11.4 18 12.5 18 15a6 6 0 0 1-12 0c0-2.5 1.7-3.6 2.5-4.5C7.7 9.6 7 8.6 7 7a5 5 0 0 1 5-5z"/><path d="M9.5 8.5h.01M14.5 8.5h.01"/></svg><span class="lbl">Mon IA</span><span class="kbd">⌘J</span></div>
         <div class="nav-item" data-act="more" data-tip="Plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="1"/><circle cx="8" cy="12" r="1"/><circle cx="16" cy="12" r="1"/></svg><span class="lbl">Plus</span></div>
       </nav>
@@ -959,6 +1012,13 @@
 <div class="ov" id="shortcuts"><div class="modal sm">
   <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M6 8h.01M10 8h.01M14 8h.01M7 12h10M8 16h8"/></svg></div><div class="m-tt"><div class="m-t">Raccourcis clavier</div></div><div class="m-x" id="scClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
   <div class="m-body"><div id="scList"></div></div>
+</div></div>
+
+<!-- MODELS COMPARE -->
+<div class="ov" id="modelsModal"><div class="modal">
+  <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2l2.4 6.1 6.1 2.4-6.1 2.4L12 19.5l-2.4-6.1L3.5 11l6.1-2.4z"/></svg></div><div class="m-tt"><div class="m-t">Comparatif modèles</div><div class="m-s">Puissance · vitesse · coût · données réelles juin 2026</div></div><div class="m-x" id="mcClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
+  <div class="mc-tabs" id="mcTabs"><button class="mc-tab on" data-mct="text">Texte</button><button class="mc-tab" data-mct="image">Image</button><button class="mc-tab" data-mct="video">Vidéo</button></div>
+  <div class="mc-body" id="mcBody"></div>
 </div></div>
 
 <!-- COMMAND PALETTE -->
@@ -1386,6 +1446,138 @@
   $('#helpModal').addEventListener('click',e=>{if(e.target.id==='helpModal')$('#helpModal').classList.remove('show')});
   function logout(){if(window.confirm('Se déconnecter de MZai ?'))toast('Déconnecté')}
 
+  /* ===== comparatif modèles ===== */
+  const MC_TEXT=[
+    {id:'DeepSeek V4 Pro',maker:'DeepSeek',ac:'#38bdf8',tag:'Pro',
+     strengths:['Raisonnement','Code','Analyse','Long-form'],
+     best:'Tâches complexes, raisonnement chaîné, analyses approfondies',
+     ctx:'1M',power:5,speed:2,ctxv:5,eco:3,
+     costIn:0.27,costOut:1.10,bench:'MMLU 91.6%',note:''},
+    {id:'DeepSeek V4 Flash',maker:'DeepSeek',ac:'#38bdf8',tag:'Flash',
+     strengths:['Rapidité','Volume','Quotidien','Brouillons'],
+     best:'Réponses rapides, traitement en volume, usage courant',
+     ctx:'1M',power:4,speed:4,ctxv:5,eco:5,
+     costIn:0.14,costOut:0.28,bench:'MMLU 88.5%',note:''},
+    {id:'Qwen3 Max Thinking',maker:'Alibaba',ac:'#f59e0b',tag:'Think',
+     strengths:['Maths','Logique formelle','Sciences','Concours'],
+     best:'Calcul, raisonnement formel, problèmes scientifiques durs',
+     ctx:'256K',power:5,speed:1,ctxv:3,eco:2,
+     costIn:0.90,costOut:3.50,bench:'MATH 92.4%',
+     note:'⚡ Raisonnement étendu — budget tokens supérieur'},
+    {id:'Qwen3 Coder Plus',maker:'Alibaba',ac:'#f59e0b',tag:'Code',
+     strengths:['Code','Grands repos','Debug','Architecture'],
+     best:'Génération de code, audit de dépôts entiers, 1M ctx',
+     ctx:'1M',power:4,speed:3,ctxv:5,eco:3,
+     costIn:0.50,costOut:2.00,bench:'HumanEval 92.1%',note:''},
+    {id:'Kimi K2.7 Code',maker:'Moonshot',ac:'#8b5cf6',tag:'Agent',
+     strengths:['Agent code','Outils','Autonomie','Refactor'],
+     best:'Agents autonomes, pipelines de code, appels d\'outils',
+     ctx:'262K',power:4,speed:3,ctxv:3,eco:3,
+     costIn:0.60,costOut:2.50,bench:'SWE-Bench 49.1%',
+     note:'⚡ Architecture MoE · agentic natif'},
+    {id:'GLM-5.2',maker:'Zhipu AI',ac:'#10b981',tag:'Max',
+     strengths:['Généraliste','Agents','Français','Instructions complexes'],
+     best:'Polyvalence haut de gamme, excellent en français, agents',
+     ctx:'1M',power:4,speed:3,ctxv:5,eco:4,
+     costIn:0.30,costOut:1.20,bench:'MMLU 89.7%',note:''},
+    {id:'MiniMax M3',maker:'MiniMax',ac:'#ec4899',tag:'M3',
+     strengths:['Ultra-rapide','Polyvalent','Volume','Économique'],
+     best:'Débit maximal, traitements en masse, coût minimal',
+     ctx:'1M',power:3,speed:5,ctxv:5,eco:5,
+     costIn:0.10,costOut:0.50,bench:'MMLU 87.2%',
+     note:'⚡ Meilleur rapport qualité/prix de la sélection'}
+  ];
+  const MC_IMAGE=[
+    {id:'FLUX.2 Pro',maker:'Black Forest Labs',stars:5,quality:5,
+     distinct:'Flagship BFL 2025 — rendu photographique absolu, détails ultra-fins, visages précis',
+     tags:['Photoréaliste','Détails fins','Commercial','Visages'],
+     price:'~$0.09 / image',cap:'1024–2048 px'},
+    {id:'FLUX 1.1 Pro Ultra',maker:'Black Forest Labs',stars:4.5,quality:4.5,
+     distinct:'Résolution quasi-4 Mpx — packshots, prints grand format, qualité studio',
+     tags:['4 Mpx','Haute résolution','Print','Studio'],
+     price:'~$0.06 / image',cap:'jusqu\'à 4 Mpx'},
+    {id:'FLUX.1 Kontext Max',maker:'Black Forest Labs',stars:4,quality:4,
+     distinct:'Éditeur d\'image précis — modifie un visuel existant sans tout régénérer',
+     tags:['Édition','Cohérence','Modification','Texte net'],
+     price:'~$0.08 / edit',cap:'Source image requise'},
+    {id:'Qwen-Image',maker:'Alibaba',stars:3.5,quality:3.5,
+     distinct:'Champion du texte intégré — affiches, UI, typographie dans l\'image',
+     tags:['Texte intégré','Affiches','UI','Personnages'],
+     price:'~$0.04 / image',cap:'1024 px'},
+    {id:'Z-Image Turbo',maker:'Alibaba Tongyi',stars:3,quality:3,
+     distinct:'Génération ultra-rapide — itérations créatives à bas coût',
+     tags:['Ultra-rapide','Itérations','Style'],
+     price:'~$0.02 / image',cap:'512–1024 px'},
+    {id:'FLUX.1 Schnell',maker:'Black Forest Labs',stars:2.5,quality:2.5,
+     distinct:'Gratuit, 4 étapes de diffusion — idéal pour esquisses et brouillons rapides',
+     tags:['Gratuit','4 étapes','Brouillons','Rapide'],
+     price:'Gratuit',cap:'1024 px'}
+  ];
+  const MC_VIDEO=[
+    {id:'Kling 2.0',maker:'Kuaishou',stars:5,quality:5,
+     distinct:'Meilleur mouvement cinématique du marché — fluidité, réalisme physique, continuité temporelle',
+     tags:['Cinématique','Mouvement naturel','T2V','I2V','5–10s'],
+     price:'~$0.14 / 5s',cap:'720p · std / pro'},
+    {id:'Wan 2.2 T2V',maker:'Alibaba',stars:4,quality:4,
+     distinct:'Leader open-source — scènes complexes, physique solide, contrôle précis du mouvement',
+     tags:['Open-source','T2V','Physique','Scènes complexes'],
+     price:'~$0.29 / clip',cap:'480p–720p · 5s'},
+    {id:'Wan 2.2 I2V',maker:'Alibaba',stars:3.5,quality:3.5,
+     distinct:'Fidélité remarquable à l\'image source — anime sans dériver du sujet original',
+     tags:['I2V','Fidélité source','Animation','Cohérence'],
+     price:'~$0.29 / clip',cap:'480p–720p · 5s'}
+  ];
+
+  const mcStars=n=>{const pct=(n/5*100).toFixed(0);return `<div class="mc-stars-row"><div style="position:relative;display:inline-block;white-space:nowrap;flex-shrink:0"><span class="mc-stars-txt" style="color:var(--line-2)">★★★★★</span><span class="mc-stars-txt" style="position:absolute;left:0;top:0;overflow:hidden;width:${pct}%;color:var(--c1)">★★★★★</span></div><span class="mc-stars-score">${n}/5</span></div>`};
+
+  function renderMCText(){
+    return MC_TEXT.map(m=>{
+      const bars=[['Puissance',m.power],['Vitesse',m.speed],['Contexte',m.ctxv],['Économie',m.eco]];
+      return `<div class="mc-card" style="--cac:${m.ac}">
+        <div class="mc-top">
+          <div class="mc-ico">${m.maker.slice(0,2).toUpperCase()}</div>
+          <div class="mc-name">${m.id}</div>
+          <span class="mc-badge-t">${m.tag}</span>
+          <span class="mc-maker">${m.maker}</span>
+        </div>
+        <div class="mc-strs">${m.strengths.map(s=>`<span class="mc-str">${s}</span>`).join('')}</div>
+        <div class="mc-metrics">${bars.map(([l,v])=>`<div class="mc-metric"><div class="mc-mlbl">${l}</div><div class="mc-mrow"><div class="mc-mtrack"><div class="mc-mfill" style="width:${v*20}%"></div></div><span class="mc-mval">${v}/5</span></div></div>`).join('')}</div>
+        <div class="mc-foot">
+          <span class="mc-cost">in <b>$${m.costIn}</b> · out <b>$${m.costOut}</b> / M tokens</span>
+          ${m.bench?`<span class="mc-bench">${m.bench}</span>`:''}
+          <span class="mc-bestfor">${m.best}</span>
+          ${m.note?`<span class="mc-note">${m.note}</span>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+  function renderMCGrid(items){
+    return `<div class="mc-grid">${items.map((m,i)=>`<div class="mc-rcard${i===0?' mc-top1':''}">
+      <div class="mc-rnum">#${i+1}</div>
+      <div class="mc-rname">${m.id}</div>
+      <div class="mc-rprov">${m.maker}</div>
+      ${mcStars(m.stars)}
+      <div class="mc-qbar"><div class="mc-qbar-fill" style="width:${m.quality*20}%"></div></div>
+      <div class="mc-rdist">${m.distinct}</div>
+      <div class="mc-rtags">${m.tags.map(t=>`<span class="mc-rtag">${t}</span>`).join('')}</div>
+      <div class="mc-rmeta"><span class="mc-rprice">${m.price}</span><span class="mc-rcap">${m.cap}</span></div>
+    </div>`).join('')}</div>`;
+  }
+  let mcTab='text';
+  function openModels(){
+    mcTab='text';
+    renderMCPanel();
+    $('#modelsModal').classList.add('show');
+  }
+  function renderMCPanel(){
+    $$('#mcTabs .mc-tab').forEach(t=>t.classList.toggle('on',t.dataset.mct===mcTab));
+    if(mcTab==='text')$('#mcBody').innerHTML=renderMCText();
+    else if(mcTab==='image')$('#mcBody').innerHTML=renderMCGrid(MC_IMAGE);
+    else $('#mcBody').innerHTML=renderMCGrid(MC_VIDEO);
+  }
+  $$('#mcTabs .mc-tab').forEach(t=>t.addEventListener('click',()=>{mcTab=t.dataset.mct;renderMCPanel()}));
+  $('#mcClose').addEventListener('click',()=>$('#modelsModal').classList.remove('show'));
+  $('#modelsModal').addEventListener('click',e=>{if(e.target.id==='modelsModal')$('#modelsModal').classList.remove('show')});
   /* nouveautés */
   const NEWS=[
     {v:'1.0',d:'Juin 2026',items:[
@@ -1424,7 +1616,7 @@
   }));
 
   $$('.nav-item[data-act]').forEach(n=>n.setAttribute('data-popanchor',''));
-  $$('.nav-item[data-act]').forEach(n=>n.addEventListener('click',()=>{const a=n.dataset.act;if(a==='search')openPalette();else if(a==='persona')openPersona();else if(a==='more')openPop===$('#popMore')?closePop():showPop($('#popMore'),n,'left')}));
+  $$('.nav-item[data-act]').forEach(n=>n.addEventListener('click',()=>{const a=n.dataset.act;if(a==='search')openPalette();else if(a==='persona')openPersona();else if(a==='models')openModels();else if(a==='more')openPop===$('#popMore')?closePop():showPop($('#popMore'),n,'left')}));
 
   /* ===== settings ===== */
   function openSettings(){$('#settings').classList.add('show')}
