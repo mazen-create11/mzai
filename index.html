@@ -703,6 +703,9 @@
   .mc-rcard{animation:mcIn .32s var(--ease) both;animation-delay:var(--stg,0ms)}
   .mc-rcard.mc-top1{border-color:color-mix(in srgb,var(--c1) 38%,transparent);animation:mcIn .32s var(--ease) both,mcPulse 3s ease-in-out infinite;animation-delay:var(--stg,0ms),calc(var(--stg,0ms) + .6s)}
   .mc-app-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:color-mix(in srgb,var(--c1) 12%,transparent);color:var(--c1);border:1px solid color-mix(in srgb,var(--c1) 25%,transparent)}
+  .mc-ico{overflow:hidden}
+  .mc-ico svg,.mc-rlogo svg{width:100%;height:100%;display:block}
+  .mc-rlogo{width:22px;height:22px;border-radius:6px;overflow:hidden;flex-shrink:0}
   .mc-rnum{position:absolute;top:13px;right:14px;font-size:10.5px;font-weight:800;color:var(--txt-faint);letter-spacing:.07em}
   .mc-rcard.mc-top1 .mc-rnum{color:var(--c1)}
   .mc-rname{font-size:13.5px;font-weight:700;color:var(--txt);padding-right:36px;line-height:1.2}
@@ -1452,6 +1455,16 @@
   function logout(){if(window.confirm('Se déconnecter de MZai ?'))toast('Déconnecté')}
 
   /* ===== comparatif modèles ===== */
+  const MC_LOGOS={
+    'DeepSeek':`<svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="16" fill="#1B6EDE"/><path d="M8 18C8 13 12 9 18 10C23 11 26 15 24 19C22 23 17 25 13 23C10 22 8 20 8 18Z" fill="white"/><path d="M8 18L5.5 14.5M8 18L5.5 21.5" stroke="white" stroke-width="2" stroke-linecap="round"/><circle cx="21" cy="13" r="1.8" fill="#1B6EDE"/><circle cx="21.6" cy="12.4" r=".6" fill="white"/></svg>`,
+    'Alibaba':`<svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="16" fill="#FF6A00"/><path d="M16 7.5l8.5 17h-17L16 7.5zm0 5.5-4.2 9.5h8.4L16 13z" fill="white"/></svg>`,
+    'Alibaba Tongyi':`<svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="16" fill="#FF6A00"/><path d="M16 7.5l8.5 17h-17L16 7.5zm0 5.5-4.2 9.5h8.4L16 13z" fill="white"/></svg>`,
+    'Moonshot':`<svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="16" fill="#18181B"/><path d="M21.5 10A7.5 7.5 0 1 0 21.5 22 5.5 5.5 0 1 1 21.5 10z" fill="white"/></svg>`,
+    'Zhipu AI':`<svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="16" fill="#0284C7"/><path d="M9 12h14l-6 4.5h6L9 22l5-5.5H9L14 12z" fill="white"/></svg>`,
+    'MiniMax':`<svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="16" fill="#DB2777"/><path d="M7 22V10l5.5 7.5L16 13.5l3.5 4L25 10v12h-2.5V16.5L20 20l-4-5-4 5-2.5-3.5V22H7z" fill="white"/></svg>`,
+    'Black Forest Labs':`<svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="16" fill="#1E1B4B"/><path d="M16 7l2.2 5.5H24l-4.6 3.5 1.8 5.5L16 18.5 10.8 21.5l1.8-5.5L8 12.5h5.8L16 7z" fill="white"/></svg>`,
+    'Kuaishou':`<svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="16" fill="#111"/><path d="M12 10v12M12 16l7-6M12 16l7 6" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`
+  };
   const MC_TEXT=[
     {id:'DeepSeek V4 Pro',maker:'DeepSeek',ac:'#38bdf8',tag:'Pro',
      strengths:['Raisonnement','Code','Analyse','Long-form'],
@@ -1540,7 +1553,7 @@
       const bars=[['Puissance',m.power],['Vitesse',m.speed],['Contexte',m.ctxv],['Économie',m.eco]];
       return `<div class="mc-card" style="--cac:${m.ac};--stg:${i*55}ms">
         <div class="mc-top">
-          <div class="mc-ico">${m.maker.slice(0,2).toUpperCase()}</div>
+          <div class="mc-ico">${MC_LOGOS[m.maker]||m.maker.slice(0,2).toUpperCase()}</div>
           <div class="mc-name">${m.id}</div>
           <span class="mc-badge-t">${m.tag}</span>
           <span class="mc-maker">${m.maker}</span>
@@ -1561,7 +1574,7 @@
     return `<div class="mc-grid">${items.map((m,i)=>`<div class="mc-rcard${i===0?' mc-top1':''}" style="--stg:${i*80}ms">
       <div class="mc-rnum">#${i+1}</div>
       <div class="mc-rname">${m.id}</div>
-      <div class="mc-rprov">${m.maker}</div>
+      <div style="display:flex;align-items:center;gap:6px"><div class="mc-rlogo">${MC_LOGOS[m.maker]||''}</div><div class="mc-rprov">${m.maker}</div></div>
       ${mcStars(m.stars)}
       <div class="mc-qbar"><div class="mc-qbar-fill" data-w="${m.quality*20}" style="width:0"></div></div>
       <div class="mc-rdist">${m.distinct}</div>
