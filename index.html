@@ -594,6 +594,9 @@
 
   /* stats d'usage réel sous chaque réponse */
   .msg-stats{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:4px;font-size:10.5px;color:var(--txt-faint);letter-spacing:.02em;user-select:none;opacity:.78}
+  .suggestions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;animation:mcIn .28s var(--ease) both}
+  .sug-chip{font-size:12px;padding:6px 13px;border-radius:20px;border:1px solid var(--line-2);background:var(--panel-2);color:var(--txt-dim);cursor:pointer;transition:.16s var(--ease);line-height:1.3;text-align:left}
+  .sug-chip:hover{border-color:color-mix(in srgb,var(--c1) 50%,transparent);color:var(--txt);background:color-mix(in srgb,var(--c1) 6%,transparent);transform:translateY(-1px)}
   .msg-stats .ms-dot{width:3px;height:3px;border-radius:50%;background:var(--txt-faint);opacity:.6}
   .msg-stats b{font-weight:600;color:var(--txt-dim)}
   /* raisonnement réel — replié par défaut, dépliable au clic */
@@ -1866,7 +1869,7 @@
       if(t&&t.length>2&&t.length<60){c.title=t;saveConvos();renderRecents();renderChatHead(c);}
     }catch(e){}
   }
-  function genReply(c){const reason=isOn('Réflexion'),search=isOn('Recherche'),model=currentModel,node=addAINode(model);runGen(node,REPLIES[ri++%REPLIES.length],{reason,search,model,onDone:(t,meta)=>{c.msgs.push({role:'ai',text:t,model,reason,search,reasonText:meta.reasonText||'',sources:meta.sources||[],usage:meta.usage||null,ms:meta.ms||0});c.ts=now();saveConvos();renderRecents();if(c.msgs.filter(m=>m.role==='user').length===1)autoTitle(c);}})}
+  function genReply(c){const reason=isOn('Réflexion'),search=isOn('Recherche'),model=currentModel,node=addAINode(model);runGen(node,REPLIES[ri++%REPLIES.length],{reason,search,model,onDone:(t,meta)=>{const userMsg=(c.msgs.filter(m=>m.role==='user').pop()||{}).text||'';c.msgs.push({role:'ai',text:t,model,reason,search,reasonText:meta.reasonText||'',sources:meta.sources||[],usage:meta.usage||null,ms:meta.ms||0});c.ts=now();saveConvos();renderRecents();if(c.msgs.filter(m=>m.role==='user').length===1)autoTitle(c);genSuggestions(node.querySelector('.col'),t,userMsg);}})}
   function addAINode(modelId){const m=modelById(modelId||currentModel),ac=acOf(m),n=document.createElement('div');n.className='msg ai';n.innerHTML='<div class="av" style="background:linear-gradient(135deg,'+ac+',var(--c3))">'+MARK+'</div><div class="col"><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>';chat.appendChild(n);scrollDown();return n}
   function reasoningBlock(modelId,content,live){
     const m=modelById(modelId||currentModel);
@@ -2189,6 +2192,23 @@
     btn.classList.add('on');
   }
 
+  async function genSuggestions(col,aiText,userText){
+    if(!KEYS.openrouter)return;
+    try{
+      const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',
+        headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MZai'},
+        body:JSON.stringify({model:'deepseek/deepseek-v4-flash',max_tokens:80,temperature:0.7,
+          messages:[{role:'system',content:'Génère exactement 3 questions de suivi courtes (max 8 mots chacune) basées sur cette conversation. Retourne UNIQUEMENT les 3 questions séparées par des sauts de ligne, sans numérotation ni ponctuation finale.'},
+            {role:'user',content:'Question : '+userText.slice(0,200)+'\nRéponse : '+aiText.slice(0,300)}]})});
+      if(!res.ok)return;
+      const d=await res.json();
+      const lines=(d.choices?.[0]?.message?.content||'').trim().split('\n').map(l=>l.replace(/^[\d\-\.\)]+\s*/,'').trim()).filter(l=>l.length>3&&l.length<80).slice(0,3);
+      if(!lines.length)return;
+      const wrap=document.createElement('div');wrap.className='suggestions';
+      lines.forEach(q=>{const b=document.createElement('button');b.className='sug-chip rip';b.textContent=q;b.onclick=()=>{$('#prompt').value=q;autoGrow();updateCount();$('#prompt').focus();wrap.remove()};wrap.appendChild(b)});
+      col.appendChild(wrap);
+    }catch(e){}
+  }
   function addActions(col,text,node){
     const a=document.createElement('div');a.className='actions';
     a.innerHTML='<div class="act" data-a="copy" data-tip="Copier"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></div><div class="act" data-a="speak" data-tip="Lecture"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg></div><div class="act" data-a="redo" data-tip="Régénérer ('+currentModel+')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v4h-4"/></svg></div><div class="act" data-a="like" data-tip="J\'aime"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 11v9M2 13v6a2 2 0 0 0 2 2h13.3a2 2 0 0 0 2-1.6l1.4-7A2 2 0 0 0 19.7 10H14V5a2 2 0 0 0-3.7-1L7 11"/></svg></div>';
