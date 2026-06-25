@@ -647,6 +647,8 @@ a.src .su{flex-shrink:0;font-size:11px;color:var(--accent-strong);font-weight:va
 .pi.danger .pi-t,.pi.danger .pn{color:var(--danger-strong)}
 .pi.danger:hover{background:var(--danger-tint)}
 .pi.danger:hover .pi-i{color:var(--danger-strong);border-color:var(--danger)}
+.pop .pi-tail{margin-left:auto;align-self:center;font-size:11.5px;font-weight:var(--fw-semi);color:var(--ink-soft);background:var(--surface-2);border:1px solid var(--line);padding:2px 9px;border-radius:var(--r-pill);flex-shrink:0}
+.pop .pi:hover .pi-tail{border-color:var(--line-strong);color:var(--ink)}
 .pop-sep,.pop .sep{height:1px;background:var(--line);margin:5px 9px}
 .pop-foot,.pop .pfoot{margin-top:5px;padding:6px 3px 2px;border-top:1px solid var(--line)}
 .pop .pf-btn{display:flex;align-items:center;gap:10px;width:100%;font-family:inherit;font-size:var(--fs-sm);font-weight:var(--fw-med);color:var(--ink-soft);background:transparent;border:1px solid transparent;border-radius:var(--r-sm);padding:9px 11px;cursor:pointer;transition:.14s var(--ease);text-align:left}
@@ -954,7 +956,7 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   <!-- ================= SIDEBAR ================= -->
   <aside class="sidebar" id="sidebar" aria-label="Navigation">
     <header class="sb-head">
-      <span class="brand-mini"><span class="mark">M</span><span class="wordmark">MZ<i>ai</i></span></span>
+      <span class="brand-mini" id="brandHome" role="button" tabindex="0" data-tip="Accueil" aria-label="Accueil" style="cursor:pointer"><span class="mark">M</span><span class="wordmark">MZ<i>ai</i></span></span>
       <button class="icon-btn ghost" id="collapseBtn" aria-label="Réduire le panneau" data-tip="Réduire">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></svg>
       </button>
@@ -983,7 +985,7 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
       <button class="profile" id="profileBtn">
         <span class="avatar" id="navAv">M</span>
         <span class="who"><span class="name" id="navName">Mazen</span><span class="sub" id="navSub">Premium · local</span></span>
-        <svg class="chev" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+        <svg class="chev" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
       </button>
     </footer>
   </aside>
@@ -995,9 +997,6 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
     <header class="topbar">
       <button class="menu-btn" id="menuBtn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="sidebar" data-tip="Menu">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-      </button>
-      <button class="brand" id="brandHome" data-tip="Accueil">
-        <span class="mark">M</span><span class="wordmark">MZ<i>ai</i></span>
       </button>
       <h1 class="tb-title" id="convTitle" hidden></h1>
       <span class="tb-spacer"></span>
@@ -1334,7 +1333,8 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   const projCount=id=>CONVOS.filter(c=>c.pid===id).length;
   const projLastTs=p=>{const cs=CONVOS.filter(c=>c.pid===p.id);return cs.length?Math.max(...cs.map(c=>c.ts)):p.ts};
   const hexOf=g=>{const m=String(g).match(/#[0-9a-fA-F]{3,8}/);return m?m[0]:'#7FA9DC'};
-  const PCOLORS=['linear-gradient(140deg,#E4C674,#A8801F)','linear-gradient(140deg,#4CC59C,#0C6B4E)','linear-gradient(140deg,#7FA9DC,#2C4A8F)','linear-gradient(140deg,#C76B82,#7A1E3A)','linear-gradient(140deg,#AD92E2,#553597)','linear-gradient(140deg,#B6C4D8,#6B7E97)'];
+  const ARGILE_AV='linear-gradient(140deg,#C46B4A,#8E3D22)';   /* avatar argile, accordé à la DA */
+  const PCOLORS=[ARGILE_AV,'linear-gradient(140deg,#E4C674,#A8801F)','linear-gradient(140deg,#4CC59C,#0C6B4E)','linear-gradient(140deg,#7FA9DC,#2C4A8F)','linear-gradient(140deg,#C76B82,#7A1E3A)','linear-gradient(140deg,#AD92E2,#553597)','linear-gradient(140deg,#B6C4D8,#6B7E97)'];
   const PICONS=['spark','bolt','target','globe','code','card','bag','brain','shield','wand'];
   /* types de projet — chaque type porte son icône + sa couleur (plus de choix manuel) */
   const PTYPES=[
@@ -1436,9 +1436,13 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   Object.keys(DEFAULT_KEYS).forEach(k=>{if(DEFAULT_KEYS[k]&&!KEYS[k])KEYS[k]=DEFAULT_KEYS[k]});
   DB.set('apikeys',KEYS);
   const SF_HOST='https://api.siliconflow.com';
-  const USER=DB.get('user',{name:'Mazen',email:'mazenchaban09@gmail.com',role:'Compte développeur',avColor:'linear-gradient(135deg,#7FA9DC,#5E86C9)'});
+  const USER=DB.get('user',{name:'Mazen',email:'mazenchaban09@gmail.com',role:'Compte développeur',avColor:ARGILE_AV});
+  if(/#7fa9dc|#5e86c9|#6ba3ff|#b6c4d8|#6b7e97|#2c4a8f/i.test(USER.avColor||'')){USER.avColor=ARGILE_AV;DB.set('user',USER)}   /* migration : avatar bleu/ardoise hérité → argile DA */
   const firstName=()=>(USER.name||'Mazen').trim().split(' ')[0];
   const modelById=id=>MODELS.find(m=>m.id===id)||MODELS[0];
+  const VISION_DOC='qwen/qwen3-vl-8b-instruct';  // modèle vision OpenRouter (OCR docs scannés / photos en mode Documents)
+  function injCap(id){const ctx=(modelById(id).ctx||'').toLowerCase();  // budget de caractères injectés dérivé de la fenêtre de contexte du modèle
+    return (ctx.includes('m')||ctx.includes('auto'))?400000:parseInt(ctx)>=256?240000:parseInt(ctx)>=128?140000:60000;}
   const provOf=m=>PROVIDERS[(typeof m==='string'?modelById(m):m||{}).provider||'mz'];
   const acOf=m=>provOf(m).ac;
   const hasKey=p=>p==='mz'||(p==='kling'?(!!(KEYS.kling_ak&&KEYS.kling_ak.trim())&&!!(KEYS.kling_sk&&KEYS.kling_sk.trim())):!!(KEYS[p]&&KEYS[p].trim()));
@@ -1619,10 +1623,14 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
     const navv=v==='project'?'projects':v;
     $$('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===navv));
     moveComposer(v);                          // relog le composer dans le bon dock
+    syncTopTitle();                           // titre de conv dans le topbar (chat) / masqué (home)
     if(window.innerWidth<=1024){$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show')}
   }
+  /* topbar épuré : titre de la conversation à gauche en mode chat, rien en home */
+  function syncTopTitle(){const tt=$('#convTitle');if(!tt)return;const c=convoById(activeId);if($('#app').dataset.view==='chat'&&c){tt.textContent=c.title;tt.hidden=false}else{tt.textContent='';tt.hidden=true}}
   $$('.nav-item[data-view]').forEach(n=>n.addEventListener('click',()=>showView(n.dataset.view)));
   $('#brandHome').addEventListener('click',goHome);
+  $('#brandHome').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();goHome()}});
   function goHome(){showView('home');$$('.nav-item').forEach(n=>n.classList.remove('active'))}
 
   /* ===== popovers ===== */
@@ -1662,15 +1670,44 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   $('#modelPill').setAttribute('data-popanchor','');$('#modelPill').addEventListener('click',()=>openPop===$('#popModel')?closePop():openModel($('#modelPill')));
   $('#toolModel').addEventListener('click',()=>openPop===$('#popModel')?closePop():showPop($('#popModel'),$('#toolModel'),'left'));
 
-  /* profile popover */
-  $('#popProfile').innerHTML='<div class="pi sel"><div class="pi-i" style="background:var(--grad);color:#04101f">M</div><div class="pi-main"><div class="pi-t">Mazen</div><div class="pi-d">mazenchaban09@gmail.com</div></div></div><div class="sep"></div>'+
-    [['Profil','M9 7a4 4 0 1 1 8 0 4 4 0 0 1-8 0M5 21a7 7 0 0 1 14 0'],['Paramètres','settings'],['Activité','M22 12h-4l-3 9L9 3l-3 9H2'],['Aide & support','M12 17h.01M12 13a3 3 0 1 0-3-3M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0']]
-    .map(([t,p])=>`<div class="pi" data-pf="${t}"><div class="pi-i"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p==='settings'?'<circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M5 12H3M21 12h-2"/>':`<path d="${p}"/>`}</svg></div><div class="pi-main"><div class="pi-t">${t}</div></div></div>`).join('')
-    +'<div class="sep"></div><div class="pi danger" data-pf="logout"><div class="pi-i"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg></div><div class="pi-main"><div class="pi-t">Déconnexion</div></div></div>';
+  /* profile popover (app 100% locale — contenu honnête) */
+  const SET_GEAR='<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>';
+  const SUN_IC='<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+  const pfIco=p=>`<div class="pi-i"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg></div>`;
+  function themeLabel(){return normTheme(DB.get('theme','light'))==='dark'?'Sombre':'Clair'}
+  function renderProfilePop(){
+    const email=(USER.email&&USER.email.trim())?USER.email:'Compte local';
+    const ini=(USER.name||'M').trim()[0].toUpperCase();
+    const items=[
+      ['set','Paramètres',SET_GEAR],
+      ['persona','Mon IA',GLYPH.persona],
+      ['theme','Thème',SUN_IC],
+      ['export','Exporter mes données',GLYPH.export],
+      ['help','Aide',GLYPH.help]
+    ];
+    $('#popProfile').innerHTML=
+      `<div class="pi sel"><div class="pi-i" style="background:var(--accent);color:var(--ink-on-accent);border-color:transparent;font-family:var(--font-serif);font-weight:600">${esc(ini)}</div><div class="pi-main"><div class="pi-t">${esc(USER.name||'Mazen')}</div><div class="pi-d">${esc(email)}</div></div></div><div class="sep"></div>`
+      +items.map(([pf,t,svg])=>`<div class="pi" data-pf="${pf}">${pfIco(svg)}<div class="pi-main"><div class="pi-t">${t}</div></div>${pf==='theme'?`<span class="pi-tail">${themeLabel()}</span>`:''}</div>`).join('')
+      +'<div class="sep"></div>'
+      +`<div class="pi danger" data-pf="clear">${pfIco(GLYPH.trash)}<div class="pi-main"><div class="pi-t">Effacer les données locales</div></div></div>`;
+    $$('#popProfile .pi[data-pf]').forEach(p=>p.addEventListener('click',()=>{
+      const a=p.dataset.pf;
+      if(a==='theme'){toggleTheme();const tl=p.querySelector('.pi-tail');if(tl)tl.textContent=themeLabel();return}
+      closePop();
+      if(a==='set')openSettings();
+      else if(a==='persona')openPersona();
+      else if(a==='export')$('#setExport').click();
+      else if(a==='help')launchAide();
+      else if(a==='clear')clearLocalData();
+    }));
+  }
+  renderProfilePop();
   $('#profileBtn').setAttribute('data-popanchor','');
-  $('#profileBtn').addEventListener('click',()=>openPop===$('#popProfile')?closePop():showPop($('#popProfile'),$('#profileBtn'),'left',$('#profileBtn')));
-  $$('#popProfile .pi[data-pf]').forEach(p=>p.addEventListener('click',()=>{const a=p.dataset.pf;closePop();
-    if(a==='Paramètres')openSettings();else if(a==='Profil')openProfile();else if(a==='Activité')openBilling();else if(a==='Aide & support')openHelp();else if(a==='logout')logout()}));
+  $('#profileBtn').addEventListener('click',()=>{
+    if(openPop===$('#popProfile')){closePop();return}
+    const tl=$('#popProfile .pi[data-pf="theme"] .pi-tail');if(tl)tl.textContent=themeLabel();   // reflète l'état courant à l'ouverture
+    showPop($('#popProfile'),$('#profileBtn'),'left',$('#profileBtn'));
+  });
 
   /* ===== utilisateur ===== */
   function applyUser(){
@@ -1722,6 +1759,10 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   $('#hpClose').addEventListener('click',()=>$('#helpModal').classList.remove('show'));
   $('#helpModal').addEventListener('click',e=>{if(e.target.id==='helpModal')$('#helpModal').classList.remove('show')});
   function logout(){if(window.confirm('Se déconnecter de MZai ?'))toast('Déconnecté')}
+  /* Aide : lance l'assistant « Aide MZai » dans une nouvelle conversation */
+  function launchAide(){const a=ASSISTANTS.find(x=>x.id==='aide');if(!a){openHelp();return}const c=createConvo();c.title=a.name;c.assistant=a.id;saveConvos();openConvo(c.id);if(window.innerWidth<=1024){$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show')}}
+  /* Efface toutes les données locales (conversations, réglages, clés API) puis recharge */
+  function clearLocalData(){if(!window.confirm('Effacer toutes les données locales (conversations, réglages, clés API) ? Cette action est irréversible.'))return;try{Object.keys(localStorage).filter(k=>k.indexOf('mzai:')===0).forEach(k=>localStorage.removeItem(k))}catch(e){}location.reload()}
 
   /* comparateur de modèles retiré (V2) — voir renderModelPicker pour le choix du modèle */
 
@@ -2054,7 +2095,13 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   }
   function buildSystem(c){
     if(currentMode==='translate'){const T=toolCfg;  // prompt de traduction dédié — 1 seul rôle, PAS cumulé avec la persona
-      return 'Tu es un traducteur professionnel et naturel. Traduis le message de l\'utilisateur '+(T.trFrom&&T.trFrom!=='Auto'?'depuis le '+T.trFrom+' ':'(détecte automatiquement la langue source) ')+'vers le '+T.trTo+'. Registre : '+T.trReg+'. Rends UNIQUEMENT la traduction, sans préambule ni guillemets, en conservant le sens, le ton et la mise en forme. Si un fichier est joint, traduis son contenu.';}
+      const tgt=langName(T.trTo),src=(T.trFrom&&T.trFrom!=='auto')?langName(T.trFrom):null;
+      let g='';
+      if(T.trGloss&&T.trGloss.trim()){const lines=T.trGloss.split('\n').map(l=>l.trim()).filter(l=>l.includes('=')).map(l=>{const i=l.indexOf('=');return '• '+l.slice(0,i).trim()+' → '+l.slice(i+1).trim()}).slice(0,50);
+        if(lines.length)g='\n\nGLOSSAIRE (respecte EXACTEMENT ces correspondances) :\n'+lines.join('\n');}
+      const base='Tu es un traducteur professionnel et natif. Traduis le message de l\'utilisateur '+(src?'depuis le '+src+' ':'(détecte automatiquement la langue source) ')+'vers le '+tgt+', registre '+T.trReg+'.\n\nRÈGLES STRICTES :\n— Ne traduis QUE le langage naturel. Laisse INCHANGÉS : blocs et inline de code, URLs, e-mails, {{placeholders}}, %s, $variables, balises <…>, nombres et unités.\n— Conserve EXACTEMENT la mise en forme markdown (titres, gras, listes, tableaux), les sauts de ligne et la structure.\n— Adapte les expressions idiomatiques au sens naturel de la langue cible (jamais de mot-à-mot).\n— Si un fichier est joint, traduis son contenu avec ces mêmes règles.'+g;
+      if(T.trCheck)return base+'\n\nMODE VÉRIFICATION : réponds UNIQUEMENT par un objet JSON valide entouré d\'un bloc ```json … ```, de la forme {"segments":[{"src":"<segment source>","tgt":"<traduction>","fidelity":"ok"|"doute"}]}. Découpe phrase par phrase (ou paragraphe). Mets "fidelity":"doute" quand le sens est ambigu, idiomatique ou risqué. Aucun texte hors du bloc JSON.';
+      return base+'\n\nSortie = la traduction SEULE, sans préambule, sans guillemets, sans commentaire, sans note.';}
     const p=PERSONA;let s='Tu es '+(p.name||'MZai')+', un assistant IA premium et utile.';
     if(c.assistant){const a=ASSISTANTS.find(x=>x.id===c.assistant);if(a)s=a.prompt;}
     else{
@@ -2065,18 +2112,23 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
     }
     const pc=projContextOf(c);if(pc&&pc.context)s+='\n\nContexte du projet « '+pc.name+' » : '+pc.context;
     const mem=getMemory();if(mem)s+='\n\nMémoire utilisateur (sessions précédentes) : '+mem;
-    if(currentMode==='doc')s+='\n\nTâche document : '+(toolCfg.docAction==='Extraction'?'extrais de façon structurée les informations clés du/des document(s) joint(s) — dates, montants, entités, tableaux ; signale honnêtement toute partie illisible.':toolCfg.docAction==='Q&A'?'réponds aux questions de l\'utilisateur en te basant UNIQUEMENT sur le contenu du/des document(s) joint(s) ; si l\'information est absente, dis-le clairement.':'résume le/les document(s) joint(s) en points clés clairs et hiérarchisés.')+' (Note : le contenu fourni peut être tronqué pour tenir dans la fenêtre de contexte.)';
+    if(currentMode==='doc')s+='\n\nTâche document : '+(toolCfg.docAction==='Extraction'?'extrais de façon structurée les informations clés du/des document(s) joint(s). Réponds UNIQUEMENT par un objet JSON valide, sans aucun texte avant ni après, entouré d\'un bloc ```json … ```, de la forme {"entites":[],"montants":[],"dates":[],"tableaux":[[...]],"resume":""}. N\'invente rien ; laisse un tableau vide si l\'information est absente et signale toute partie illisible dans "resume".':toolCfg.docAction==='Q&A'?'réponds aux questions de l\'utilisateur en te basant UNIQUEMENT sur le contenu du/des document(s) joint(s) ; si l\'information est absente, dis-le clairement.':'résume le/les document(s) joint(s) en points clés clairs et hiérarchisés.')+' (Note : le contenu fourni peut être tronqué pour tenir dans la fenêtre de contexte.)';
     if(currentMode==='code')s+='\n\nTâche code : génère du code complet, correct et lisible'+(toolCfg.codeLang&&toolCfg.codeLang!=='Auto'?' en '+toolCfg.codeLang:'')+'. Place chaque fichier dans un bloc de code balisé ; pour une page web autonome (HTML/CSS/JS), réunis tout dans UN seul bloc HTML afin de permettre l\'aperçu live.';
     return s;
   }
   async function runGen(node, _, opts){
     setGenerating(true);
     const col=node.querySelector('.col'),bubble=node.querySelector('.bubble');
-    let stopped=false,fin=false,reasonText="",reasonBox=null,fullText="",ctrl=null,idle=null,timedOut=false;const t0=performance.now();
+    let stopped=false,fin=false,reasonText="",reasonBox=null,fullText="",ctrl=null,idle=null,timedOut=false,injTotal=0,injUsed=0;const t0=performance.now();
     const finish=(text,meta)=>{
       if(fin)return;fin=true;meta=meta||{};clearTimeout(idle);
       if(reasonBox){const ri=reasonBox.querySelector('.rc-in');if(reasonText)ri.textContent=reasonText;reasonBox.classList.remove('open','live');const lbl=reasonBox.querySelector('.rt-lbl');if(lbl)lbl.textContent=modelById(opts.model).id+' a réfléchi'+(meta.ms?' · '+(meta.ms/1000).toFixed(1)+'s':'');}
-      bubble.classList.add('md');bubble.innerHTML=renderMD(text)+sourcesBlock(opts.model,meta.sources);wireBubble(bubble);addActions(col,text,node);
+      let copyText=text,qcDone=false;
+      if(currentMode==='translate'&&toolCfg.trCheck){const j=renderTransQC(bubble,text);if(j!=null){copyText=j;qcDone=true;}}  // côte-à-côte + contrôle qualité
+      if(!qcDone){bubble.classList.add('md');bubble.innerHTML=renderMD(text)+sourcesBlock(opts.model,meta.sources);}
+      wireBubble(bubble);addActions(col,copyText,node);
+      if(injTotal>0){const b=injBadge(injUsed,injTotal);if(b)col.appendChild(b);}                          // transparence : X / Y caractères de document injectés
+      if(currentMode==='doc'&&toolCfg.docAction==='Extraction')addJsonDownload(col,text);                  // export .json structuré
       if(meta.usage||meta.ms){const s=statsEl(opts.model,meta.ms,meta.usage,true);if(s)col.appendChild(s);}
       scrollDown();setGenerating(false);curStop=null;
       opts.onDone&&opts.onDone(text,{reasonText,sources:meta.sources,usage:meta.usage,ms:meta.ms});
@@ -2086,6 +2138,7 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
     
     try {
       const c = convoById(activeId);
+      const qcMode=(currentMode==='translate'&&toolCfg.trCheck);  // mode vérification : on masque le JSON brut pendant le stream
       let mData = modelById(opts.model);
       if(mData.provider==='mz' && KEYS.openrouter){  // MZ Auto → routage selon la demande
         const lastUser=((c.msgs.filter(m=>m.role==='user').pop())||{}).text||'';
@@ -2104,23 +2157,33 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
 
       // Truncation intelligente : garde les 24 derniers messages, tronque les longs
       const allMsgs=c.msgs.filter(m=>m.text);
-      const trimmedMsgs=allMsgs.length>24?allMsgs.slice(-24):allMsgs;
+      let trimmedMsgs=allMsgs.length>24?allMsgs.slice(-24):allMsgs;
+      if(allMsgs.length>24){  // pin : un message porteur de fichier ne doit jamais disparaître hors fenêtre
+        const carriers=allMsgs.filter(m=>(m.files||[]).some(f=>f.textContent||f.b64||(f.ocrPages&&f.ocrPages.length))&&!trimmedMsgs.includes(m));
+        if(carriers.length)trimmedMsgs=carriers.concat(trimmedMsgs);
+      }
+      const cap=injCap(opts.model);  // budget d'injection généreux calé sur la fenêtre du modèle
+      const needsVision=currentMode==='doc'&&trimmedMsgs.some(m=>(m.files||[]).some(f=>(f.isImg&&f.b64)||(f.ocrPages&&f.ocrPages.length)));
       const messages=[{role:'system',content:buildSystem(c)}].concat(
         trimmedMsgs.map(m=>{
           const imgs=(m.files||[]).filter(f=>f.isImg&&f.b64);
-          const docs=(m.files||[]).filter(f=>!f.isImg&&f.textContent);
+          const ocr=[].concat(...(m.files||[]).map(f=>f.ocrPages||[]));  // pages PDF rastérisées (scanné)
+          const docs=(m.files||[]).filter(f=>!f.isImg&&f.textContent&&!(f.ocrPages&&f.ocrPages.length));
           let txt=m.text.length>4000?m.text.slice(0,4000)+'…[tronqué]':m.text;
-          if(docs.length)txt+='\n\n'+docs.map(f=>'**Fichier : '+f.name+'**\n```\n'+f.textContent.slice(0,8000)+'\n```').join('\n\n');
-          if(imgs.length)return{role:m.role==='ai'?'assistant':'user',content:[{type:'text',text:txt},...imgs.map(f=>({type:'image_url',image_url:{url:f.b64}}))]};
+          if(docs.length)txt+='\n\n'+docs.map(f=>{const cut=f.textContent.slice(0,cap);injTotal+=f.textContent.length;injUsed+=cut.length;return '**Fichier : '+f.name+'**\n```\n'+cut+'\n```'}).join('\n\n');
+          if(ocr.length)txt+='\n\n[Document scanné joint en images — lis-les directement pour répondre.]';
+          const imgParts=[...imgs.map(f=>({type:'image_url',image_url:{url:f.b64}})),...ocr.map(u=>({type:'image_url',image_url:{url:u}}))];
+          if(imgParts.length)return{role:m.role==='ai'?'assistant':'user',content:[{type:'text',text:txt},...imgParts]};
           return{role:m.role==='ai'?'assistant':'user',content:txt};
         })
       );
       const endpoint = isOR ? "https://openrouter.ai/api/v1/chat/completions" : SF_HOST+"/v1/chat/completions";
       const headers={'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'};
       if(isOR){headers['HTTP-Referer']=location.origin||'https://mzai.app';headers['X-Title']='MZai';}
-      bubble.innerHTML='<span class="caret"></span>';
+      bubble.innerHTML=qcMode?'<div class="gen-loading"><div class="gl-ring"></div>Traduction + contrôle qualité…</div>':'<span class="caret"></span>';
       let modelId = mData.api||opts.model;
       if(opts.search && isOR) modelId += ':online';  // plugin web réel d'OpenRouter
+      if(needsVision && isOR) modelId = VISION_DOC;   // doc scanné / photo → modèle vision OCR
       const body = {model:modelId, messages, stream:SETTINGS.stream, max_tokens:4096};
       if(opts.reason && isOR) body.reasoning={enabled:true};  // chaîne de raisonnement réelle
       if(isOR) body.usage={include:true};                      // tokens + coût réels
@@ -2171,7 +2234,7 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
             if(d.annotations) sources = sources.concat(collectSources(d.annotations));
             if(d.content) {
               fullText += d.content;
-              bubble.innerHTML = esc(fullText) + '<span class="caret"></span>';
+              if(!qcMode){bubble.innerHTML = esc(fullText) + '<span class="caret"></span>';}
               scrollDown();
             }
           } catch(e) {}
@@ -2183,6 +2246,24 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
       if(err.name==='AbortError') return finish(fullText||'_Génération arrêtée._',{ms:performance.now()-t0});
       finish("**Erreur de connexion** : " + err.message);
     }
+  }
+  /* Traduction — rendu côte-à-côte + contrôle qualité (parse défensif, repli markdown si JSON cassé) */
+  function renderTransQC(bubble,text){
+    let data=null;
+    try{const m=text.match(/```json\s*([\s\S]*?)```/i);data=JSON.parse((m?m[1]:text).trim());}
+    catch(e){try{data=JSON.parse(text.slice(text.indexOf('{'),text.lastIndexOf('}')+1));}catch(e2){}}
+    if(!data||!Array.isArray(data.segments)||!data.segments.length)return null;  // repli : finish() rendra le markdown brut
+    const rows=data.segments.map(s=>{const doubt=String(s.fidelity||'').toLowerCase().startsWith('dout');
+      return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:9px 0;border-top:1px solid var(--line)">'
+        +'<div style="font-size:13px;color:var(--ink-soft);line-height:1.5">'+esc(s.src||'')+'</div>'
+        +'<div style="font-size:13px;color:var(--ink);line-height:1.5'+(doubt?';border-left:2px solid var(--warning,#c2841a);padding-left:9px':'')+'">'+esc(s.tgt||'')+(doubt?' <span style="font-size:11px;color:var(--warning-strong,#7A560F);white-space:nowrap" data-tip="Fidélité à vérifier (rétro-traduction)">⚠ à vérifier</span>':'')+'</div></div>';
+    }).join('');
+    const flagged=data.segments.filter(s=>String(s.fidelity||'').toLowerCase().startsWith('dout')).length;
+    bubble.classList.add('md');
+    bubble.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft)"><span>Source</span><span>Traduction</span></div>'
+      +rows
+      +'<div style="margin-top:10px;font-size:11.5px;color:var(--ink-soft);line-height:1.5">Contrôle qualité — '+(flagged?flagged+' segment'+(flagged>1?'s':'')+' marqué'+(flagged>1?'s':'')+' ⚠ à relire.':'aucun segment douteux détecté.')+'</div>';
+    return data.segments.map(s=>s.tgt||'').join('\n');  // texte copiable = traduction complète
   }
   function renderAIStored(msg){
     const node=addAINode(msg.model),col=node.querySelector('.col'),bubble=node.querySelector('.bubble');
@@ -2362,6 +2443,19 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
     });
     a.querySelector('[data-a=like]').addEventListener('click',e=>{e.currentTarget.classList.toggle('on');toast('Merci pour le retour')});
   }
+  function injBadge(used,total){  // badge de transparence : combien de caractères du document ont réellement été injectés
+    if(!total)return null;const trunc=used<total,el=document.createElement('div');
+    el.style.cssText='margin-top:6px;font-size:11px;color:var(--ink-soft);display:flex;align-items:center;gap:5px';
+    el.innerHTML=(trunc?'<span style="color:var(--warn,#c98a2b)">⚠️</span> ':'<span style="opacity:.6">📄</span> ')+used.toLocaleString('fr-FR')+' / '+total.toLocaleString('fr-FR')+' caractères injectés'+(trunc?' — document tronqué (choisis un modèle à plus grande fenêtre pour tout couvrir)':'');
+    return el;
+  }
+  function addJsonDownload(col,text){  // action Extraction → bouton « Télécharger .json » (parse défensif du JSON renvoyé)
+    let raw=(text||'').trim();const fence=raw.match(/```(?:json)?\s*([\s\S]*?)```/i);if(fence)raw=fence[1].trim();
+    let obj;try{obj=JSON.parse(raw)}catch(e){return}
+    const btn=document.createElement('button');btn.className='sug-chip';btn.style.marginTop='8px';btn.textContent='Télécharger .json';
+    btn.onclick=()=>{const b=new Blob([JSON.stringify(obj,null,2)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='extraction.json';a.click();URL.revokeObjectURL(u)};
+    col.appendChild(btn);
+  }
   const prompt=$('#prompt');
   function autoGrow(){prompt.style.height='auto';prompt.style.height=Math.min(prompt.scrollHeight,160)+'px'}
   function updateCount(){
@@ -2393,6 +2487,7 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
       inp.addEventListener('blur',save);
     };
     h.querySelector('.ch-t').onclick=start;h.querySelector('.ch-edit').onclick=start;
+    if(c.id===activeId)syncTopTitle();
   }
   function projContextOf(c){if(!c||!c.pid)return null;const p=projById(c.pid);return p&&(p.context||(p.files&&p.files.length))?p:null}
   function refreshCtxBanner(){const ex=chat.querySelector('.ctx-banner');if(ex)ex.remove();const p=projContextOf(convoById(activeId));if(!p)return;const nf=(p.files||[]).length;const b=document.createElement('div');b.className='ctx-banner';b.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+GLYPH.brain+'</svg>Contexte de <b>'+esc(p.name)+'</b> appliqué'+(nf?' · '+nf+' fichier'+(nf>1?'s':''):'');chat.insertBefore(b,chat.firstChild)}
@@ -2424,7 +2519,12 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
     // Images → base64 persistant ; documents (txt/docx/xlsx/pdf) → texte extrait côté client
     const files=await Promise.all(rawFiles.map(async f=>{
       if(f.isImg&&f.url){try{const b64=await blobToB64(f.url);URL.revokeObjectURL(f.url);return{name:f.name,isImg:true,b64};}catch(e){return{name:f.name,isImg:false};}}
-      if(!f.isImg&&f.file){try{const textContent=await extractFileText(f.file);if(textContent)return{name:f.name,isImg:false,textContent};}catch(e){}}
+      if(!f.isImg&&f.file){try{const textContent=await extractFileText(f.file);
+        // OCR/vision : PDF scanné (aucun texte sélectionnable) en mode Documents → rastériser les pages pour le modèle vision
+        if(currentMode==='doc'&&/\.pdf$/i.test(f.name)&&/^\[PDF «/.test(textContent||'')){
+          try{const pages=await pdfToImages(await f.file.arrayBuffer(),8);if(pages.length)return{name:f.name,isImg:false,textContent,ocrPages:pages};}catch(e){}
+        }
+        if(textContent)return{name:f.name,isImg:false,textContent};}catch(e){}}
       return{name:f.name,isImg:false};
     }));
     if(!activeId)createConvo();const c=convoById(activeId);
@@ -2455,7 +2555,11 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   /* ===== SÉLECTEUR D'OUTILS (10 outils) — pilote currentMode + opts + model-pill ===== */
   let currentMode='text';
   const opts={search:false,reason:false};                                  // toggles cumulables (Assistant)
-  const toolCfg={docAction:'Résumé',trFrom:'Auto',trTo:'Anglais',trReg:'Vouvoiement',codeLang:'Auto',asrLang:'fr-FR'};
+  const toolCfg={docAction:'Résumé',trFrom:'auto',trTo:'en',trReg:'Vouvoiement',trGloss:'',trCheck:false,codeLang:'Auto',asrLang:'fr-FR',asrEngine:'omni'};
+  /* noms de langues propres via Intl.DisplayNames (repli sur le code) */
+  const LANG_CODES=['auto','fr','en','es','de','it','pt','ar','zh','ja','ru','nl','pl','tr','ko','hi'];
+  const _LDN=(()=>{try{return new Intl.DisplayNames(['fr'],{type:'language'})}catch(e){return null}})();
+  function langName(code){if(code==='auto')return 'Détection auto';let n=_LDN?_LDN.of(code):code;return n?n.charAt(0).toUpperCase()+n.slice(1):code;}
   let lastTextModel=currentModel;                                          // mémorise le modèle texte choisi
   const MODE_CAT={text:'text',image:'image',video:'video',voice:'voice',doc:'text',translate:'text',transcribe:'text',code:'coder'};
   const MODE_LABEL={image:'Image',video:'Vidéo',voice:'Voix',doc:'Documents',translate:'Traduction',transcribe:'Transcription',code:'Code'};
@@ -2495,10 +2599,20 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
     }else if(currentMode==='doc'){
       h='<span class="opt"><label>Action</label><select data-opt="docAction">'+['Résumé','Extraction','Q&A'].map(a=>'<option'+(a===toolCfg.docAction?' selected':'')+'>'+a+'</option>').join('')+'</select></span><button class="opt" type="button" data-opt="docAttach" style="cursor:pointer;font:inherit">+ Joindre un document</button><span class="opt">PDF · DOCX · XLSX · TXT</span>';
     }else if(currentMode==='translate'){
-      const langs=['Auto','Français','Anglais','Espagnol','Allemand','Italien','Portugais','Arabe','Chinois','Japonais','Russe'];
-      h='<span class="opt"><label>De</label><select data-opt="trFrom">'+langs.map(l=>'<option'+(l===toolCfg.trFrom?' selected':'')+'>'+l+'</option>').join('')+'</select></span><span class="opt"><label>Vers</label><select data-opt="trTo">'+langs.filter(l=>l!=='Auto').map(l=>'<option'+(l===toolCfg.trTo?' selected':'')+'>'+l+'</option>').join('')+'</select></span><span class="opt"><label>Registre</label><select data-opt="trReg">'+['Vouvoiement','Tutoiement','Soutenu','Familier','Marketing','Technique'].map(r=>'<option'+(r===toolCfg.trReg?' selected':'')+'>'+r+'</option>').join('')+'</select></span>';
+      const opt=(c,sel)=>'<option value="'+c+'"'+(c===sel?' selected':'')+'>'+esc(langName(c))+'</option>';
+      h='<span class="opt"><label>De</label><select data-opt="trFrom">'+LANG_CODES.map(c=>opt(c,toolCfg.trFrom)).join('')+'</select></span>'
+       +'<button class="opt" type="button" data-opt="trSwap" data-tip="Inverser source / cible" aria-label="Inverser" style="cursor:pointer;font:inherit;padding:6px 9px">⇄</button>'
+       +'<span class="opt"><label>Vers</label><select data-opt="trTo">'+LANG_CODES.filter(c=>c!=='auto').map(c=>opt(c,toolCfg.trTo)).join('')+'</select></span>'
+       +'<span class="opt"><label>Registre</label><select data-opt="trReg">'+['Vouvoiement','Tutoiement','Soutenu','Familier','Marketing','Technique'].map(r=>'<option'+(r===toolCfg.trReg?' selected':'')+'>'+r+'</option>').join('')+'</select></span>'
+       +'<button class="opt" type="button" data-opt="trGlossBtn" style="cursor:pointer;font:inherit">＋ Glossaire</button>'
+       +'<label class="opt" style="cursor:pointer;gap:5px;display:inline-flex;align-items:center"><input type="checkbox" data-opt="trCheck"'+(toolCfg.trCheck?' checked':'')+' style="accent-color:var(--accent);margin:0"> Vérifier (côte à côte)</label>'
+       +'<div class="opt" data-glossbox style="display:'+(toolCfg.trGloss?'flex':'none')+';flex-basis:100%;width:100%;padding:0"><textarea data-opt="trGlossArea" rows="2" placeholder="Glossaire — une entrée par ligne :  terme source = terme cible" style="width:100%;font:inherit;font-size:12px;resize:vertical;border:1px solid var(--line-strong);border-radius:var(--r-xs);padding:6px 8px;background:var(--surface);color:var(--ink)">'+esc(toolCfg.trGloss||'')+'</textarea></div>';
     }else if(currentMode==='transcribe'){
-      h='<button class="opt" type="button" data-opt="asrMic" style="cursor:pointer;font:inherit">● Micro live</button><button class="opt" type="button" data-opt="asrFile" style="cursor:pointer;font:inherit">+ Importer un audio</button><span class="opt"><label>Langue</label><select data-opt="asrLang"><option value="fr-FR"'+(toolCfg.asrLang==='fr-FR'?' selected':'')+'>FR</option><option value="en-US"'+(toolCfg.asrLang==='en-US'?' selected':'')+'>EN</option></select></span><span class="opt">Micro = Chrome/Edge · sous-titres exacts non garantis</span>';
+      h='<button class="opt" type="button" data-opt="asrMic" style="cursor:pointer;font:inherit">● Micro live</button>'
+       +'<button class="opt" type="button" data-opt="asrFile" style="cursor:pointer;font:inherit">+ Importer un audio</button>'
+       +'<span class="opt"><label>Moteur</label><select data-opt="asrEngine"><option value="omni"'+(toolCfg.asrEngine!=='sense'?' selected':'')+'>Qwen3-Omni · FR + multilingue</option><option value="sense"'+(toolCfg.asrEngine==='sense'?' selected':'')+'>SenseVoice · zh/en rapide</option></select></span>'
+       +'<span class="opt"><label>Micro (live)</label><select data-opt="asrLang"><option value="fr-FR"'+(toolCfg.asrLang==='fr-FR'?' selected':'')+'>FR</option><option value="en-US"'+(toolCfg.asrLang==='en-US'?' selected':'')+'>EN</option></select></span>'
+       +'<span class="opt">Fichier ≤ ~10 Mo (~10 min) · post-traitement &amp; .srt estimé après</span>';
     }else if(currentMode==='code'){
       h='<span class="opt"><label>Langage</label><select data-opt="codeLang">'+['Auto','HTML/CSS/JS','Python','JavaScript','TypeScript','React','SQL','Rust','Go','Bash'].map(l=>'<option'+(l===toolCfg.codeLang?' selected':'')+'>'+l+'</option>').join('')+'</select></span><span class="opt">Aperçu live pour HTML autonome</span>';
     }
@@ -2510,6 +2624,10 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
     const da=host.querySelector('[data-opt=docAttach]');if(da)da.onclick=()=>{importMode=false;prjFileMode=false;$('#fileInput').multiple=true;$('#fileInput').click()};
     const af=host.querySelector('[data-opt=asrFile]');if(af)af.onclick=()=>{importMode=false;prjFileMode=false;$('#fileInput').multiple=false;$('#fileInput').click()};
     const am=host.querySelector('[data-opt=asrMic]');if(am)am.onclick=()=>toggleLiveTranscribe(am);
+    const tsw=host.querySelector('[data-opt=trSwap]');if(tsw)tsw.onclick=()=>{const a=toolCfg.trFrom,b=toolCfg.trTo;toolCfg.trFrom=b;toolCfg.trTo=(a==='auto'?toolCfg.trTo:a);renderToolOpts()};
+    const tch=host.querySelector('[data-opt=trCheck]');if(tch)tch.onchange=()=>{toolCfg.trCheck=tch.checked};
+    const tga=host.querySelector('[data-opt=trGlossArea]');if(tga)tga.oninput=()=>{toolCfg.trGloss=tga.value};
+    const tgb=host.querySelector('[data-opt=trGlossBtn]');if(tgb)tgb.onclick=()=>{const bx=host.querySelector('[data-glossbox]');if(!bx)return;const show=bx.style.display==='none';bx.style.display=show?'flex':'none';if(show){const ta=bx.querySelector('textarea');ta&&ta.focus()}};
   }
   function syncToolUI(){
     const _txt=MODE_CAT[currentMode]==='text';
@@ -2539,26 +2657,119 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
     asrRec.onend=()=>{asrOn=false;btn&&btn.classList.remove('on')};
     asrRec.start();
   }
-  /* ===== Transcription fichier audio → SiliconFlow /v1/audio/transcriptions (texte brut, pas de timestamps fiables) ===== */
-  async function genTranscribe(c,file){
+  /* ===== Transcription fichier audio → SiliconFlow ===== */
+  /* Dispatcher : Qwen3-Omni (FR + multilingue, défaut) ou SenseVoice (zh/en, rapide). */
+  function genTranscribe(c,file){return (toolCfg.asrEngine==='sense')?genTranscribeSense(c,file):genTranscribeOmni(c,file);}
+  function fileToDataURL(file){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=()=>rej(new Error('Lecture du fichier échouée'));fr.readAsDataURL(file)})}
+  function downloadText(name,txt,mime){const b=new Blob([txt],{type:mime||'text/plain'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;a.click();URL.revokeObjectURL(u)}
+  /* wrapper OpenRouter réutilisable (post-traitement, etc.) */
+  async function chatOR(messages,model,opt){
+    if(!KEYS.openrouter)throw new Error('Clé OpenRouter manquante — ajoute-la dans Réglages › Clés API');
+    const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',
+      headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MZai'},
+      body:JSON.stringify(Object.assign({model:model||'deepseek/deepseek-v4-flash',messages},opt||{}))});
+    if(!res.ok)throw new Error('HTTP '+res.status+' · '+(await res.text().catch(()=>'')).slice(0,160));
+    const d=await res.json();return (d.choices?.[0]?.message?.content||'').trim();
+  }
+  /* SenseVoice — endpoint dédié, zh/en rapide (le FR n'est PAS fiable ici → réservé zh/en) */
+  async function genTranscribeSense(c,file){
     setGenerating(true);showView('chat');
     const node=addAINode('Transcription'),bubble=node.querySelector('.bubble');
-    bubble.innerHTML='<div class="gen-loading"><div class="gl-ring"></div>Transcription de l\'audio…</div>';
+    bubble.innerHTML='<div class="gen-loading"><div class="gl-ring"></div>Transcription (SenseVoice)…</div>';
     let done=false;curStop=()=>{done=true;node.remove();setGenerating(false);curStop=null};
     try{
       if(!hasKey('siliconflow'))throw new Error('Clé SiliconFlow manquante — ajoute-la dans Réglages › Clés API');
+      if(file.size>30*1024*1024)throw new Error('Fichier trop lourd ('+(file.size/1048576).toFixed(1)+' Mo). Limite ≈ 30 Mo.');
       const fd=new FormData();fd.append('model','FunAudioLLM/SenseVoiceSmall');fd.append('file',file);
       const res=await fetch(SF_HOST+'/v1/audio/transcriptions',{method:'POST',headers:{'Authorization':'Bearer '+KEYS.siliconflow},body:fd});
       if(!res.ok)throw new Error('HTTP '+res.status+' · '+(await res.text().catch(()=>'')).slice(0,200));
       const data=await res.json();const text=((data.text||'')+'').trim()||'(aucune parole détectée dans l\'audio)';
       if(done)return;
-      bubble.classList.add('md');bubble.innerHTML=renderMD(text)+'<div style="margin-top:9px;font-size:11.5px;color:var(--ink-soft);line-height:1.5">Transcription brute (modèle SenseVoice). L\'API ne renvoie pas d\'horodatage : des sous-titres .srt/.vtt exacts ne sont pas garantis. La piste audio d\'une vidéo ne peut pas être extraite côté navigateur — fournis directement un fichier audio.</div>';
-      wireBubble(bubble);addActions(col0(node),text,null);
-      const dl=document.createElement('button');dl.className='sug-chip';dl.style.marginTop='8px';dl.textContent='Télécharger .txt';
-      dl.onclick=()=>{const b=new Blob([text],{type:'text/plain'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='transcription.txt';a.click();URL.revokeObjectURL(u)};
-      col0(node).appendChild(dl);
-      c.msgs.push({role:'ai',text,model:'Transcription'});c.ts=now();saveConvos();renderRecents();setGenerating(false);curStop=null;scrollDown();
+      finishTranscript(c,node,bubble,file,text,'SenseVoice (zh/en)');
     }catch(e){if(!done){bubble.classList.remove('md');bubble.innerHTML="<div class='api-err'><b>Erreur transcription</b><br>"+esc(e.message)+"</div>";setGenerating(false);curStop=null;scrollDown();}}
+  }
+  /* Qwen3-Omni — chat/completions multimodal (débloque le FR + 18 langues), streaming, 2 formes d'audio testées en repli */
+  async function genTranscribeOmni(c,file){
+    setGenerating(true);showView('chat');
+    const node=addAINode('Transcription'),bubble=node.querySelector('.bubble');
+    bubble.innerHTML='<div class="gen-loading"><div class="gl-ring"></div>Transcription (Qwen3-Omni)…</div>';
+    let stopped=false,ctrl=new AbortController();
+    curStop=()=>{stopped=true;try{ctrl.abort()}catch(e){}node.remove();setGenerating(false);curStop=null};
+    try{
+      if(!hasKey('siliconflow'))throw new Error('Clé SiliconFlow manquante — ajoute-la dans Réglages › Clés API');
+      if(file.size>10*1024*1024)throw new Error('Fichier trop lourd ('+(file.size/1048576).toFixed(1)+' Mo). Limite ≈ 10 Mo (~10 min) pour l\'envoi en ligne. Découpe l\'audio en segments plus courts et réessaie.');
+      const dataUrl=await fileToDataURL(file);
+      const b64=dataUrl.slice(dataUrl.indexOf(',')+1);
+      const fmt=((file.name.split('.').pop()||'mp3').toLowerCase()).replace('mpeg','mp3').replace('m4a','mp3').replace('oga','ogg');
+      const sys='Transcris fidèlement et mot à mot le contenu parlé de cet audio, dans sa langue d\'origine. Restitue UNIQUEMENT le texte transcrit, avec une ponctuation naturelle, sans commentaire ni horodatage.';
+      const tries=[{type:'input_audio',input_audio:{data:b64,format:fmt}},{type:'audio_url',audio_url:{url:dataUrl}}];
+      let text='',ok=false,lastErr='';
+      for(const part of tries){
+        try{
+          const body={model:'Qwen/Qwen3-Omni-30B-A3B-Instruct',stream:true,max_tokens:4096,
+            messages:[{role:'user',content:[{type:'text',text:sys},part]}]};
+          const res=await fetch(SF_HOST+'/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+KEYS.siliconflow,'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctrl.signal});
+          if(!res.ok){lastErr='HTTP '+res.status+' · '+(await res.text().catch(()=>'')).slice(0,180);continue;}
+          text='';const reader=res.body.getReader(),dec=new TextDecoder();let buf='';
+          while(!stopped){const{done,value}=await reader.read();if(done)break;buf+=dec.decode(value,{stream:true});const lines=buf.split('\n');buf=lines.pop();
+            for(const ln of lines){const tl=ln.trim();if(!tl.startsWith('data:')||tl==='data: [DONE]')continue;try{const j=JSON.parse(tl.slice(tl.indexOf(':')+1).trim());const dc=j.choices?.[0]?.delta?.content;if(dc){text+=dc;bubble.innerHTML=esc(text)+'<span class="caret"></span>';scrollDown();}}catch(e){}}}
+          ok=true;break;
+        }catch(e){if(e.name==='AbortError')throw e;lastErr=e.message;}
+      }
+      if(stopped)return;
+      if(!ok)throw new Error('Transcription refusée par l\'API. '+lastErr);
+      text=(text||'').trim()||'(aucune parole détectée dans l\'audio)';
+      finishTranscript(c,node,bubble,file,text,'Qwen3-Omni');
+    }catch(e){if(stopped)return;if(e.name==='AbortError')return;bubble.classList.remove('md');bubble.innerHTML="<div class='api-err'><b>Erreur transcription</b><br>"+esc(e.message)+"</div>";setGenerating(false);curStop=null;scrollDown();}
+  }
+  /* rendu commun : transcript + post-traitement (Ponctuer/Résumer/Notes/Chapitres) + téléchargements (.txt / .srt estimé) */
+  function finishTranscript(c,node,bubble,file,text,engine){
+    const col=col0(node);
+    bubble.classList.add('md');bubble.innerHTML=renderMD(text);wireBubble(bubble);addActions(col,text,node);
+    const note=document.createElement('div');note.style.cssText='margin-top:9px;font-size:11.5px;color:var(--ink-soft);line-height:1.5';
+    note.textContent='Transcrit avec '+engine+'. L\'API ne renvoie pas d\'horodatage exact : le .srt utilise un découpage estimé. La piste son d\'une vidéo doit être fournie comme fichier audio.';
+    col.appendChild(note);
+    const pp=document.createElement('div');pp.style.cssText='display:flex;flex-wrap:wrap;gap:6px;margin-top:9px';
+    [['Ponctuer','punct'],['Résumer','sum'],['Notes structurées','notes'],['Chapitres','chap']].forEach(([lbl,act])=>{const b=document.createElement('button');b.className='sug-chip';b.textContent=lbl;b.onclick=()=>postProcessTranscript(c,text,act,lbl);pp.appendChild(b)});
+    col.appendChild(pp);
+    const dls=document.createElement('div');dls.style.cssText='display:flex;flex-wrap:wrap;gap:6px;margin-top:6px';
+    const mk=(lbl,fn)=>{const b=document.createElement('button');b.className='sug-chip';b.textContent=lbl;b.onclick=fn;dls.appendChild(b)};
+    mk('Télécharger .txt',()=>downloadText('transcription.txt',text,'text/plain'));
+    mk('.srt estimé',()=>estimateSRT(file,text).then(srt=>srt?downloadText('transcription.srt',srt,'text/plain'):toast('Aucun segment à exporter')).catch(()=>toast('Export SRT impossible')));
+    col.appendChild(dls);
+    c.msgs.push({role:'ai',text,model:'Transcription'});c.ts=now();saveConvos();renderRecents();setGenerating(false);curStop=null;scrollDown();
+  }
+  async function postProcessTranscript(c,text,act,lbl){
+    const prompts={punct:'Reformate ce texte transcrit : ajoute la ponctuation, les majuscules et des paragraphes, SANS changer les mots ni leur ordre. Rends uniquement le texte corrigé.',
+      sum:'Résume ce transcript en points clés clairs et hiérarchisés (markdown).',
+      notes:'Transforme ce transcript en notes structurées : titres, sous-points, décisions et actions à retenir (markdown).',
+      chap:'Découpe ce transcript en chapitres thématiques. Pour chaque chapitre : un titre court puis 1-2 phrases de résumé (markdown).'};
+    if(!activeId)createConvo();const cc=convoById(activeId)||c;showView('chat');
+    setGenerating(true);const node=addAINode('Transcription · '+lbl),bubble=node.querySelector('.bubble');
+    bubble.innerHTML='<div class="gen-loading"><div class="gl-ring"></div>'+esc(lbl)+'…</div>';
+    let stop=false;curStop=()=>{stop=true;node.remove();setGenerating(false);curStop=null};
+    try{
+      const out=await chatOR([{role:'system',content:prompts[act]},{role:'user',content:text.slice(0,24000)}],'deepseek/deepseek-v4-flash',{max_tokens:2048,temperature:0.3});
+      if(stop)return;
+      bubble.classList.add('md');bubble.innerHTML=renderMD(out||'(vide)');wireBubble(bubble);addActions(col0(node),out,node);
+      cc.msgs.push({role:'ai',text:out,model:'Transcription · '+lbl});cc.ts=now();saveConvos();renderRecents();setGenerating(false);curStop=null;scrollDown();
+    }catch(e){if(!stop){bubble.classList.remove('md');bubble.innerHTML="<div class='api-err'><b>Erreur</b><br>"+esc(e.message)+"</div>";setGenerating(false);curStop=null;scrollDown();}}
+  }
+  /* SRT à horodatage ESTIMÉ : segments répartis proportionnellement à la durée réelle de l'audio */
+  function srtTime(sec){sec=Math.max(0,sec);const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=Math.floor(sec%60),ms=Math.round((sec-Math.floor(sec))*1000);const p=(n,l)=>String(n).padStart(l,'0');return p(h,2)+':'+p(m,2)+':'+p(s,2)+','+p(ms,3);}
+  function estimateSRT(file,text){
+    return new Promise(resolve=>{
+      const segs=text.replace(/\s+/g,' ').trim().split(/(?<=[.!?…])\s+/).filter(Boolean);
+      if(!segs.length){resolve('');return;}
+      const build=dur=>{
+        const total=(dur&&isFinite(dur)&&dur>0)?dur:segs.length*3.5;
+        const totChars=segs.reduce((a,x)=>a+x.length,0)||1;let t=0;const out=[];
+        segs.forEach((s,i)=>{const d=Math.max(1.2,total*(s.length/totChars)),st=t,en=t+d;t=en;out.push((i+1)+'\n'+srtTime(st)+' --> '+srtTime(en)+'\n'+s+'\n');});
+        resolve(out.join('\n'));
+      };
+      try{const url=URL.createObjectURL(file),a=new Audio();a.onloadedmetadata=()=>{const d=a.duration;URL.revokeObjectURL(url);build(d)};a.onerror=()=>{URL.revokeObjectURL(url);build(0)};a.src=url;}
+      catch(e){build(0)}
+    });
   }
   const col0=n=>n.querySelector('.col');
 
@@ -2617,6 +2828,13 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
     const pages=Math.min(pdf.numPages,40);
     for(let i=1;i<=pages;i++){const pg=await pdf.getPage(i),tc=await pg.getTextContent();txt+=tc.items.map(it=>it.str).join(' ')+'\n'}
     return txt.trim();
+  }
+  async function pdfToImages(buf,maxPages){  // PDF scanné → pages JPEG (pour le modèle vision OCR) ; limité pour le coût
+    const lib=await loadPdfjs(),pdf=await lib.getDocument({data:buf}).promise,n=Math.min(pdf.numPages,maxPages||8),out=[];
+    for(let i=1;i<=n;i++){const pg=await pdf.getPage(i),vp=pg.getViewport({scale:2}),cv=document.createElement('canvas');
+      cv.width=vp.width;cv.height=vp.height;await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
+      out.push(cv.toDataURL('image/jpeg',0.82));}
+    return out;
   }
   const TEXT_EXT=/\.(txt|md|js|ts|jsx|tsx|css|html|json|py|sql|yaml|yml|sh|xml|csv|env|toml|rs|go|java|c|cpp|php|rb|kt|swift|log|ini)$/i;
   async function extractFileText(file){
