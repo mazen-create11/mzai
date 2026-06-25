@@ -966,6 +966,47 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
 .help-cta .hc-t{font-size:var(--fs-base);font-weight:var(--fw-semi);color:var(--ink)}
 .help-cta .hc-d{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
 .help-cta .hc-go{color:var(--accent-strong);flex-shrink:0;margin-left:auto}
+
+/* ===== vague 1 : avatar « réflexion » (spinner, sans MZ) + persona compact ===== */
+.msg.ai .av .av-mz{display:grid;place-items:center;width:100%;height:100%}
+.msg.ai:has(.bubble .typing) .av,.msg.ai:has(.bubble .gen-loading) .av{background:var(--surface-2)!important;border:1px solid var(--line-strong);position:relative}
+.msg.ai:has(.bubble .typing) .av .av-mz,.msg.ai:has(.bubble .gen-loading) .av .av-mz{display:none}
+.msg.ai:has(.bubble .typing) .av::after,.msg.ai:has(.bubble .gen-loading) .av::after{content:"";position:absolute;inset:0;margin:auto;width:15px;height:15px;border-radius:50%;border:2px solid var(--line-strong);border-top-color:var(--accent);animation:spin .8s linear infinite}
+#psPresets{grid-template-columns:repeat(2,1fr);gap:8px}
+.ps-preset{flex-direction:row;align-items:center;gap:11px;padding:10px 12px}
+.ps-preset .pp-ic{margin-bottom:0;width:34px;height:34px;flex-shrink:0}
+.ps-preset .pp-t{font-size:13px}
+.ps-preset .pp-d{font-size:11px;line-height:1.35}
+@media(max-width:560px){#psPresets{grid-template-columns:1fr}}
+
+/* ===== vague 2 : composer façon Claude (+ menu, chips outils, live), sidebar repliée propre, centrage ===== */
+.tools-btn{width:34px;height:34px;padding:0;gap:0;border:1px solid var(--line-strong);border-style:solid;border-radius:var(--r-sm);justify-content:center;color:var(--ink-soft);background:var(--surface-2)}
+.tools-btn:hover{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-tint)}
+.tools-btn.pop-on{border-color:var(--accent);color:var(--accent-strong);background:var(--accent-tint)}
+/* chips outils (accueil) — icône + libellé */
+.home-suggest .sug{display:inline-flex;align-items:center;gap:7px;font-weight:var(--fw-med);color:var(--ink)}
+.home-suggest .sug svg{color:var(--accent-strong);flex-shrink:0}
+.home-suggest .sug:hover{border-color:var(--accent);background:var(--accent-tint)}
+/* bouton transcription live dans la barre */
+#liveBtn.on{color:var(--danger-strong);background:var(--danger-tint);border-color:var(--danger);animation:micPulse 1.3s ease-in-out infinite}
+/* badge raccourci dans le menu + */
+.pi-kbd{margin-left:auto;font-family:var(--font-mono);font-size:10.5px;color:var(--ink-faint);background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-xs);padding:2px 6px;flex-shrink:0}
+/* options d'outil — plus premium */
+.opt{padding:6px 11px;border-radius:var(--r-md);transition:.15s var(--ease)}
+button.opt,label.opt{cursor:pointer}
+button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);background:var(--surface)}
+.opt select{cursor:pointer;font-weight:var(--fw-med);color:var(--ink)}
+/* composer centré en conversation comme l'accueil */
+#dockChat .composer,.composer-dock .composer{max-width:var(--thread-max);margin-inline:auto;width:100%}
+/* sidebar repliée : rail d'icônes épuré, sans conversations (façon Claude) */
+#app:has(.sidebar.collapsed),.app:has(.sidebar.collapsed){grid-template-columns:var(--rail-w) minmax(0,1fr)}
+#app,.app{transition:grid-template-columns .26s var(--ease)}
+.sidebar.collapsed #recentList,.sidebar.collapsed .sb-label{display:none}
+.sidebar.collapsed .nav{gap:6px;margin-top:4px}
+.sidebar.collapsed .nav-item{width:42px;height:42px;margin:0 auto;border-radius:var(--r-sm)}
+.sidebar.collapsed .nav-item:hover{background:var(--surface-2)}
+.sidebar.collapsed .sb-head{justify-content:center;padding-inline:0}
+.sidebar.collapsed .new-chat{width:42px;height:42px;margin:0 auto;border-radius:var(--r-sm)}
 </style>
 </head>
 <body>
@@ -984,7 +1025,7 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   <!-- ================= SIDEBAR ================= -->
   <aside class="sidebar" id="sidebar" aria-label="Navigation">
     <header class="sb-head">
-      <span class="brand-mini" id="brandHome" role="button" tabindex="0" data-tip="Accueil" aria-label="Accueil" style="cursor:pointer"><span class="mark">M</span><span class="wordmark">MZ<i>ai</i></span></span>
+      <span class="brand-mini" id="brandHome" role="button" tabindex="0" data-tip="Accueil" aria-label="Accueil" style="cursor:pointer"><span class="wordmark">MZ<i>ai</i></span></span>
       <button class="icon-btn ghost" id="collapseBtn" aria-label="Réduire le panneau" data-tip="Réduire">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></svg>
       </button>
@@ -1067,13 +1108,13 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
                     <button class="clip" id="attachBtn" aria-label="Joindre un fichier" data-tip="Joindre"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 11.5 12.5 20a5 5 0 0 1-7-7l8.5-8.5a3.5 3.5 0 0 1 5 5L10.5 18a2 2 0 0 1-3-3l7.5-7.5"/></svg></button>
                     <textarea id="prompt" rows="1" placeholder="Pose ta question à MZai…"></textarea>
                     <button class="clip" id="dictateBtn" aria-label="Dictée vocale" data-tip="Dictée"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+                    <button class="clip" id="liveBtn" aria-label="Transcription live" data-tip="Transcription live"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 10v4M8 6v12M12 3v18M16 6v12M20 10v4"/></svg></button>
                     <button class="send rip" id="sendBtn" aria-label="Envoyer" data-tip="Envoyer"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
                   </div>
                   <!-- options contextuelles propres à l'outil choisi, masqué tant que vide -->
                   <div class="opt-row" id="toolOpts"></div>
                   <div class="toolbar" id="toolbar" role="toolbar" aria-label="Outils">
-                    <button class="tools-btn" id="toolsBtn" aria-haspopup="true" aria-expanded="false" data-tip="Outils"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Outils</button>
-                    <span class="tb-div"></span>
+                    <button class="tools-btn" id="toolsBtn" aria-haspopup="true" aria-expanded="false" aria-label="Ajouter et outils" data-tip="Ajouter · outils"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
                     <button class="tool" id="toolModel" data-tip="Modèle"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5l2.4 6.1 6.1 2.4-6.1 2.4L12 19.5l-2.4-6.1L3.5 11l6.1-2.4z"/></svg><span id="toolModelLbl">MZ Auto</span></button>
                     <span class="tb-spacer"></span>
                     <span class="counter" id="counter">0 mots</span>
@@ -1086,10 +1127,12 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
             </div><!-- /#dockHome -->
 
             <div class="home-suggest" id="homeSuggest">
-              <button class="sug" data-prompt="Résume ce document en 5 points clés">Résumer un document</button>
-              <button class="sug" data-prompt="Aide-moi à rédiger un message clair et professionnel">Rédiger un message</button>
-              <button class="sug" data-prompt="Écris une fonction et explique-la">Coder une fonction</button>
-              <button class="sug" data-prompt="Traduis ce texte en gardant le ton">Traduire un texte</button>
+              <button class="sug" data-mode="image"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="m21 15-5-5L5 21"/></svg>Image</button>
+              <button class="sug" data-mode="doc"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M13 2v7h7"/></svg>Documents</button>
+              <button class="sug" data-mode="code"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg>Code</button>
+              <button class="sug" data-mode="translate"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h7M9 3v2c0 4-2.5 7-5 8M5 9c0 2.5 2.5 4.5 5 5M13 21l4-9 4 9M14.5 17h5"/></svg>Traduction</button>
+              <button class="sug" data-mode="voice"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/></svg>Voix</button>
+              <button class="sug" data-toggle="search"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>Recherche web</button>
             </div>
           </div>
         </div>
@@ -1218,6 +1261,9 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
 
 <!-- + OUTILS : sélecteur des 10 outils, groupé en 3 -->
 <div class="pop wide" id="popTools">
+  <div class="pop-h">Ajouter</div>
+  <div class="pi" data-add="file"><span class="pic2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 11.5 12.5 20a5 5 0 0 1-7-7l8.5-8.5a3.5 3.5 0 0 1 5 5L10.5 18a2 2 0 0 1-3-3l7.5-7.5"/></svg></span><div class="pt"><div class="pn">Joindre un fichier</div><div class="pd">Document, image ou audio</div></div><span class="pi-kbd">⌘U</span></div>
+  <div class="pop-sep"></div>
   <div class="pop-h">Converser</div>
   <div class="pi" data-tool="text" data-mode="text"><span class="pic2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg></span><div class="pt"><div class="pn">Assistant</div><div class="pd">Discussion, MZ&nbsp;Auto par défaut</div></div></div>
   <div class="pi" data-toggle="search"><span class="pic2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4" stroke-linecap="round"/></svg></span><div class="pt"><div class="pn">Recherche web</div><div class="pd">Réponses sourcées en direct</div></div></div>
@@ -1402,7 +1448,7 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   const saveIntState=()=>DB.set('intstate',Object.fromEntries(INTEGRATIONS.map(x=>[x.n,x.on])));
   /* ===== fournisseurs IA (logos de marque) ===== */
   const PROVIDERS={
-    mz:{name:'MZai',ac:'#38bdf8',logo:'<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2.5l2.4 6.1 6.1 2.4-6.1 2.4L12 19.5l-2.4-6.1L3.5 11l6.1-2.4z"/></svg>'},
+    mz:{name:'MZai',ac:'#B85335',logo:'<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2.5l2.4 6.1 6.1 2.4-6.1 2.4L12 19.5l-2.4-6.1L3.5 11l6.1-2.4z"/></svg>'},
     google:{name:'Google',ac:'#4285F4',site:'gemini.google.com',logo:'<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C12 7 17 12 22 12C17 12 12 17 12 22C12 17 7 12 2 12C7 12 12 7 12 2Z"/></svg>'},
     openai:{name:'OpenAI',ac:'#10a37f',site:'platform.openai.com',logo:'<svg viewBox="0 0 256 260" width="17" height="17" fill="currentColor"><path d="M239.184 106.203a64.716 64.716 0 0 0-5.576-53.103C219.452 28.459 191 15.784 163.213 21.74A65.586 65.586 0 0 0 52.096 45.22a64.716 64.716 0 0 0-43.23 31.36c-14.31 24.602-11.061 55.634 8.033 76.74a64.665 64.665 0 0 0 5.525 53.102c14.174 24.65 42.644 37.324 70.446 31.36a64.72 64.72 0 0 0 48.754 21.744c28.481.025 53.714-18.361 62.414-45.481a64.767 64.767 0 0 0 43.229-31.36c14.137-24.558 10.875-55.423-8.083-76.483Zm-97.56 136.338a48.397 48.397 0 0 1-31.105-11.255l1.535-.87 51.67-29.825a8.595 8.595 0 0 0 4.247-7.367v-72.85l21.845 12.636c.218.111.37.32.409.563v60.367c-.056 26.818-21.783 48.545-48.601 48.601Zm-104.466-44.61a48.345 48.345 0 0 1-5.781-32.589l1.534.921 51.722 29.826a8.339 8.339 0 0 0 8.441 0l63.181-36.425v25.221a.87.87 0 0 1-.358.665l-52.335 30.184c-23.257 13.398-52.97 5.431-66.404-17.803ZM23.549 85.38a48.499 48.499 0 0 1 25.58-21.333v61.39a8.288 8.288 0 0 0 4.195 7.316l62.874 36.272-21.845 12.636a.819.819 0 0 1-.767 0L41.353 151.53c-23.211-13.454-31.171-43.144-17.804-66.405v.256Zm179.466 41.695-63.08-36.63L161.73 77.86a.819.819 0 0 1 .768 0l52.233 30.184a48.6 48.6 0 0 1-7.316 87.635v-61.391a8.544 8.544 0 0 0-4.4-7.213Zm21.742-32.69-1.535-.922-51.619-30.081a8.39 8.39 0 0 0-8.492 0L99.98 99.808V74.587a.716.716 0 0 1 .307-.665l52.233-30.133a48.652 48.652 0 0 1 72.236 50.391v.205ZM88.061 139.097l-21.845-12.585a.87.87 0 0 1-.41-.614V65.685a48.652 48.652 0 0 1 79.757-37.346l-1.535.87-51.67 29.825a8.595 8.595 0 0 0-4.246 7.367l-.051 72.697Zm11.868-25.58 28.138-16.217 28.188 16.218v32.434l-28.086 16.218-28.188-16.218-.052-32.434Z"/></svg>'},
     anthropic:{name:'Anthropic',ac:'#d97757',site:'console.anthropic.com',logo:'<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M13.827 3.52h3.603L24 20h-3.603l-6.57-16.48zm-7.258 0h3.767L16.906 20h-3.674l-1.343-3.461H5.017l-1.344 3.46H0L6.57 3.522zm4.132 9.959L8.453 7.687 6.205 13.48H10.7z"/></svg>'},
@@ -1554,7 +1600,7 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   function editTags(id){const c=convoById(id);if(!c)return;const v=window.prompt('Tags (séparés par des virgules)',(c.tags||[]).join(', '));if(v===null)return;c.tags=v.split(',').map(s=>s.trim()).filter(Boolean).slice(0,6);saveConvos();renderLibrary($('#libSearch')?.value||'');toast('Tags mis à jour')}
   function exportConvo(id){const c=convoById(id);if(!c)return;const md='# '+c.title+'\n\n'+c.msgs.map(m=>(m.role==='user'?'**Toi**\n\n':'**'+(m.model||'MZai')+'**\n\n')+m.text).join('\n\n---\n\n')+'\n';const blob=new Blob([md],{type:'text/markdown'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(c.title||'conversation').replace(/[^\wÀ-ſ-]+/g,'_').slice(0,50)+'.md';a.click();URL.revokeObjectURL(u);toast('Conversation exportée (.md)')}
   const ASSISTANTS = [
-    { id: 'aide', name: 'Aide MZai', desc: 'Prise en main, fonctions & réglages', color: '#38bdf8', icon: 'help', prompt: "Tu es l'assistant d'aide intégré de MZai, une application de chat IA premium. Tu connais parfaitement l'app et tu guides l'utilisateur pas à pas dans l'interface. Fonctions clés : le sélecteur de modèle en haut à droite (DeepSeek, Qwen, Kimi, GLM, MiniMax — et « MZ Auto » qui choisit automatiquement le meilleur modèle selon la demande) ; les modes Image, Vidéo et Voix dans la barre d'outils sous le champ de saisie ; les Projets (espaces avec contexte permanent) ; la Bibliothèque (historique et recherche) ; « Mon IA » (⌘J) pour définir nom, ton, longueur et instructions système ; et les clés API à coller dans Réglages › Clés API (OpenRouter pour le texte, SiliconFlow pour l'image/voix, Kling pour la vidéo). Réponds de façon claire, concrète et bienveillante, en indiquant toujours où cliquer. Si une fonction nécessite une clé API non renseignée, explique calmement où l'ajouter." },
+    { id: 'aide', name: 'Aide MZai', desc: 'Prise en main, fonctions & réglages', color: '#B85335', icon: 'help', prompt: "Tu es l'assistant d'aide intégré de MZai, une application de chat IA premium. Tu connais parfaitement l'app et tu guides l'utilisateur pas à pas dans l'interface. Fonctions clés : le sélecteur de modèle en haut à droite (DeepSeek, Qwen, Kimi, GLM, MiniMax — et « MZ Auto » qui choisit automatiquement le meilleur modèle selon la demande) ; les modes Image, Vidéo et Voix dans la barre d'outils sous le champ de saisie ; les Projets (espaces avec contexte permanent) ; la Bibliothèque (historique et recherche) ; « Mon IA » (⌘J) pour définir nom, ton, longueur et instructions système ; et les clés API à coller dans Réglages › Clés API (OpenRouter pour le texte, SiliconFlow pour l'image/voix, Kling pour la vidéo). Réponds de façon claire, concrète et bienveillante, en indiquant toujours où cliquer. Si une fonction nécessite une clé API non renseignée, explique calmement où l'ajouter." },
     { id: 'dev', name: 'Développeur Senior', desc: 'Code propre, architecture & debug', color: '#6366f1', icon: 'code', prompt: 'Tu es un développeur senior expert. Tu fournis du code propre, moderne, testé et optimisé, et tu expliques brièvement tes choix techniques. Tu repères les bugs et proposes le correctif minimal. Tu privilégies la lisibilité et la robustesse.' },
     { id: 'copy', name: 'Copywriter', desc: 'Textes qui vendent, emails & hooks', color: '#f43f5e', icon: 'pen', prompt: 'Tu es un copywriter professionnel. Tu écris des textes persuasifs, vivants et orientés conversion, avec des accroches fortes. Tu utilises les structures éprouvées (AIDA, PAS, BAB) sans jargon ni clichés IA, et tu proposes plusieurs variantes quand c\'est utile.' },
     { id: 'seo', name: 'Expert SEO', desc: 'Mots-clés, structure & contenu Google', color: '#10b981', icon: 'search', prompt: 'Tu es un expert SEO. Tu trouves des mots-clés pertinents avec intention de recherche, tu structures les pages (titres, balises, maillage) et tu rédiges un contenu lisible qui plaît à Google comme aux IA génératives (EEAT, citabilité).' },
@@ -1705,7 +1751,7 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
     $('#popPersona').addEventListener('click',()=>{closePop();openPersona()});
   }
   renderModelPicker();
-  function syncModel(){const m=modelById(currentModel),ac=acOf(m);$$('#popModel .pi').forEach(p=>p.classList.toggle('sel',p.dataset.model===currentModel));$('.model-pill .lbl').textContent=currentModel;$('#toolModelLbl').textContent=currentModel;const live=$('.model-pill .live');live.style.background=ac;live.style.boxShadow='0 0 8px '+ac;const sm=$('#setModelLbl');if(sm)sm.textContent=currentModel;const sd=$('#setModelDot');if(sd){sd.style.background=ac;sd.style.boxShadow='0 0 8px '+ac}DB.set('model',currentModel)}
+  function syncModel(){const m=modelById(currentModel);$$('#popModel .pi').forEach(p=>p.classList.toggle('sel',p.dataset.model===currentModel));$('.model-pill .lbl').textContent=currentModel;$('#toolModelLbl').textContent=currentModel;const live=$('.model-pill .live');if(live){live.style.background='var(--accent)';live.style.boxShadow=''}const sm=$('#setModelLbl');if(sm)sm.textContent=currentModel;const sd=$('#setModelDot');if(sd){sd.style.background='var(--accent)';sd.style.boxShadow=''}DB.set('model',currentModel)}
   syncModel();
   const openModel=a=>showPop($('#popModel'),a,'right',$('#modelPill'));
   $('#modelPill').setAttribute('data-popanchor','');$('#modelPill').addEventListener('click',()=>openPop===$('#popModel')?closePop():openModel($('#modelPill')));
@@ -1794,7 +1840,7 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   function renderHelp(){
     $('#helpLinks').innerHTML=HELP_LINKS.map((l,i)=>`<div class="help-link" data-h="${i}"><div class="hl-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH[l[2]]||GLYPH.spark}</svg></div><div style="min-width:0"><div class="hl-t">${l[0]}</div><div class="hl-d">${l[1]}</div></div></div>`).join('');
     $('#faqList').innerHTML='<button class="help-cta" id="helpAssistant"><span class="hc-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/></svg></span><div class="min0"><div class="hc-t">Demander à l\'assistant MZai</div><div class="hc-d">Une question précise ? L\'IA te guide pas à pas, en direct.</div></div><svg class="hc-go" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></button>'
-      +FAQ.map(([q,a])=>`<div class="faq"><div class="faq-q">${q}<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></div><div class="faq-a"><div>${a}</div></div></div>`).join('');
+      +FAQ.filter(([q])=>!/cl[ée]s?\s*api/i.test(q)).map(([q,a])=>`<div class="faq"><div class="faq-q">${q}<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></div><div class="faq-a"><div>${a}</div></div></div>`).join('');
     $('#helpAssistant').onclick=launchAide;
     $$('#helpLinks .help-link').forEach(el=>el.onclick=()=>{const i=+el.dataset.h;if(HELP_LINKS[i][0]==='Raccourcis clavier'){$('#shortcuts').classList.add('show')}else toast(HELP_LINKS[i][0]==='Statut'?'Tous les systèmes sont opérationnels ✓':HELP_LINKS[i][1])});
     $$('#faqList .faq-q').forEach(q=>q.onclick=()=>q.parentElement.classList.toggle('open'));
@@ -1998,7 +2044,7 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
 
   /* ===== conversation engine ===== */
   const chat=$('#chat');
-  const MARK='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#04101f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 18.5V6.2l4.5 6 4.5-6v12.3"/><path d="M14 6.2h6.5L14 18.5h6.5"/></svg>';
+  const MARK='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 18.5V6.2l4.5 6 4.5-6v12.3"/><path d="M14 6.2h6.5L14 18.5h6.5"/></svg>';
   const REPLIES=[
     "Bonne question. Voici comment je m'y prendrais :\n\n- On clarifie l'**objectif** et la cible.\n- On découpe en étapes concrètes.\n- On exécute, puis on mesure.\n\nDis-moi le contexte exact et je détaille chaque point.",
     "### Voici un exemple\nUn petit composant `Button` réutilisable :\n\n```jsx\nexport function Button({ children, onClick }) {\n  return (\n    <button className=\"btn\" onClick={onClick}>\n      {children}\n    </button>\n  );\n}\n```\n\nTu copies, tu colles, c'est prêt. Je peux l'adapter à ton style.",
@@ -2076,7 +2122,8 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
     }catch(e){}
   }
   function genReply(c){const reason=isOn('Réflexion'),search=isOn('Recherche'),model=currentModel,node=addAINode(model);runGen(node,REPLIES[ri++%REPLIES.length],{reason,search,model,onDone:(t,meta)=>{const userMsg=(c.msgs.filter(m=>m.role==='user').pop()||{}).text||'';c.msgs.push({role:'ai',text:t,model,reason,search,reasonText:meta.reasonText||'',sources:meta.sources||[],usage:meta.usage||null,ms:meta.ms||0});c.ts=now();saveConvos();renderRecents();if(c.msgs.filter(m=>m.role==='user').length===1)autoTitle(c);genSuggestions(node.querySelector('.col'),t,userMsg);}})}
-  function addAINode(modelId){const m=modelById(modelId||currentModel),ac=acOf(m),n=document.createElement('div');n.className='msg ai';n.innerHTML='<div class="av" style="background:linear-gradient(135deg,'+ac+',var(--c3))">'+MARK+'</div><div class="col"><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>';chat.appendChild(n);scrollDown();return n}
+  function addAINode(modelId){const m=modelById(modelId||currentModel),n=document.createElement('div');n.className='msg ai';n.innerHTML='<div class="av" style="background:linear-gradient(140deg,#C46B4A,#8E3D22)"><span class="av-mz">'+MARK+'</span></div><div class="col"><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>';chat.appendChild(n);scrollDown();return n}
+  const aiReady=n=>{n&&n.classList&&n.classList.add('rendered')};   // bascule l'avatar du spinner « réflexion » au glyphe MZ
   function reasoningBlock(modelId,content,live){
     const m=modelById(modelId||currentModel);
     const lbl=live?`<span class="rt-spin"></span>${m.id} réfléchit…`:`${m.id} a réfléchi`;
@@ -2590,7 +2637,11 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   $('#newChat').addEventListener('click',newChat);
 
   /* suggestions d'accueil — pré-remplit le champ SANS envoyer */
-  $$('#homeSuggest .sug').forEach(s=>s.addEventListener('click',()=>{prompt.value=s.dataset.prompt||s.textContent;autoGrow();updateCount();prompt.focus();prompt.setSelectionRange(prompt.value.length,prompt.value.length)}));
+  $$('#homeSuggest .sug').forEach(s=>s.addEventListener('click',()=>{
+    if(s.dataset.mode){if(currentMode!==s.dataset.mode)setMode(s.dataset.mode);prompt.focus();return}
+    if(s.dataset.toggle){const k=s.dataset.toggle;if(MODE_CAT[currentMode]!=='text'){toast('Disponible avec l\'Assistant');return}opts[k]=!opts[k];renderModeChip();syncToolUI();toast((k==='search'?'Recherche web':'Réflexion')+(opts[k]?' activée':' désactivée'));prompt.focus();return}
+    prompt.value=s.dataset.prompt||s.textContent;autoGrow();updateCount();prompt.focus();prompt.setSelectionRange(prompt.value.length,prompt.value.length);
+  }));
 
   /* ===== SÉLECTEUR D'OUTILS (10 outils) — pilote currentMode + opts + model-pill ===== */
   let currentMode='text';
@@ -2648,11 +2699,10 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
        +'<label class="opt" style="cursor:pointer;gap:5px;display:inline-flex;align-items:center"><input type="checkbox" data-opt="trCheck"'+(toolCfg.trCheck?' checked':'')+' style="accent-color:var(--accent);margin:0"> Vérifier (côte à côte)</label>'
        +'<div class="opt" data-glossbox style="display:'+(toolCfg.trGloss?'flex':'none')+';flex-basis:100%;width:100%;padding:0"><textarea data-opt="trGlossArea" rows="2" placeholder="Glossaire — une entrée par ligne :  terme source = terme cible" style="width:100%;font:inherit;font-size:12px;resize:vertical;border:1px solid var(--line-strong);border-radius:var(--r-xs);padding:6px 8px;background:var(--surface);color:var(--ink)">'+esc(toolCfg.trGloss||'')+'</textarea></div>';
     }else if(currentMode==='transcribe'){
-      h='<button class="opt" type="button" data-opt="asrMic" style="cursor:pointer;font:inherit">● Micro live</button>'
-       +'<button class="opt" type="button" data-opt="asrFile" style="cursor:pointer;font:inherit">+ Importer un audio</button>'
+      h='<button class="opt" type="button" data-opt="asrFile" style="cursor:pointer;font:inherit">+ Importer un audio</button>'
        +'<span class="opt"><label>Moteur</label><select data-opt="asrEngine"><option value="omni"'+(toolCfg.asrEngine!=='sense'?' selected':'')+'>Qwen3-Omni · FR + multilingue</option><option value="sense"'+(toolCfg.asrEngine==='sense'?' selected':'')+'>SenseVoice · zh/en rapide</option></select></span>'
        +'<span class="opt"><label>Micro (live)</label><select data-opt="asrLang"><option value="fr-FR"'+(toolCfg.asrLang==='fr-FR'?' selected':'')+'>FR</option><option value="en-US"'+(toolCfg.asrLang==='en-US'?' selected':'')+'>EN</option></select></span>'
-       +'<span class="opt">Fichier ≤ ~10 Mo (~10 min) · post-traitement &amp; .srt estimé après</span>';
+       +'<span class="opt">Micro live = bouton ⫶⫶ dans la barre · Fichier ≤ ~10 Mo (~10 min) · post-traitement &amp; .srt</span>';
     }else if(currentMode==='code'){
       h='<span class="opt"><label>Langage</label><select data-opt="codeLang">'+['Auto','HTML/CSS/JS','Python','JavaScript','TypeScript','React','SQL','Rust','Go','Bash'].map(l=>'<option'+(l===toolCfg.codeLang?' selected':'')+'>'+l+'</option>').join('')+'</select></span><span class="opt">Aperçu live pour HTML autonome</span>';
     }
@@ -2680,6 +2730,7 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
     if(openPop===$('#popTools')){closePop();tb.setAttribute('aria-expanded','false');return}
     showPop($('#popTools'),tb,'left',tb);tb.setAttribute('aria-expanded','true');
   });
+  $$('#popTools .pi[data-add]').forEach(p=>p.addEventListener('click',()=>{closePop();if(p.dataset.add==='file'){importMode=false;prjFileMode=false;$('#fileInput').multiple=true;$('#fileInput').click()}}));
   $$('#popTools .pi[data-mode]').forEach(p=>p.addEventListener('click',()=>{setMode(p.dataset.mode);closePop()}));
   $$('#popTools .pi[data-toggle]').forEach(p=>p.addEventListener('click',()=>{const k=p.dataset.toggle;if(MODE_CAT[currentMode]!=='text'){toast('Disponible avec l\'Assistant');return}opts[k]=!opts[k];renderModeChip();syncToolUI();toast((k==='search'?'Recherche web':'Réflexion')+(opts[k]?' activée':' désactivée'))}));
 
@@ -3006,6 +3057,8 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
     rec.onend=()=>{listening=false;micBtn.classList.remove('on')};
     rec.start();
   });
+  /* transcription live dans la barre (façon Claude) — réutilise la voie Web Speech continue */
+  const liveBtn=$('#liveBtn');liveBtn&&liveBtn.addEventListener('click',()=>toggleLiveTranscribe(liveBtn));
   $('#addProject').addEventListener('click',openProjModal);
   $('#libSearch').addEventListener('input',e=>renderLibrary(e.target.value));
   $('#intSearch').addEventListener('input',e=>renderIntegrations(e.target.value));
