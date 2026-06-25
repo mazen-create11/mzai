@@ -938,6 +938,34 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
   .gm-sheen,.typing span,.pill-live,.model-pill .live{animation:none!important}
 }
+
+/* ===== ajouts V2 : vues in-place (Mon IA / Prompts / Aide), picker modèle Réglages, intégrations groupées ===== */
+.view-form{max-width:640px}
+.view-form.wide{max-width:760px}
+#popModel{z-index:1100}            /* au-dessus de la modale Réglages */
+.model-field{display:flex;align-items:center;gap:9px;cursor:pointer;text-align:left}
+.model-field #setModelLbl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:var(--fw-med)}
+.model-field .mf-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.model-field .mf-chev{color:var(--ink-soft);flex-shrink:0;transition:.2s var(--ease)}
+.model-field:hover{border-color:var(--accent)}
+.model-field.pop-on .mf-chev{transform:rotate(180deg)}
+.prompt-cats{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 16px}
+.prchip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:var(--fw-med);color:var(--ink-soft);background:var(--surface-2);border:1px solid var(--line-strong);border-radius:var(--r-pill);padding:6px 13px;cursor:pointer;transition:.15s var(--ease)}
+.prchip:hover{border-color:var(--accent);color:var(--ink)}
+.prchip.on{background:var(--accent);border-color:transparent;color:var(--ink-on-accent)}
+.prchip .prn{font-size:11px;opacity:.7;font-variant-numeric:tabular-nums}
+.prchip.on .prn{opacity:.85}
+.pr-row{cursor:pointer;transition:.15s var(--ease)}
+.pr-row:hover{border-color:var(--accent);background:var(--surface)}
+.pr-ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--accent-tint);border:1px solid var(--accent-tint-2,var(--line));color:var(--accent-strong);flex-shrink:0}
+.int-cat-h{font-size:11px;font-weight:var(--fw-semi);letter-spacing:.6px;text-transform:uppercase;color:var(--ink-soft);margin:18px 0 10px;padding-left:2px}
+.int-cat-h:first-child{margin-top:2px}
+.help-cta{display:flex;align-items:center;gap:13px;width:100%;text-align:left;padding:15px 16px;border-radius:var(--r-md);border:1px solid var(--accent-tint-2,var(--line-strong));background:linear-gradient(135deg,var(--accent-tint),var(--surface-2));cursor:pointer;transition:.18s var(--ease);margin-bottom:8px}
+.help-cta:hover{border-color:var(--accent);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+.help-cta .hc-ic{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;background:var(--accent);color:var(--ink-on-accent);flex-shrink:0}
+.help-cta .hc-t{font-size:var(--fs-base);font-weight:var(--fw-semi);color:var(--ink)}
+.help-cta .hc-d{font-size:12.5px;color:var(--ink-soft);margin-top:2px}
+.help-cta .hc-go{color:var(--accent-strong);flex-shrink:0;margin-left:auto}
 </style>
 </head>
 <body>
@@ -973,7 +1001,7 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
         <button class="nav-item" data-view="library" data-tip="Bibliothèque"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19V6a2 2 0 0 1 2-2h9l5 5v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M14 4v5h5"/></svg><span class="lbl">Bibliothèque</span></button>
         <button class="nav-item" data-view="projects" data-tip="Projets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4.5 16.5 12 21l7.5-4.5M4.5 12 12 16.5 19.5 12M12 3 4.5 7.5 12 12l7.5-4.5L12 3z"/></svg><span class="lbl">Projets</span></button>
         <button class="nav-item" data-view="integrations" data-tip="Intégrations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></svg><span class="lbl">Intégrations</span></button>
-        <button class="nav-item" data-act="persona" data-tip="Mon IA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 1 5 5c0 1.6-.7 2.6-1.5 3.5C16.3 11.4 18 12.5 18 15a6 6 0 0 1-12 0c0-2.5 1.7-3.6 2.5-4.5C7.7 9.6 7 8.6 7 7a5 5 0 0 1 5-5z"/></svg><span class="lbl">Mon IA</span><kbd>⌘J</kbd></button>
+        <button class="nav-item" data-view="persona" data-tip="Mon IA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 1 5 5c0 1.6-.7 2.6-1.5 3.5C16.3 11.4 18 12.5 18 15a6 6 0 0 1-12 0c0-2.5 1.7-3.6 2.5-4.5C7.7 9.6 7 8.6 7 7a5 5 0 0 1 5-5z"/></svg><span class="lbl">Mon IA</span><kbd>⌘J</kbd></button>
         <button class="nav-item" data-act="more" data-tip="Plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="1"/><circle cx="8" cy="12" r="1"/><circle cx="16" cy="12" r="1"/></svg><span class="lbl">Plus</span></button>
       </nav>
 
@@ -1119,6 +1147,51 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
         </div>
       </section>
 
+      <!-- MON IA (in-place) -->
+      <section class="view" id="view-persona" aria-label="Mon IA">
+        <header class="vhead">
+          <button class="back-btn" id="psBack" aria-label="Retour" data-tip="Retour"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="prj-headic" id="psAv">M</div>
+          <div class="min0"><div class="vt">Mon IA</div><div class="vs">Personnalise le comportement de MZai</div></div>
+          <span class="tb-spacer"></span>
+          <button class="vbtn ghost" id="psReset">Réinitialiser</button>
+          <button class="vbtn" id="psSave"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Enregistrer</button>
+        </header>
+        <div class="vbody"><div class="view-form">
+          <div class="field"><label>Nom de l'assistant</label><input class="inp" id="psName" placeholder="MZai"></div>
+          <div class="field"><label>Personnalités</label><div class="seg" id="psPresets"></div></div>
+          <div class="field"><label>Ton</label><div class="seg" id="psTone"></div></div>
+          <div class="field"><label>Longueur des réponses</label><div class="seg" id="psLength"></div></div>
+          <div class="field"><label>Traits</label><div class="seg" id="psTraits"></div></div>
+          <div class="field"><label>Instructions système</label><textarea class="inp" id="psSys" placeholder="Comment MZai doit-il répondre ?"></textarea></div>
+        </div></div>
+      </section>
+
+      <!-- PROMPTS RAPIDES (in-place) -->
+      <section class="view" id="view-prompts" aria-label="Prompts rapides">
+        <header class="vhead">
+          <button class="back-btn" id="prBack" aria-label="Retour" data-tip="Retour"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="min0"><div class="vt">Prompts rapides</div><div class="vs">Ta boîte à prompts /commande — clique pour insérer</div></div>
+          <span class="tb-spacer"></span>
+          <button class="vbtn" id="promptAdd"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Ajouter</button>
+        </header>
+        <div class="vsearch"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4" stroke-linecap="round"/></svg><input id="prSearch" placeholder="Rechercher un prompt…"></div>
+        <div class="vbody"><div class="prompt-cats" id="prCats"></div><div id="promptList"></div></div>
+      </section>
+
+      <!-- AIDE (in-place) -->
+      <section class="view" id="view-help" aria-label="Aide">
+        <header class="vhead">
+          <button class="back-btn" id="hpBack" aria-label="Retour" data-tip="Retour"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="min0"><div class="vt">Aide</div><div class="vs">Questions fréquentes &amp; ressources</div></div>
+        </header>
+        <div class="vbody"><div class="view-form wide">
+          <div id="faqList"></div>
+          <div class="sb-label" style="margin-left:0;margin-top:20px">Ressources</div>
+          <div id="helpLinks"></div>
+        </div></div>
+      </section>
+
     </main>
 
     <!-- COMPOSER ANCRÉ : dock chat/outils, vide à l'accueil (replié) -->
@@ -1166,7 +1239,7 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
 <div class="ov" id="settings"><div class="modal">
   <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82M4.6 9a1.65 1.65 0 0 0-.33-1.82"/></svg></div><div class="m-tt"><div class="m-t">Réglages</div><div class="m-s">Modèle, clés API et préférences</div></div><div class="m-x" id="setClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
   <div class="m-body set-body">
-    <div class="field"><label>Modèle par défaut</label><select id="setModel" class="inp"></select></div>
+    <div class="field"><label>Modèle par défaut</label><button type="button" class="inp model-field" id="setModelBtn" data-popanchor><span class="mf-dot" id="setModelDot"></span><span id="setModelLbl">MZ Auto</span><svg class="mf-chev" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button></div>
     <div class="field" id="set-api"><label>Clés API</label><div id="apiList"></div></div>
     <div class="row"><div><div class="rl">Thème</div><div class="rd">Apparence de l'interface</div></div><div class="seg" id="segTheme"></div></div>
     <div class="row"><div><div class="rl">Animations</div><div class="rd">Effets et transitions</div></div><div class="toggle on" data-set="anim"></div></div>
@@ -1190,20 +1263,6 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   <div class="m-foot"><div class="btn" id="pfCancel">Annuler</div><div class="btn primary" id="pfSave">Enregistrer</div></div>
 </div></div>
 
-<!-- PERSONA / MON IA -->
-<div class="ov" id="persona"><div class="modal">
-  <div class="m-head"><div class="m-ic" id="psAv"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a5 5 0 0 1 5 5c0 1.6-.7 2.6-1.5 3.5C16.3 11.4 18 12.5 18 15a6 6 0 0 1-12 0c0-2.5 1.7-3.6 2.5-4.5C7.7 9.6 7 8.6 7 7a5 5 0 0 1 5-5z"/></svg></div><div class="m-tt"><div class="m-t">Mon IA</div><div class="m-s">Personnalise le comportement de MZai</div></div><div class="m-x" id="psClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
-  <div class="m-body">
-    <div class="field"><label>Nom de l'assistant</label><input class="inp" id="psName" placeholder="MZai"></div>
-    <div class="field"><label>Personnalités</label><div class="seg" id="psPresets"></div></div>
-    <div class="field"><label>Ton</label><div class="seg" id="psTone"></div></div>
-    <div class="field"><label>Longueur des réponses</label><div class="seg" id="psLength"></div></div>
-    <div class="field"><label>Traits</label><div class="seg" id="psTraits"></div></div>
-    <div class="field"><label>Instructions système</label><textarea class="inp" id="psSys" placeholder="Comment MZai doit-il répondre ?"></textarea></div>
-  </div>
-  <div class="m-foot"><div class="btn" id="psReset">Réinitialiser</div><div class="btn primary" id="psSave">Enregistrer</div></div>
-</div></div>
-
 <!-- PROJECT MODAL -->
 <div class="ov" id="projModal"><div class="modal">
   <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4.5 16.5 12 21l7.5-4.5M4.5 12 12 16.5 19.5 12M12 3 4.5 7.5 12 12l7.5-4.5L12 3z"/></svg></div><div class="m-tt"><div class="m-t">Nouveau projet</div><div class="m-s">Un espace de travail dédié</div></div><div class="m-x" id="pmClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
@@ -1214,13 +1273,6 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
     <div class="field"><label>Contexte</label><textarea class="inp pm-ta" id="pmCtx" placeholder="Instructions permanentes du projet…"></textarea></div>
   </div>
   <div class="m-foot"><div class="btn" id="pmCancel">Annuler</div><div class="btn primary" id="pmCreate">Créer le projet</div></div>
-</div></div>
-
-<!-- PROMPTS / SLASH MANAGE -->
-<div class="ov" id="promptsModal"><div class="modal">
-  <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div><div class="m-tt"><div class="m-t">Prompts rapides</div><div class="m-s">Tes raccourcis /commande</div></div><div class="m-x" id="prClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
-  <div class="m-body"><div id="promptList"></div></div>
-  <div class="m-foot"><div class="btn primary" id="promptAdd">Ajouter un prompt</div></div>
 </div></div>
 
 <!-- ARTIFACT / CANVAS -->
@@ -1236,11 +1288,6 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   </div>
 </div></div>
 
-<!-- HELP -->
-<div class="ov" id="helpModal"><div class="modal">
-  <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01" stroke-linecap="round"/></svg></div><div class="m-tt"><div class="m-t">Aide</div><div class="m-s">Questions fréquentes</div></div><div class="m-x" id="hpClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
-  <div class="m-body"><div id="faqList"></div><div id="helpLinks" style="margin-top:14px"></div></div>
-</div></div>
 
 <!-- NEWS / ROADMAP -->
 <div class="ov" id="newsModal"><div class="modal">
@@ -1349,16 +1396,7 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   /* migration : type + icône/couleur premium dérivés du type */
   PROJECTS.forEach(p=>{if(!p.type)p.type=p.icon==='target'?'marketing':(p.icon==='code'||p.icon==='bolt')?'web':p.icon==='bag'?'ecom':p.icon==='globe'?'research':'content';const t=ptypeOf(p.type);p.icon=t.icon;p.color=t.color});
   DB.set('projects',PROJECTS);
-  const INTEGRATIONS=[
-    {n:'Shopify',d:'Produits, commandes, clients',ic:'bag',cat:'E-commerce',on:true},
-    {n:'Google Drive',d:'Docs et feuilles de calcul',ic:'drive',cat:'Productivité',on:true},
-    {n:'GitHub',d:'Dépôts et pull requests',ic:'branch',cat:'Développement',on:false},
-    {n:'Figma',d:'Designs et composants',ic:'figma',cat:'Design',on:false},
-    {n:'Notion',d:'Pages et bases de données',ic:'note',cat:'Productivité',on:false},
-    {n:'Slack',d:'Notifications et messages',ic:'hash',cat:'Communication',on:false},
-    {n:'Stripe',d:'Paiements et abonnements',ic:'card',cat:'E-commerce',on:false},
-    {n:'Gmail',d:'Emails et brouillons',ic:'mail',cat:'Communication',on:false}
-  ];
+  const INTEGRATIONS=JSON.parse(`[{"n":"GitHub","d":"Repos, pull requests, issues et CI/CD du code","cat":"Développement","ic":"branch","on":false},{"n":"Figma","d":"Designs et design systems convertis en code","cat":"Design","ic":"figma","on":false},{"n":"Notion","d":"Bases, docs et wikis de l'équipe","cat":"Productivité","ic":"note","on":false},{"n":"Google Drive","d":"Docs et Sheets à lire, créer et synchroniser","cat":"Productivité","ic":"drive","on":true},{"n":"Slack","d":"Messages, canaux et alertes en temps réel","cat":"Communication","ic":"hash","on":false},{"n":"Gmail","d":"Lecture, rédaction et envoi d'emails","cat":"Communication","ic":"mail","on":false},{"n":"Stripe","d":"Paiements, abonnements et facturation en direct","cat":"E-commerce","ic":"card","on":false},{"n":"Shopify","d":"Produits, commandes, clients et stock de la boutique","cat":"E-commerce","ic":"bag","on":true},{"n":"Firecrawl","d":"Scraping et recherche web structurée, sites entiers","cat":"Web & SEO","ic":"globe","on":false},{"n":"Semrush","d":"Mots-clés, audit SEO, trafic et concurrents","cat":"Web & SEO","ic":"search","on":false},{"n":"DataForSEO","d":"SERP, volumes de recherche et difficulté des mots-clés","cat":"Web & SEO","ic":"target","on":false},{"n":"Lighthouse","d":"Performance, Core Web Vitals et accessibilité","cat":"Web & SEO","ic":"chart","on":false},{"n":"Chrome DevTools","d":"Inspection réseau, requêtes cachées et reverse","cat":"Développement","ic":"eye","on":false},{"n":"Hugging Face","d":"Modèles, datasets et papers IA open source","cat":"Données & IA","ic":"brain","on":false},{"n":"Magic UI","d":"Composants UI générés en langage naturel","cat":"Design","ic":"wand","on":false},{"n":"OpenAI Images","d":"Génération et édition d'images, mockups, visuels","cat":"Médias","ic":"spark","on":false},{"n":"Higgsfield","d":"Génération de vidéos et visuels UGC","cat":"Médias","ic":"pen","on":false},{"n":"Vibe Prospecting","d":"Leads B2B enrichis et prospection ciblée","cat":"Données & IA","ic":"chip","on":false}]`);
   const INTSTATE=DB.get('intstate',null);
   if(INTSTATE)INTEGRATIONS.forEach(x=>{if(INTSTATE[x.n]!==undefined)x.on=INTSTATE[x.n]});
   const saveIntState=()=>DB.set('intstate',Object.fromEntries(INTEGRATIONS.map(x=>[x.n,x.on])));
@@ -1581,10 +1619,12 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   function renameProject(id){const p=projById(id);if(!p)return;const v=window.prompt('Renommer le projet',p.name);if(v&&v.trim()){p.name=v.trim();saveProjects();renderProjects()}}
   function deleteProject(id){const p=projById(id);if(!p||!window.confirm('Supprimer le projet « '+p.name+' » ? Les conversations sont conservées (détachées).'))return;CONVOS.forEach(c=>{if(c.pid===id)c.pid=null});saveConvos();PROJECTS=PROJECTS.filter(x=>x.id!==id);saveProjects();renderProjects();toast('Projet supprimé')}
   function renderIntegrations(filter=''){
-    const q=filter.toLowerCase(),f=INTEGRATIONS.map((x,i)=>({x,i})).filter(({x})=>x.n.toLowerCase().includes(q)||x.cat.toLowerCase().includes(q)||x.d.toLowerCase().includes(q));
+    const q=filter.toLowerCase().trim(),f=INTEGRATIONS.map((x,i)=>({x,i})).filter(({x})=>!q||x.n.toLowerCase().includes(q)||x.cat.toLowerCase().includes(q)||x.d.toLowerCase().includes(q));
     const on=INTEGRATIONS.filter(x=>x.on).length;
     $('#intCount').textContent=on+' connectée'+(on>1?'s':'')+' sur '+INTEGRATIONS.length;
-    $('#intList').innerHTML=f.length?f.map(({x,i})=>`<div class="irow"><div class="iic">${GLYPH[x.ic]?`<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${GLYPH[x.ic]}</svg>`:''}</div><div style="min-width:0;flex:1"><div class="inm">${x.n} <span class="icat">${x.cat}</span></div><div class="idesc">${x.on?`<span class="istat"><span class="idot"></span>Connecté · sync il y a ${2+i}min</span>`:x.d}</div></div><div class="toggle${x.on?' on':''}" data-int="${i}"></div></div>`).join(''):`<div class="cp-empty">Aucune intégration pour « ${esc(filter)} »</div>`;
+    if(!f.length){$('#intList').innerHTML=`<div class="cp-empty">Aucune intégration pour « ${esc(filter)} »</div>`;return}
+    const cats=[];f.forEach(o=>{if(!cats.includes(o.x.cat))cats.push(o.x.cat)});
+    $('#intList').innerHTML=cats.map(cat=>`<div class="int-cat-h">${esc(cat)}</div>`+f.filter(o=>o.x.cat===cat).map(({x,i})=>`<div class="irow"><div class="iic">${GLYPH[x.ic]?`<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${GLYPH[x.ic]}</svg>`:''}</div><div style="min-width:0;flex:1"><div class="inm">${esc(x.n)}</div><div class="idesc">${x.on?`<span class="istat"><span class="idot"></span>Connecté · sync il y a ${2+(i%9)}min</span>`:esc(x.d)}</div></div><div class="toggle${x.on?' on':''}" data-int="${i}"></div></div>`).join('')).join('');
     $$('#intList .toggle').forEach(t=>t.addEventListener('click',()=>{const i=t.dataset.int;INTEGRATIONS[i].on=!INTEGRATIONS[i].on;saveIntState();renderIntegrations($('#intSearch').value||'');toast(INTEGRATIONS[i].n+(INTEGRATIONS[i].on?' connecté':' déconnecté'))}));
   }
   /* project create modal */
@@ -1619,6 +1659,7 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
     if(v!=='chat'&&activeId){const c=convoById(activeId);if(c&&c.msgs.length>=4)updateMemory(c);}
     $$('.view').forEach(s=>s.classList.remove('active'));
     $('#view-'+v).classList.add('active');
+    if(v==='persona')fillPersona();else if(v==='prompts')renderPromptsView();else if(v==='help')renderHelp();   // vues in-place (ex-modales)
     $('#app').dataset.view=v;                 // pilote le dock (#dockChat visible seulement en chat) + le clavier mobile
     const navv=v==='project'?'projects':v;
     $$('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===navv));
@@ -1664,7 +1705,7 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
     $('#popPersona').addEventListener('click',()=>{closePop();openPersona()});
   }
   renderModelPicker();
-  function syncModel(){const m=modelById(currentModel),ac=acOf(m);$$('#popModel .pi').forEach(p=>p.classList.toggle('sel',p.dataset.model===currentModel));$('.model-pill .lbl').textContent=currentModel;$('#toolModelLbl').textContent=currentModel;const live=$('.model-pill .live');live.style.background=ac;live.style.boxShadow='0 0 8px '+ac;DB.set('model',currentModel)}
+  function syncModel(){const m=modelById(currentModel),ac=acOf(m);$$('#popModel .pi').forEach(p=>p.classList.toggle('sel',p.dataset.model===currentModel));$('.model-pill .lbl').textContent=currentModel;$('#toolModelLbl').textContent=currentModel;const live=$('.model-pill .live');live.style.background=ac;live.style.boxShadow='0 0 8px '+ac;const sm=$('#setModelLbl');if(sm)sm.textContent=currentModel;const sd=$('#setModelDot');if(sd){sd.style.background=ac;sd.style.boxShadow='0 0 8px '+ac}DB.set('model',currentModel)}
   syncModel();
   const openModel=a=>showPop($('#popModel'),a,'right',$('#modelPill'));
   $('#modelPill').setAttribute('data-popanchor','');$('#modelPill').addEventListener('click',()=>openPop===$('#popModel')?closePop():openModel($('#modelPill')));
@@ -1697,7 +1738,7 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
       if(a==='set')openSettings();
       else if(a==='persona')openPersona();
       else if(a==='export')$('#setExport').click();
-      else if(a==='help')launchAide();
+      else if(a==='help')openHelp();
       else if(a==='clear')clearLocalData();
     }));
   }
@@ -1747,17 +1788,18 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   $('#billingModal').addEventListener('click',e=>{if(e.target.id==='billingModal')$('#billingModal').classList.remove('show')});
   $('#blUpgrade').addEventListener('click',()=>$('#billingModal').classList.remove('show'));
   /* aide */
-  const HELP_LINKS=[['Documentation','Guides & référence','note'],['Raccourcis clavier','Toutes les touches','keyboard'],['Nous contacter','support@mzai.app','mail'],['Statut','Tous systèmes OK','shield']];
-  const FAQ=[['Comment changer de modèle ?','Clique sur le sélecteur en haut à droite, ou « Modèles & API » dans le menu Plus, puis choisis ton modèle.'],['Mes données sont-elles privées ?','Tout est stocké en local sur ton appareil. Rien n\'est envoyé tant qu\'une clé API n\'est pas branchée.'],['Comment personnaliser mon IA ?','Ouvre « Mon IA » (⌘J) pour définir le nom, le ton, les traits et les instructions système.'],['Comment créer un projet ?','Projets → Nouveau projet : donne un nom, choisis un type et un contexte. Les conversations s\'y rattachent automatiquement.']];
-  function openHelp(){
-    $('#helpLinks').innerHTML=HELP_LINKS.map((l,i)=>`<div class="help-link" data-h="${i}"><div class="hl-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH[l[2]]}</svg></div><div style="min-width:0"><div class="hl-t">${l[0]}</div><div class="hl-d">${l[1]}</div></div></div>`).join('');
-    $('#faqList').innerHTML=FAQ.map(([q,a])=>`<div class="faq"><div class="faq-q">${q}<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></div><div class="faq-a"><div>${a}</div></div></div>`).join('');
-    $$('#helpLinks .help-link').forEach(el=>el.onclick=()=>{const i=+el.dataset.h;if(i===1){$('#helpModal').classList.remove('show');$('#shortcuts').classList.add('show')}else toast(HELP_LINKS[i][0]==='Statut'?'Tous les systèmes sont opérationnels ✓':HELP_LINKS[i][1])});
+  const HELP_LINKS=JSON.parse(`[["Documentation","Guides de prise en main, outils, modèles et réglages, pas à pas avec captures.","note"],["Raccourcis clavier","⌘J (Mon IA), / pour les commandes, ⌘K recherche et plus pour aller plus vite.","keyboard"],["Nous contacter","Une question, un bug, une idée ? Écris-nous à support@mzai.app, réponse rapide.","mail"],["Statut des services","Disponibilité en temps réel des modèles et fournisseurs (OpenRouter, SiliconFlow, Kling).","globe"],["Confidentialité","Tout reste en local sur ton appareil. Détail de ce qui est stocké et jamais envoyé.","shield"]]`);
+  const FAQ=JSON.parse(`[["Comment changer de modèle ?","Clique sur la pastille du modèle en haut à droite (« MZ Auto » par défaut), ou sur le bouton Modèles sous le champ de saisie, puis choisis ton modèle texte, image, vidéo ou voix."],["C'est quoi MZ Auto ?","MZ Auto est le routeur intelligent : il choisit automatiquement le meilleur modèle selon ta tâche (raisonnement, code, rapidité…). Laisse-le sélectionné, ou force un modèle précis dans le sélecteur si tu veux garder la main."],["Où ajouter mes clés API ?","Menu Plus › Connexions API (ou Réglages › Clés API). Colle OpenRouter pour le texte, SiliconFlow pour image, voix et transcription, et Kling (Access Key + Secret Key) pour la vidéo. Les clés restent sur ton appareil."],["Mes données sont-elles privées ?","Oui. Conversations, projets, persona et clés sont stockés en local (localStorage) sur ton appareil. Rien ne part vers un serveur, sauf l'appel direct au modèle quand tu envoies un message avec ta propre clé."],["Comment personnaliser Mon IA ?","Ouvre Mon IA via le raccourci ⌘J (ou le menu latéral). Définis le nom, le ton, la longueur des réponses, les traits et les instructions système : c'est appliqué à toutes tes conversations."],["À quoi servent les Projets ?","Un Projet est un espace de travail avec un Contexte permanent (marque, ton, cible, contraintes) injecté dans chaque réponse. Va dans Projets › Nouveau projet, remplis le contexte ; les conversations s'y rattachent automatiquement."],["Quels outils propose MZai ?","10 outils : Assistant, Image, Vidéo, Voix (TTS), Code/Canvas (aperçu live HTML), Documents (PDF/DOCX/XLSX), Traduction, Transcription, Recherche web sourcée et Réflexion. Sélectionne-les dans la barre d'outils sous le champ de saisie."],["Comment utiliser les commandes /prompt ?","Tape « / » au début du champ de saisie pour afficher les commandes (traduire, résumer, coder, image…). Choisis-en une pour pré-remplir un prompt prêt à compléter."],["Comment exporter mes données ?","Réglages › Exporter mes données pour tout récupérer en JSON (conversations + réglages). Pour une seule conversation, survole-la dans la Bibliothèque et clique sur l'icône Exporter (.md)."],["Puis-je installer MZai comme une app (PWA) ?","Oui. Sur Chrome/Edge, clique sur l'icône d'installation dans la barre d'adresse ; sur iPhone (Safari), Partager › Sur l'écran d'accueil. MZai s'ouvre alors en fenêtre dédiée, hors navigateur."],["Pourquoi un outil me demande une clé API ?","Chaque type de génération passe par son fournisseur : texte (OpenRouter), image/voix/transcription (SiliconFlow), vidéo (Kling). Si la clé correspondante manque, ajoute-la dans Connexions API et réessaie."]]`);
+  function openHelp(){showView('help')}            // ex-modale → vue in-place
+  function renderHelp(){
+    $('#helpLinks').innerHTML=HELP_LINKS.map((l,i)=>`<div class="help-link" data-h="${i}"><div class="hl-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH[l[2]]||GLYPH.spark}</svg></div><div style="min-width:0"><div class="hl-t">${l[0]}</div><div class="hl-d">${l[1]}</div></div></div>`).join('');
+    $('#faqList').innerHTML='<button class="help-cta" id="helpAssistant"><span class="hc-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/></svg></span><div class="min0"><div class="hc-t">Demander à l\'assistant MZai</div><div class="hc-d">Une question précise ? L\'IA te guide pas à pas, en direct.</div></div><svg class="hc-go" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></button>'
+      +FAQ.map(([q,a])=>`<div class="faq"><div class="faq-q">${q}<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></div><div class="faq-a"><div>${a}</div></div></div>`).join('');
+    $('#helpAssistant').onclick=launchAide;
+    $$('#helpLinks .help-link').forEach(el=>el.onclick=()=>{const i=+el.dataset.h;if(HELP_LINKS[i][0]==='Raccourcis clavier'){$('#shortcuts').classList.add('show')}else toast(HELP_LINKS[i][0]==='Statut'?'Tous les systèmes sont opérationnels ✓':HELP_LINKS[i][1])});
     $$('#faqList .faq-q').forEach(q=>q.onclick=()=>q.parentElement.classList.toggle('open'));
-    $('#helpModal').classList.add('show');
   }
-  $('#hpClose').addEventListener('click',()=>$('#helpModal').classList.remove('show'));
-  $('#helpModal').addEventListener('click',e=>{if(e.target.id==='helpModal')$('#helpModal').classList.remove('show')});
+  $('#hpBack').addEventListener('click',()=>showView(activeId?'chat':'home'));
   function logout(){if(window.confirm('Se déconnecter de MZai ?'))toast('Déconnecté')}
   /* Aide : lance l'assistant « Aide MZai » dans une nouvelle conversation */
   function launchAide(){const a=ASSISTANTS.find(x=>x.id==='aide');if(!a){openHelp();return}const c=createConvo();c.title=a.name;c.assistant=a.id;saveConvos();openConvo(c.id);if(window.innerWidth<=1024){$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show')}}
@@ -1844,9 +1886,7 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   }
 
   /* modèle par défaut (select) */
-  $('#setModel').innerHTML=[['Recommandé',m=>m.provider==='mz'],['Texte',m=>m.provider!=='mz'&&!m.kind],['Image',m=>m.kind==='image'],['Vidéo',m=>m.kind==='video'],['Voix',m=>m.kind==='audio']].map(([lbl,test])=>{const ms=MODELS.filter(test);return ms.length?`<optgroup label="${lbl}">`+ms.map(m=>`<option value="${m.id}">${m.id}</option>`).join('')+'</optgroup>':''}).join('');
-  $('#setModel').value=currentModel;
-  $('#setModel').addEventListener('change',e=>{currentModel=e.target.value;syncModel();toast('Modèle par défaut : '+currentModel)});
+  $('#setModelBtn').addEventListener('click',()=>{const b=$('#setModelBtn');openPop===$('#popModel')?closePop():showPop($('#popModel'),b,'left',b)});
 
   /* connexions API */
   function renderApiList(){
@@ -1885,11 +1925,12 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   /* le nom du persona sert d'identité de style — il ne renomme JAMAIS l'app (qui reste MZai) */
   function applyPersona(){const nm=PERSONA.name||'MZai';const av=$('#psAv');if(av)av.textContent=nm.trim()[0].toUpperCase()}
   function fillChipset(host,opts,sel,multi){$(host).innerHTML=opts.map(o=>`<div class="chip${(multi?sel.includes(o):sel===o)?' on':''}" data-v="${o}">${o}</div>`).join('')}
-  function openPersona(){
+  function openPersona(){showView('persona')}     // ex-modale → vue in-place
+  function fillPersona(){
     $('#psName').value=PERSONA.name;$('#psSys').value=PERSONA.sys;$('#psAv').textContent=(PERSONA.name||'M').trim()[0].toUpperCase();
     $('#psPresets').innerHTML=PRESETS.map((p,i)=>`<div class="ps-preset" data-p="${i}"><div class="pp-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH[p.g]}</svg></div><div class="pp-t">${p.n}</div><div class="pp-d">${p.d}</div></div>`).join('');
     fillChipset('#psTone',TONES,PERSONA.tone,false);fillChipset('#psLength',LENGTHS,PERSONA.length,false);fillChipset('#psTraits',TRAITS,PERSONA.traits,true);
-    bindChips();$('#persona').classList.add('show');
+    bindChips();
     $$('#psPresets .ps-preset').forEach(el=>el.addEventListener('click',()=>{const p=PRESETS[el.dataset.p];$('#psSys').value=p.sys;PERSONA.tone=p.tone;PERSONA.length=p.length;PERSONA.traits=[...p.traits];fillChipset('#psTone',TONES,PERSONA.tone,false);fillChipset('#psLength',LENGTHS,PERSONA.length,false);fillChipset('#psTraits',TRAITS,PERSONA.traits,true);bindChips();toast('Modèle « '+p.n+' » appliqué')}));
   }
   function bindChips(){
@@ -1898,10 +1939,9 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
     $$('#psTraits .chip').forEach(c=>c.onclick=()=>{c.classList.toggle('on');const v=c.dataset.v,i=PERSONA.traits.indexOf(v);i<0?PERSONA.traits.push(v):PERSONA.traits.splice(i,1)});
   }
   $('#psName').addEventListener('input',e=>$('#psAv').textContent=(e.target.value||'M').trim()[0].toUpperCase());
-  $('#psClose').addEventListener('click',()=>$('#persona').classList.remove('show'));
-  $('#persona').addEventListener('click',e=>{if(e.target.id==='persona')$('#persona').classList.remove('show')});
-  $('#psSave').addEventListener('click',()=>{PERSONA.name=($('#psName').value.trim()||'MZai');PERSONA.sys=$('#psSys').value.trim();DB.set('persona',PERSONA);applyPersona();syncModel();$('#persona').classList.remove('show');toast(PERSONA.name+' est prête ✦')});
-  $('#psReset').addEventListener('click',()=>{Object.assign(PERSONA,{name:'MZai',tone:'Direct',length:'Équilibré',sys:'',traits:[]});DB.set('persona',PERSONA);openPersona();applyPersona();toast('Persona réinitialisée')});
+  $('#psBack').addEventListener('click',()=>showView(activeId?'chat':'home'));
+  $('#psSave').addEventListener('click',()=>{PERSONA.name=($('#psName').value.trim()||'MZai');PERSONA.sys=$('#psSys').value.trim();DB.set('persona',PERSONA);applyPersona();syncModel();toast(PERSONA.name+' est prête ✦')});
+  $('#psReset').addEventListener('click',()=>{Object.assign(PERSONA,{name:'MZai',tone:'Direct',length:'Équilibré',sys:'',traits:[]});DB.set('persona',PERSONA);fillPersona();applyPersona();toast('Persona réinitialisée')});
 
   /* ===== command palette ===== */
   const COMMANDS=[
@@ -2852,16 +2892,10 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
 
   /* ===== slash-commands + bibliothèque de prompts ===== */
   let PROMPTS=DB.get('prompts',null);
-  if(!PROMPTS){PROMPTS=[
-    {cmd:'landing',title:'Landing page',icon:'code',text:'Crée une landing page complète, premium et responsive (HTML+CSS dans un seul fichier) pour : '},
-    {cmd:'site',title:'Site web',icon:'globe',text:'Code un site web premium, moderne et responsive pour : '},
-    {cmd:'resume',title:'Résumer',icon:'note',text:'Résume le texte suivant en points clés clairs et actionnables :\n\n'},
-    {cmd:'traduis',title:'Traduire',icon:'globe',text:'Traduis le texte suivant en anglais, ton naturel et fluide :\n\n'},
-    {cmd:'seo',title:'Article SEO',icon:'target',text:'Écris un article SEO optimisé (titre, H2/H3, mots-clés, meta description) sur : '},
-    {cmd:'email',title:'Cold email',icon:'mail',text:'Écris un cold email B2B court (≤120 mots, 1 seul CTA, opener personnalisé) pour : '},
-    {cmd:'viral',title:'Post viral',icon:'spark',text:'Écris un post viral (hook fort en première ligne, court, rythmé) pour LinkedIn sur : '},
-    {cmd:'corrige',title:'Corriger',icon:'wand',text:'Corrige l\'orthographe, la grammaire et améliore le style du texte suivant :\n\n'}
-  ];DB.set('prompts',PROMPTS)}
+  (function(){const SEED=JSON.parse(`[{"cmd":"explique","title":"Explique simplement","cat":"assistant","text":"Explique de façon simple et limpide, comme à une personne curieuse mais novice, le sujet ci-dessous. Procède en trois temps : (1) l'idée essentielle en une seule phrase, (2) l'explication détaillée pas à pas, (3) une analogie concrète tirée du quotidien. Bannis le jargon ou définis-le entre parenthèses. Termine par « En résumé : » et une phrase à retenir. Sujet : "},{"cmd":"plan","title":"Plan d'action","cat":"assistant","text":"Transforme l'objectif ci-dessous en plan d'action clair et réaliste. Structure : grandes étapes numérotées ; pour chaque étape, les tâches concrètes, la durée estimée et les ressources nécessaires. Indique le tout premier pas à faire dès aujourd'hui, puis liste les 3 obstacles probables avec leur parade. Reste pragmatique et priorise l'impact. Objectif : "},{"cmd":"idees","title":"Brainstorm 10 idées","cat":"assistant","text":"Génère 10 idées originales et variées sur le thème ci-dessous. Évite les évidences : équilibre des pistes sûres, audacieuses et inattendues. Pour chacune : un titre accrocheur, une phrase d'explication et son principal intérêt. Classe-les de la plus simple à mettre en œuvre à la plus ambitieuse, et signale ta préférée. Thème : "},{"cmd":"clair","title":"Réécris clair","cat":"assistant","text":"Réécris le texte ci-dessous pour le rendre clair, fluide et agréable à lire, sans en altérer le sens ni perdre d'information. Supprime répétitions et jargon superflu, raccourcis les phrases trop longues, aère la structure. Conserve un ton naturel et professionnel. Donne uniquement la version réécrite. Texte : "},{"cmd":"synthese","title":"Synthèse en points","cat":"assistant","text":"Fais une synthèse structurée du contenu ci-dessous. Donne : l'idée principale en une phrase, 5 à 7 points clés en puces, puis une conclusion actionnable. Reste strictement fidèle au contenu, sans ajout ni interprétation personnelle. Contenu : "},{"cmd":"packshot","title":"Packshot produit","cat":"image","text":"Génère un packshot produit haut de gamme façon photographie de studio. Rendu : fond uni épuré, éclairage doux en trois points, ombre portée subtile, reflets maîtrisés, mise au point ultra-nette sur les textures et finitions, cadrage centré, style e-commerce premium, très haute résolution. Décris ci-après le produit, sa matière, sa couleur et l'ambiance (claire ou sombre) souhaitée. Produit : "},{"cmd":"portrait","title":"Portrait éditorial","cat":"image","text":"Crée un portrait éditorial soigné, qualité magazine. Rendu : lumière naturelle latérale et douce, profondeur de champ marquée (arrière-plan flou), peau réaliste, regard expressif, colorimétrie élégante et légèrement désaturée, cadrage buste. Précise ci-après le sujet, son style vestimentaire, l'ambiance et le décor. Sujet : "},{"cmd":"banniere","title":"Bannière web","cat":"image","text":"Conçois une bannière web percutante et équilibrée. Rendu : composition aérée laissant de l'espace pour un titre, hiérarchie visuelle claire, palette harmonieuse, format horizontal large, style moderne et premium, lisible même en petit. Indique ci-après le message, la marque, l'ambiance et les couleurs voulues. Brief : "},{"cmd":"logo","title":"Concept de logo","cat":"image","text":"Propose un concept de logo épuré et mémorable. Rendu : design vectoriel minimaliste, formes géométriques équilibrées, fond neutre, déclinable en monochrome, sans dégradés inutiles, lisible à petite taille. Précise ci-après le nom de la marque, son secteur, sa personnalité et l'émotion à transmettre. Marque : "},{"cmd":"lifestyle","title":"Scène lifestyle","cat":"image","text":"Crée une scène lifestyle authentique mettant le produit en situation réelle d'usage. Rendu : ambiance naturelle et chaleureuse, lumière du jour, décor crédible, composition narrative, profondeur de champ douce, style photo premium non posé. Décris ci-après le produit, l'utilisateur, le lieu et le moment de la journée. Scène : "},{"cmd":"scene","title":"Scène cinématique","cat":"video","text":"Décris une scène vidéo cinématique prête à générer. Précise pour moi : le type de plan (large ou serré), le mouvement de caméra (travelling, panoramique, statique), la lumière et l'ambiance, le décor, l'action principale et le rythme. Style : rendu cinéma, colorimétrie soignée, 5 à 8 secondes. Idée de départ : "},{"cmd":"pubvideo","title":"Spot publicitaire","cat":"video","text":"Écris le concept d'un spot publicitaire vidéo de 15 à 30 secondes. Donne : l'accroche des 3 premières secondes, le déroulé plan par plan (image + action), le message clé, le ton, la musique suggérée et le call-to-action final. Pense rétention et impact dès la première seconde. Produit ou service : "},{"cmd":"storyb","title":"Storyboard","cat":"video","text":"Crée un storyboard détaillé scène par scène. Pour chaque plan : numéro, description visuelle, type de plan et mouvement de caméra, durée, et éventuelle voix off ou texte à l'écran. Garde une progression narrative fluide avec un début, un milieu et une chute. Sujet de la vidéo : "},{"cmd":"broll","title":"Plans B-roll","cat":"video","text":"Propose une liste de plans B-roll d'illustration pour habiller une vidéo. Pour chaque plan : ce qu'on voit, l'angle, le mouvement et l'émotion qu'il transmet. Vise des images esthétiques et variées qui renforcent le propos sans le répéter. Thème de la vidéo : "},{"cmd":"explainer","title":"Vidéo explicative","cat":"video","text":"Structure une vidéo explicative claire et engageante de 60 à 90 secondes. Donne : le hook d'ouverture, le problème, la solution expliquée simplement étape par étape, un exemple concret, puis la conclusion avec call-to-action. Indique pour chaque section la voix off et le visuel à l'écran. Sujet à expliquer : "},{"cmd":"voixoff","title":"Voix off pub","cat":"voice","text":"Rédige un script de voix off publicitaire de 20 à 30 secondes, percutant et chaleureux. Phrases courtes, rythme parlé, une seule idée forte, montée émotionnelle vers un call-to-action mémorable. Indique les respirations et les mots à accentuer. Produit ou marque : "},{"cmd":"narration","title":"Narration douce","cat":"voice","text":"Écris un texte de narration douce et posée, au ton apaisant et immersif. Phrases fluides, vocabulaire évocateur, rythme lent propice à une lecture calme. Pense aux pauses naturelles. Idéal pour une voix off de marque ou de méditation. Thème : "},{"cmd":"tutovoix","title":"Voix tutoriel","cat":"voice","text":"Rédige le script de voix off d'un tutoriel, clair et pédagogique. Ton amical et précis, instructions à l'impératif, une action par phrase, transitions explicites entre les étapes. Évite le jargon. Indique les moments de pause pour suivre à l'écran. Sujet du tutoriel : "},{"cmd":"pubradio","title":"Spot radio","cat":"voice","text":"Écris un spot radio de 30 secondes prêt à enregistrer. Donne : l'accroche sonore d'ouverture, le corps du message (offre + bénéfice), la mention obligatoire et un slogan final. Précise le ton, l'énergie et l'ambiance sonore suggérée. Le texte doit tenir en lecture naturelle de 30 secondes. Annonceur ou offre : "},{"cmd":"podcastintro","title":"Intro de podcast","cat":"voice","text":"Rédige une intro de podcast accrocheuse de 15 à 20 secondes. Donne : une phrase d'accroche qui pose le thème, la promesse de l'épisode, le nom de l'émission et une transition vers le contenu. Ton dynamique et complice. Précise le mot ou la phrase à appuyer. Sujet de l'épisode : "},{"cmd":"react","title":"Composant React","cat":"code","text":"Crée un composant React moderne, propre et réutilisable répondant au besoin ci-dessous. Utilise des fonctions, des hooks et du TypeScript avec props typées. Gère les états de chargement et d'erreur si pertinent, soigne l'accessibilité, et ajoute un court exemple d'utilisation. Ne commente que le non-évident. Besoin : "},{"cmd":"fonction","title":"Fonction + tests","cat":"code","text":"Écris une fonction propre et robuste pour le besoin ci-dessous. Précise le langage si tu le détectes, sinon demande-le. Gère les cas limites, documente la signature, puis ajoute une série de tests unitaires couvrant les cas nominaux et les cas limites. Explique brièvement ton approche. Besoin : "},{"cmd":"debug","title":"Débogue mon code","cat":"code","text":"Agis comme un débogueur méthodique. Pour le code et le bug ci-dessous : (1) reformule le comportement attendu face au comportement observé, (2) identifie la cause racine en raisonnant étape par étape, (3) propose le correctif minimal, (4) indique comment l'éviter à l'avenir. Ne modifie que le nécessaire. Code et erreur : "},{"cmd":"sql","title":"Requête SQL","cat":"code","text":"Écris une requête SQL correcte et lisible pour le besoin ci-dessous. Indique tes hypothèses sur le schéma, privilégie les jointures explicites, nomme clairement les alias, et propose une version optimisée si la requête est lourde. Explique brièvement ce qu'elle fait. Besoin (et structure des tables si connue) : "},{"cmd":"refacto","title":"Refactorise","cat":"code","text":"Refactorise le code ci-dessous sans changer son comportement. Améliore lisibilité, nommage, structure et performance ; élimine les répétitions et le code mort. Procède par petites améliorations justifiées, liste les changements clés, et garde une version testable. Code : "},{"cmd":"docresume","title":"Résumé de document","cat":"doc","text":"Résume le document ci-dessous de façon fidèle et structurée. Donne : un résumé exécutif en 3 phrases, les points clés en puces par thème, les décisions ou conclusions, et les éventuelles zones d'incertitude. Adapte la longueur à la densité du document. Document : "},{"cmd":"chiffres","title":"Chiffres clés","cat":"doc","text":"Extrais et organise tous les chiffres clés du document ci-dessous : montants, pourcentages, dates, volumes, indicateurs. Présente-les dans un tableau clair (donnée, valeur, contexte dans le texte). Signale toute incohérence ou donnée manquante. Document : "},{"cmd":"comparedoc","title":"Comparer 2 documents","cat":"doc","text":"Compare les deux documents ci-dessous. Donne : un tableau des points communs et des différences par thème, les contradictions éventuelles, puis une synthèse indiquant lequel est le plus complet, récent ou pertinent selon le critère demandé. Reste factuel. Documents (A puis B) : "},{"cmd":"qadoc","title":"Questions sur un doc","cat":"doc","text":"Tu es un expert du document ci-dessous. Réponds précisément aux questions en t'appuyant uniquement sur son contenu, en citant le passage pertinent. Si l'information n'y figure pas, dis-le clairement plutôt que d'inventer. Colle le document, puis pose tes questions. Document et questions : "},{"cmd":"clauses","title":"Points de vigilance","cat":"doc","text":"Analyse le document ci-dessous et repère les points de vigilance : clauses sensibles, engagements, échéances, montants, responsabilités, ambiguïtés et risques. Classe-les par niveau d'importance (élevé, moyen, faible) avec une recommandation pour chacun. Tu n'es pas un conseil juridique : signale-le. Document : "},{"cmd":"enpro","title":"Anglais professionnel","cat":"translate","text":"Traduis le texte ci-dessous en anglais professionnel, naturel et idiomatique, sans mot-à-mot. Respecte le sens, le ton et l'intention. Adapte les expressions culturelles, garde la terminologie cohérente, et signale toute formulation ambiguë. Donne uniquement la traduction, sauf note utile. Texte : "},{"cmd":"localise","title":"Localisation marketing","cat":"translate","text":"Localise le texte marketing ci-dessous vers la langue demandée (précise-la). Ne traduis pas mot à mot : adapte le ton, les références culturelles, les jeux de mots et le call-to-action pour qu'ils sonnent natifs et vendeurs. Propose si besoin 2 variantes d'accroche. Langue cible et texte : "},{"cmd":"multilang","title":"Traduction multilingue","cat":"translate","text":"Traduis le texte ci-dessous dans les langues demandées, en respectant le sens et un ton naturel propre à chaque langue. Présente le résultat langue par langue, avec un titre clair. Garde la terminologie cohérente d'une langue à l'autre. Indique les langues cibles, puis colle le texte : "},{"cmd":"registre","title":"Adapter le registre","cat":"translate","text":"Réécris ou traduis le texte ci-dessous dans le registre demandé (soutenu, courant, familier, ou ton précis : formel B2B, complice, institutionnel...). Conserve le message mais ajuste le vocabulaire, la syntaxe et le niveau de politesse. Précise le registre cible et, s'il s'agit d'une traduction, la langue. Demande et texte : "},{"cmd":"glossaire","title":"Traduire avec glossaire","cat":"translate","text":"Traduis le texte ci-dessous en respectant impérativement le glossaire fourni (termes à traduire d'une manière imposée et termes à ne pas traduire). Maintiens la cohérence terminologique sur tout le texte et signale les termes non couverts par le glossaire. Indique la langue cible, le glossaire, puis le texte : "},{"cmd":"nettoietr","title":"Nettoyer transcript","cat":"transcribe","text":"Nettoie la transcription brute ci-dessous sans en changer le sens. Supprime les hésitations (euh, ben), répétitions et tics de langage, corrige la ponctuation et les fautes évidentes, structure en paragraphes lisibles. Conserve le ton et les propos d'origine. Transcription : "},{"cmd":"creunion","title":"Compte-rendu réunion","cat":"transcribe","text":"Transforme la transcription de réunion ci-dessous en compte-rendu professionnel. Structure : participants (si mentionnés), ordre du jour reconstitué, décisions prises, points de discussion clés, et un tableau des actions (quoi, qui, pour quand). Reste factuel et concis. Transcription : "},{"cmd":"actions","title":"Extraire les actions","cat":"transcribe","text":"À partir de la transcription ou des notes ci-dessous, extrais uniquement les actions à mener. Présente-les en tableau : action, responsable (si identifiable), échéance, priorité. Liste à part les décisions actées et les questions restées en suspens. Contenu : "},{"cmd":"verbatim","title":"Verbatim propre","cat":"transcribe","text":"Produis un verbatim propre de l'audio retranscrit ci-dessous : fidèle aux propos mais lisible. Identifie les locuteurs (Locuteur 1, Locuteur 2...), structure les échanges, ajoute la ponctuation, et garde les formulations marquantes telles quelles. Note [inaudible] si nécessaire. Transcription : "},{"cmd":"soustitres","title":"Sous-titres","cat":"transcribe","text":"Découpe le texte ci-dessous en sous-titres prêts à l'emploi. Segments courts (environ 42 caractères par ligne, 2 lignes maximum), respectant le rythme de parole et les unités de sens. Numérote chaque segment. Si des durées sont fournies, propose un calage temporel approximatif. Texte ou transcription : "},{"cmd":"recherche","title":"Recherche sourcée","cat":"search","text":"Effectue une recherche web sérieuse et à jour sur le sujet ci-dessous. Donne une réponse structurée et nuancée, en appuyant chaque affirmation importante d'une source (nom + lien) et de sa date. Distingue les faits établis des points débattus, et signale les informations incertaines ou anciennes. Sujet : "},{"cmd":"compare","title":"Comparatif sourcé","cat":"search","text":"Compare les options ci-dessous à partir de sources web récentes. Donne un tableau comparatif sur les critères pertinents (prix, fonctionnalités, avis, limites...), puis une recommandation argumentée selon différents profils d'usage. Cite tes sources avec leur date. Options à comparer : "},{"cmd":"veille","title":"Veille récente","cat":"search","text":"Fais une veille des actualités les plus récentes sur le sujet ci-dessous. Présente les 5 à 7 développements marquants des dernières semaines, classés par importance, avec pour chacun : ce qui s'est passé, pourquoi c'est important, et la source datée. Signale la fraîcheur des informations. Sujet : "},{"cmd":"verifie","title":"Vérifier une info","cat":"search","text":"Vérifie l'affirmation ci-dessous via des sources web fiables. Conclus par un verdict clair (Vrai, Faux, Partiellement vrai ou Invérifiable), explique le contexte, cite au moins deux sources indépendantes avec leur date, et signale les nuances ou désaccords entre sources. Affirmation : "},{"cmd":"marche","title":"État d'un marché","cat":"search","text":"Dresse un état des lieux d'un marché ou secteur à partir de données récentes. Couvre : taille et croissance, principaux acteurs, tendances clés, opportunités et menaces. Chiffre dès que possible et cite chaque donnée avec sa source datée. Marché ou secteur : "},{"cmd":"strategie","title":"Analyse stratégique","cat":"reason","text":"Mène une analyse stratégique rigoureuse de la situation ci-dessous. Raisonne en étapes visibles : enjeux réels, forces et faiblesses, options possibles avec leurs conséquences, puis une recommandation argumentée et un plan d'exécution. Distingue clairement les faits de tes hypothèses. Situation : "},{"cmd":"pourcontre","title":"Pour et contre","cat":"reason","text":"Pèse le pour et le contre de la décision ci-dessous de façon équilibrée. Présente un tableau arguments pour / arguments contre, pondère leur importance, identifie les angles morts, puis donne ta conclusion nuancée avec le facteur décisif. Décision à trancher : "},{"cmd":"decision","title":"Aide à la décision","cat":"reason","text":"Aide-moi à décider face au choix ci-dessous. Reformule l'objectif et les critères, compare les options sur ces critères (tableau), évalue les risques et le scénario du pire pour chacune, puis recommande une option avec sa justification et les conditions qui changeraient ta réponse. Choix : "},{"cmd":"probleme","title":"Résolution de problème","cat":"reason","text":"Résous le problème ci-dessous avec méthode. Étapes visibles : (1) reformule le vrai problème, (2) décompose-le en sous-problèmes, (3) explore plusieurs pistes, (4) choisis la meilleure en justifiant, (5) donne les étapes concrètes de mise en œuvre. Signale tes hypothèses. Problème : "},{"cmd":"hypothese","title":"Tester une hypothèse","cat":"reason","text":"Mets à l'épreuve l'hypothèse ci-dessous comme le ferait un esprit critique. Liste ce qui la soutient et ce qui la contredit, identifie les biais et les preuves manquantes, propose un test pour la valider ou l'infirmer, puis conclus : confirmée, réfutée, partielle ou indéterminée. Hypothèse : "}]`);const OLD=['landing','site','resume','traduis','seo','email','viral','corrige'];const v=DB.get('promptsSeedV',0);
+    if(!PROMPTS){PROMPTS=SEED;DB.set('prompts',PROMPTS);DB.set('promptsSeedV',2);}
+    else if(v<2){const customs=PROMPTS.filter(p=>!OLD.includes(p.cmd)&&!SEED.some(d=>d.cmd===p.cmd));PROMPTS=SEED.concat(customs);DB.set('prompts',PROMPTS);DB.set('promptsSeedV',2);}
+  })();
   const savePrompts=()=>DB.set('prompts',PROMPTS);
   let slashItems=[],slashK=0;
   function updateSlash(){const m=/^\/(\S*)$/.exec(prompt.value);if(!m){closeSlash();return}const q=m[1].toLowerCase();slashItems=PROMPTS.filter(p=>p.cmd.toLowerCase().includes(q)||p.title.toLowerCase().includes(q));slashK=0;renderSlash()}
@@ -2878,16 +2912,27 @@ body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0
   prompt.addEventListener('input',updateSlash);
   prompt.addEventListener('blur',()=>setTimeout(closeSlash,150));
   /* gestion (CRUD) */
-  function openPrompts(){closeSlash();renderPromptsList();$('#promptsModal').classList.add('show')}
-  function renderPromptsList(){
-    $('#promptList').innerHTML=PROMPTS.map((p,i)=>`<div class="pr-row"><span class="pr-cmd">/${esc(p.cmd)}</span><div class="pr-main"><div class="pr-t">${esc(p.title)}</div><div class="pr-x">${esc(p.text.replace(/\n/g,' '))}</div></div><span class="la" data-pe="${i}" data-tip="Modifier"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span><span class="la" data-pd="${i}" data-tip="Supprimer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.trash}</svg></span></div>`).join('')||'<div class="cp-empty">Aucun prompt. Crée le premier.</div>';
-    $$('#promptList [data-pe]').forEach(b=>b.onclick=()=>editPrompt(+b.dataset.pe));
-    $$('#promptList [data-pd]').forEach(b=>b.onclick=()=>{PROMPTS.splice(+b.dataset.pd,1);savePrompts();renderPromptsList();toast('Prompt supprimé')});
+  const PCATS=[['all','Tous'],['assistant','Assistant'],['image','Image'],['video','Vidéo'],['voice','Voix'],['code','Code'],['doc','Documents'],['translate','Traduction'],['transcribe','Transcription'],['search','Recherche'],['reason','Réflexion']];
+  const PCAT_IC={assistant:'persona',image:'eye',video:'bolt',voice:'spark',code:'code',doc:'note',translate:'globe',transcribe:'search',reason:'brain',search:'search'};
+  let prFilter='all',prQuery='';
+  function openPrompts(){closeSlash();showView('prompts')}
+  function renderPromptsView(){
+    const counts={};PROMPTS.forEach(p=>{const k=p.cat||'assistant';counts[k]=(counts[k]||0)+1});
+    $('#prCats').innerHTML=PCATS.map(([k,l])=>{const n=k==='all'?PROMPTS.length:(counts[k]||0);return `<button class="prchip${k===prFilter?' on':''}" data-pc="${k}">${l}${n?` <span class="prn">${n}</span>`:''}</button>`}).join('');
+    $$('#prCats .prchip').forEach(b=>b.onclick=()=>{prFilter=b.dataset.pc;renderPromptsView()});
+    const s=$('#prSearch');if(s&&!s._b){s._b=1;s.addEventListener('input',()=>{prQuery=s.value.toLowerCase().trim();renderPromptList()})}
+    renderPromptList();
   }
-  function editPrompt(i){const p=PROMPTS[i];const title=window.prompt('Nom du prompt',p?p.title:'');if(title===null||!title.trim())return;const cmd=window.prompt('Raccourci (sans /)',p?p.cmd:title.toLowerCase().replace(/\s+/g,'-').slice(0,16));if(cmd===null)return;const text=window.prompt('Texte du prompt',p?p.text:'');if(text===null)return;const obj={cmd:cmd.trim().replace(/^\//,''),title:title.trim(),text:text,icon:p?p.icon:'spark'};if(p)PROMPTS[i]=obj;else PROMPTS.push(obj);savePrompts();renderPromptsList();toast('Prompt enregistré')}
+  function renderPromptList(){
+    const items=PROMPTS.map((p,i)=>({p,i})).filter(({p})=>{const k=p.cat||'assistant';const okc=prFilter==='all'||k===prFilter;const okq=!prQuery||(p.title+' '+p.cmd+' '+p.text).toLowerCase().includes(prQuery);return okc&&okq});
+    $('#promptList').innerHTML=items.length?items.map(({p,i})=>`<div class="pr-row" data-pi="${i}"><span class="pr-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH[PCAT_IC[p.cat]||p.icon||'spark']||GLYPH.spark}</svg></span><span class="pr-cmd">/${esc(p.cmd)}</span><div class="pr-main"><div class="pr-t">${esc(p.title)}</div><div class="pr-x">${esc(p.text.replace(/\n/g,' '))}</div></div><span class="la" data-pe="${i}" data-tip="Modifier"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></span><span class="la" data-pd="${i}" data-tip="Supprimer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.trash}</svg></span></div>`).join(''):`<div class="cp-empty">Aucun prompt${prQuery?' pour « '+esc(prQuery)+' »':''}.</div>`;
+    $$('#promptList .pr-row').forEach(r=>r.addEventListener('click',e=>{if(e.target.closest('.la'))return;const p=PROMPTS[+r.dataset.pi];if(!p)return;showView(activeId?'chat':'home');prompt.value=p.text;autoGrow();updateCount();setTimeout(()=>{try{prompt.focus();prompt.setSelectionRange(prompt.value.length,prompt.value.length)}catch(_){}},0);toast('Prompt inséré ✦')}));
+    $$('#promptList [data-pe]').forEach(b=>b.onclick=e=>{e.stopPropagation();editPrompt(+b.dataset.pe)});
+    $$('#promptList [data-pd]').forEach(b=>b.onclick=e=>{e.stopPropagation();PROMPTS.splice(+b.dataset.pd,1);savePrompts();renderPromptsView();toast('Prompt supprimé')});
+  }
+  function editPrompt(i){const p=PROMPTS[i];const title=window.prompt('Nom du prompt',p?p.title:'');if(title===null||!title.trim())return;const cmd=window.prompt('Raccourci (sans /)',p?p.cmd:title.toLowerCase().replace(/\s+/g,'-').slice(0,16));if(cmd===null)return;const text=window.prompt('Texte du prompt',p?p.text:'');if(text===null)return;const cat=p?p.cat:(prFilter!=='all'?prFilter:'assistant');const obj={cmd:cmd.trim().replace(/^\//,''),title:title.trim(),text:text,cat:cat||'assistant',icon:p?p.icon:'spark'};if(p)PROMPTS[i]=obj;else PROMPTS.push(obj);savePrompts();renderPromptsView();toast('Prompt enregistré')}
   $('#promptAdd').addEventListener('click',()=>editPrompt(-1));
-  $('#prClose').addEventListener('click',()=>$('#promptsModal').classList.remove('show'));
-  $('#promptsModal').addEventListener('click',e=>{if(e.target.id==='promptsModal')$('#promptsModal').classList.remove('show')});
+  $('#prBack').addEventListener('click',()=>showView(activeId?'chat':'home'));
 
   /* misc */
   $('#collapseBtn').addEventListener('click',()=>{$('#sidebar').classList.toggle('collapsed')});
