@@ -1073,12 +1073,16 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 .gm-demo{position:absolute;left:10px;bottom:10px;z-index:2;font-size:11px;font-weight:var(--fw-semi);color:var(--ink);background:rgba(250,248,243,.88);border:1px solid var(--line-strong);border-radius:var(--r-pill);padding:3px 10px;backdrop-filter:blur(4px)}
 [data-theme="dark"] .gm-demo{background:rgba(26,25,22,.82)}
 
+/* a11y : lien d'évitement, visible au focus clavier seulement */
+.skip-link{position:fixed;top:-60px;left:12px;z-index:9999;background:var(--accent);color:#fff;padding:10px 16px;border-radius:var(--r-sm);font-weight:600;text-decoration:none;transition:top .15s}
+.skip-link:focus{top:12px;outline:2px solid var(--ink);outline-offset:2px}
 /* perf : ne rend pas les messages hors écran (longues conversations) */
 .msg{content-visibility:auto;contain-intrinsic-size:auto 90px}
 .gen-media img.gm-art,.gen-media video.gm-art{decoding:async}
 </style>
 </head>
 <body>
+<a href="#main" class="skip-link">Aller au contenu</a>
 
 <!-- ====================================================================
   MAZ V2 — SHELL (DA « Encre & Crème », anti-découpe)
@@ -1154,7 +1158,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     </header>
 
     <!-- MAIN : toutes les vues empilées dans une seule cellule grid -->
-    <main class="main" id="main">
+    <main class="main" id="main" tabindex="-1">
 
       <!-- ACCUEIL minimal -->
       <section class="view active" id="view-home" aria-label="Accueil">
@@ -3255,12 +3259,14 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     });
   }
   /* a11y : rend les contrôles d'action (divs/spans cliquables) focusables + nommés + activables au clavier (cf. handler keydown role=button) */
-  const A11Y_SEL='.la,.pa,.ax,.mc-x,.pf-x,.gm-b,.help-link,.src,.toggle,.chat-pill,.lrow,.pcard,.irow,.ps-preset,.prchip,.faq-q,.cp-item,.sug,.ob-theme,.slash-i,.pi[data-mode],.pi[data-toggle],.pi[data-pf],.pi[data-add],.ptype,.nw-road,.pp-file .pf-x';
+  const A11Y_SEL='.la,.pa,.ax,.mc-x,.pf-x,.gm-b,.help-link,.src,.toggle,.chat-pill,.lrow,.pcard,.irow,.ps-preset,.prchip,.faq-q,.cp-item,.sug,.ob-theme,.slash-i,.pi[data-mode],.pi[data-toggle],.pi[data-pf],.pi[data-add],.ptype,.nw-road,.pp-file .pf-x,.btn,.m-x,.mini-btn,.sg,.ltag,.pr-row,.rt,.swatch,.vbtn';
   function a11yButtons(root){(root||document).querySelectorAll(A11Y_SEL).forEach(el=>{
     if(el.matches('button,a,input,textarea,select'))return;
-    if(!el.getAttribute('role'))el.setAttribute('role','button');
+    if(!el.getAttribute('role'))el.setAttribute('role',el.matches('.toggle')?'switch':'button');
     if(!el.hasAttribute('tabindex'))el.setAttribute('tabindex','0');
-    if(!el.getAttribute('aria-label')){const t=(el.getAttribute('data-tip')||el.textContent||'').replace(/\s+/g,' ').trim().slice(0,60);if(t)el.setAttribute('aria-label',t);}
+    if(!el.getAttribute('aria-label')){const t=(el.getAttribute('data-tip')||el.textContent||'').replace(/\s+/g,' ').trim().slice(0,60)||(el.matches('.m-x,.mc-x,.pf-x,.ax')?'Fermer':'');if(t)el.setAttribute('aria-label',t);}
+    if(el.matches('.toggle'))el.setAttribute('aria-checked',el.classList.contains('on')?'true':'false');   // état réel de l'interrupteur
+    else if(el.matches('.sg,.ob-theme,.ps-preset,.ptype'))el.setAttribute('aria-pressed',(el.classList.contains('on')||el.classList.contains('active')||el.classList.contains('sel'))?'true':'false');
   });}
   let _a11yT=0;function _a11ySweep(){a11yButtons();autoLabelAll();}
   (function(){const app=document.getElementById('app');if(!app)return;new MutationObserver(()=>{clearTimeout(_a11yT);_a11yT=setTimeout(_a11ySweep,250);}).observe(app,{childList:true,subtree:true});})();
@@ -3350,10 +3356,12 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   /* a11y : les éléments role=button (divs cliquables : onboarding, vignettes thème…) s'activent au clavier */
   document.addEventListener('keydown',e=>{
     if(e.key!=='Enter'&&e.key!==' ')return;
-    const t=e.target;if(!t||t.getAttribute('role')!=='button')return;
+    const t=e.target,r=t&&t.getAttribute('role');if(r!=='button'&&r!=='switch')return;
     if(t.matches('button,a[href],input,textarea,select'))return;
     e.preventDefault();t.click();
   });
+  /* a11y : reflète l'état réel des interrupteurs/segments après bascule */
+  document.addEventListener('click',e=>{const t=e.target&&e.target.closest('.toggle,.sg,.ob-theme,.ps-preset,.ptype,.chip');if(!t)return;setTimeout(()=>{const on=t.classList.contains('on')||t.classList.contains('active');if(t.matches('.toggle'))t.setAttribute('aria-checked',on?'true':'false');else t.setAttribute('aria-pressed',on?'true':'false');},0);});
   /* ===== accessibilité : modales (aria-modal + piège de focus + retour focus) ===== */
   (function(){
     const SEL='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
