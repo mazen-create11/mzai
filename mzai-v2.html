@@ -1713,6 +1713,22 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   }
   function togglePin(id){const c=convoById(id);if(!c)return;c.pinned=!c.pinned;saveConvos();renderRecents();renderLibrary($('#libSearch')?.value||'');toast(c.pinned?'Conversation épinglée':'Désépinglée')}
   function editTags(id){const c=convoById(id);if(!c)return;const v=window.prompt('Tags (séparés par des virgules)',(c.tags||[]).join(', '));if(v===null)return;c.tags=v.split(',').map(s=>s.trim()).filter(Boolean).slice(0,6);saveConvos();renderLibrary($('#libSearch')?.value||'');toast('Tags mis à jour')}
+  // export portable : réhydrate images/OCR + inline l'audio depuis IndexedDB pour que la sauvegarde fonctionne sur un autre appareil
+  async function buildExport(){
+    const convs=[];
+    for(const c of CONVOS){
+      await rehydrateFiles(c);
+      const cc=Object.assign({},c);
+      cc.msgs=await Promise.all((c.msgs||[]).map(async m=>{
+        const mm=Object.assign({},m);
+        if(m.media&&m.media.mid&&!m.media.url){const u=await MEDIA.get(m.media.mid);if(u)mm.media=Object.assign({},m.media,{url:u});}
+        if(Array.isArray(m.files))mm.files=m.files.map(f=>{const ff=Object.assign({},f);delete ff.file;return ff;});
+        return mm;
+      }));
+      convs.push(cc);
+    }
+    return {version:2,model:currentModel,persona:PERSONA,settings:SETTINGS,conversations:convs,projects:PROJECTS,prompts:PROMPTS,memory:getMemory(),exportedAt:new Date().toISOString()};
+  }
   function exportConvo(id){const c=convoById(id);if(!c)return;const md='# '+c.title+'\n\n'+c.msgs.map(m=>(m.role==='user'?'**Toi**\n\n':'**'+(m.model||'MAZ')+'**\n\n')+(m.text||(m.media?'_['+m.media.type+' généré : '+(m.media.prompt||'')+']_':''))).join('\n\n---\n\n')+'\n';const blob=new Blob([md],{type:'text/markdown'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(c.title||'conversation').replace(/[^\wÀ-ſ-]+/g,'_').slice(0,50)+'.md';a.click();URL.revokeObjectURL(u);toast('Conversation exportée (.md)')}
   const ASSISTANTS = [
     { id: 'aide', name: 'Aide MAZ', desc: 'Prise en main, fonctions & réglages', color: '#B85335', icon: 'help', prompt: "Tu es l'assistant d'aide intégré de MAZ, une application de chat IA premium. Tu connais parfaitement l'app et tu guides l'utilisateur pas à pas dans l'interface. Fonctions clés : le sélecteur de modèle en haut à droite (DeepSeek, Qwen, Kimi, GLM, MiniMax — et « MAZ Auto » qui choisit automatiquement le meilleur modèle selon la demande) ; les modes Image, Vidéo et Voix dans la barre d'outils sous le champ de saisie ; les Projets (espaces avec contexte permanent) ; la Bibliothèque (historique et recherche) ; « Mon IA » (⌘J) pour définir nom, ton, longueur et instructions système ; et les clés API à coller dans Réglages › Clés API (OpenRouter pour le texte, SiliconFlow pour l'image/voix, Kling pour la vidéo). Réponds de façon claire, concrète et bienveillante, en indiquant toujours où cliquer. Si une fonction nécessite une clé API non renseignée, explique calmement où l'ajouter." },
@@ -2000,7 +2016,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     else if(a==='Bibliothèque de prompts')openPrompts();
     else if(a==='Raccourcis clavier')$('#shortcuts').classList.add('show');
     else if(a==='Importer une conversation'){importMode=true;$('#fileInput').multiple=false;$('#fileInput').click()}
-    else if(a==='Exporter mes données'){const data={version:2,model:currentModel,persona:PERSONA,settings:SETTINGS,conversations:CONVOS,projects:PROJECTS,prompts:PROMPTS,memory:getMemory(),exportedAt:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const u=URL.createObjectURL(blob),link=document.createElement('a');link.href=u;link.download='mzai-export.json';link.click();URL.revokeObjectURL(u);toast('Données exportées')}
+    else if(a==='Exporter mes données'){buildExport().then(data=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const u=URL.createObjectURL(blob),link=document.createElement('a');link.href=u;link.download='mzai-export.json';link.click();URL.revokeObjectURL(u);toast('Données exportées')})}
     else if(a==='Nouveautés')openNews();
     else if(a==='Corbeille')openTrash();
     else if(a==='Conditions & confidentialité')openHelp();
@@ -2062,7 +2078,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     $$('#apiList [data-kf]').forEach(inp=>{inp.addEventListener('input',()=>{KEYS[inp.dataset.kf]=inp.value.trim();persistKeys();const st=$('#apiList .api-kling .api-st'),ok=hasKey('kling');if(st){st.classList.toggle('on',ok);st.setAttribute('data-tip',ok?'Connecté':'2 clés requises')}renderModelPicker();syncModel()})});
   }
   renderApiList();
-  $('#setExport').addEventListener('click',()=>{const data={version:2,model:currentModel,persona:PERSONA,settings:SETTINGS,conversations:CONVOS,projects:PROJECTS,prompts:PROMPTS,memory:getMemory(),exportedAt:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='mzai-export.json';a.click();URL.revokeObjectURL(u);toast('Données exportées')});
+  $('#setExport').addEventListener('click',()=>{buildExport().then(data=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='mzai-export.json';a.click();URL.revokeObjectURL(u);toast('Données exportées')})});
   $('#setClear').addEventListener('click',()=>{if(!window.confirm('Effacer TOUTES les conversations, la corbeille et la mémoire de l\'IA ? (Tes clés API et réglages sont conservés.) Action irréversible.'))return;CONVOS=[];activeId=null;TRASH=[];saveTrash();setMemory('');MEDIA.clear&&MEDIA.clear();SESSION_TOKENS=0;SESSION_COST=0;try{localStorage.removeItem('mzai:stok');localStorage.removeItem('mzai:scost')}catch(e){}_renderTok(false);saveConvos();renderRecents();renderLibrary('');typeof renderTrash==='function'&&renderTrash();chat.innerHTML='';goHome();toast('Conversations, corbeille et mémoire effacées')});
 
   /* ===== persona studio ("Mon IA") ===== */
