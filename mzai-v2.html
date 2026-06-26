@@ -1523,12 +1523,12 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   // localStorage ne reçoit JAMAIS les données lourdes (images b64 / pages OCR) : elles vivent en IndexedDB (réf _mid). Évite le dépassement de quota ~5 Mo → perte de session.
   function _convosForStorage(){
     return CONVOS.map(c=>{
-      if(!(c.msgs&&c.msgs.some(m=>(m.files||[]).some(f=>f&&f._mid&&(f.b64||f.ocrPages))))) return c;
+      if(!(c.msgs&&c.msgs.some(m=>(m.files||[]).some(f=>f&&f._mid&&(f.b64||f.ocrPages||f._txt))))) return c;
       const cc=Object.assign({},c);
       cc.msgs=c.msgs.map(m=>{
-        if(!(m.files&&m.files.some(f=>f&&f._mid&&(f.b64||f.ocrPages)))) return m;
+        if(!(m.files&&m.files.some(f=>f&&f._mid&&(f.b64||f.ocrPages||f._txt)))) return m;
         const mm=Object.assign({},m);
-        mm.files=m.files.map(f=>{if(f&&f._mid){const ff=Object.assign({},f);delete ff.b64;delete ff.ocrPages;delete ff.file;return ff;}return f;});
+        mm.files=m.files.map(f=>{if(f&&f._mid){const ff=Object.assign({},f);delete ff.b64;delete ff.ocrPages;delete ff.file;if(f._txt)delete ff.textContent;return ff;}return f;});
         return mm;
       });
       return cc;
@@ -2775,7 +2775,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   // recharge en mémoire les données lourdes (b64 image / pages OCR) déportées en IndexedDB, avant le rendu
   async function rehydrateFiles(c){
     const tasks=[];
-    (c.msgs||[]).forEach(m=>(m.files||[]).forEach(f=>{ if(f&&f._mid&&!f.b64&&!f.ocrPages) tasks.push(MEDIA.get(f._mid).then(v=>{if(!v)return;if(f._ocr){try{f.ocrPages=JSON.parse(v)}catch(e){}}else{f.b64=v}})); }));
+    (c.msgs||[]).forEach(m=>(m.files||[]).forEach(f=>{ if(f&&f._mid&&f._txt){ if(!f.textContent) tasks.push(MEDIA.get(f._mid).then(v=>{if(v)f.textContent=v})); } else if(f&&f._mid&&!f.b64&&!f.ocrPages){ tasks.push(MEDIA.get(f._mid).then(v=>{if(!v)return;if(f._ocr){try{f.ocrPages=JSON.parse(v)}catch(e){}}else{f.b64=v}})); } }));
     if(tasks.length)await Promise.all(tasks);
   }
   async function openConvo(id){const c=convoById(id);if(!c)return;activeId=id;activeProject=c.pid||null;if(c.model&&MODELS.some(m=>m.id===c.model)){currentModel=c.model;syncModel()}chat.innerHTML='';showView('chat');await rehydrateFiles(c);if(activeId!==id)return;c.msgs.forEach(m=>m.role==='user'?addUser(m.text,m.files):renderAIStored(m));refreshCtxBanner();renderChatHead(c);renderRecents();stickBottom=true;scrollDown(true)}
@@ -2835,9 +2835,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(!f.isImg&&f.file){try{const textContent=await extractFileText(f.file);
         // OCR/vision : PDF scanné (aucun texte sélectionnable) en mode Documents → rastériser les pages pour le modèle vision
         if(currentMode==='doc'&&/\.pdf$/i.test(f.name)&&/^\[PDF «/.test(textContent||'')){
-          try{const pages=await pdfToImages(await f.file.arrayBuffer(),8);if(pages.length){const o={name:f.name,isImg:false,textContent,ocrPages:pages};const id='f'+newId();if(await MEDIA.put(id,JSON.stringify(pages))){o._mid=id;o._ocr=true;}return o;}}catch(e){}
+          try{const pages=await pdfToImages(await f.file.arrayBuffer(),8);if(pages.length){const o={name:f.name,isImg:false,textContent,ocrPages:pages};const id='f'+newId();if(await MEDIA.put(id,JSON.stringify(pages))){o._mid=id;o._ocr=true;}return o;}}catch(e){toast("Lecture PDF indisponible (réseau ou intégrité)")}
         }
-        if(textContent)return{name:f.name,isImg:false,textContent};}catch(e){}}
+        if(textContent){const o={name:f.name,isImg:false,textContent};if(textContent.length>20000){const id='f'+newId();if(await MEDIA.put(id,textContent)){o._mid=id;o._txt=true;}}return o;}}catch(e){}}
       return{name:f.name,isImg:false};
     }));
     if(!activeId)createConvo();const c=convoById(activeId);
