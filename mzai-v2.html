@@ -1007,6 +1007,24 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 .sidebar.collapsed .nav-item:hover{background:var(--surface-2)}
 .sidebar.collapsed .sb-head{justify-content:center;padding-inline:0}
 .sidebar.collapsed .new-chat{width:42px;height:42px;margin:0 auto;border-radius:var(--r-sm)}
+
+/* ===== fix : toggle panneau unique en bas + menu-btn propre ===== */
+.sb-foot{align-items:center}
+.sb-foot .profile{flex:1;min-width:0}
+.sb-foot #collapseBtn{flex-shrink:0}
+.sidebar.collapsed .sb-foot{flex-direction:column;gap:10px;padding:12px 0}
+.sidebar.collapsed .sb-foot #collapseBtn{margin:0 auto}
+.sidebar.collapsed .sb-head{padding-block:12px;min-height:24px}
+@media (max-width:1024px){.sb-foot #collapseBtn{display:none}}  /* mobile = drawer (open/close), pas de collapse */
+/* hamburger mobile : pas de fond collant après tap */
+.menu-btn:hover{background:transparent;color:var(--ink)}
+@media (hover:hover){.menu-btn:hover{background:var(--surface-2)}}
+.menu-btn:active{background:var(--surface-2)}
+
+/* fix scrim : interactif dès .show (pointer-events au lieu de visibility, plus fiable) */
+.scrim{visibility:visible;transition:opacity .25s var(--ease)}
+.scrim:not(.show){pointer-events:none}
+.scrim.show{opacity:1;pointer-events:auto}
 </style>
 </head>
 <body>
@@ -1026,9 +1044,6 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   <aside class="sidebar" id="sidebar" aria-label="Navigation">
     <header class="sb-head">
       <span class="brand-mini" id="brandHome" role="button" tabindex="0" data-tip="Accueil" aria-label="Accueil" style="cursor:pointer"><span class="wordmark">MZ<i>ai</i></span></span>
-      <button class="icon-btn ghost" id="collapseBtn" aria-label="Réduire le panneau" data-tip="Réduire">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></svg>
-      </button>
     </header>
 
     <div class="sb-scroll">
@@ -1055,6 +1070,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         <span class="avatar" id="navAv">M</span>
         <span class="who"><span class="name" id="navName">Mazen</span><span class="sub" id="navSub">Premium · local</span></span>
         <svg class="chev" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+      </button>
+      <button class="icon-btn ghost" id="collapseBtn" aria-label="Réduire ou agrandir le panneau" title="Réduire / agrandir le panneau">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></svg>
       </button>
     </footer>
   </aside>
@@ -1105,20 +1123,20 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
                   <!-- chip(s) de mode amovible(s), masqué tant que vide -->
                   <div class="opt-row" id="modeChip"></div>
                   <div class="input-row">
-                    <button class="clip" id="attachBtn" aria-label="Joindre un fichier" data-tip="Joindre"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 11.5 12.5 20a5 5 0 0 1-7-7l8.5-8.5a3.5 3.5 0 0 1 5 5L10.5 18a2 2 0 0 1-3-3l7.5-7.5"/></svg></button>
+                    <button class="clip" id="attachBtn" aria-label="Joindre un fichier" title="Joindre un fichier"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 11.5 12.5 20a5 5 0 0 1-7-7l8.5-8.5a3.5 3.5 0 0 1 5 5L10.5 18a2 2 0 0 1-3-3l7.5-7.5"/></svg></button>
                     <textarea id="prompt" rows="1" placeholder="Pose ta question à MZai…"></textarea>
-                    <button class="clip" id="dictateBtn" aria-label="Dictée vocale" data-tip="Dictée"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
-                    <button class="clip" id="liveBtn" aria-label="Transcription live" data-tip="Transcription live"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 10v4M8 6v12M12 3v18M16 6v12M20 10v4"/></svg></button>
-                    <button class="send rip" id="sendBtn" aria-label="Envoyer" data-tip="Envoyer"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
+                    <button class="clip" id="dictateBtn" aria-label="Dictée vocale" title="Dictée vocale"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+                    <button class="clip" id="liveBtn" aria-label="Transcription live" title="Transcription live (dictée continue)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 10v4M8 6v12M12 3v18M16 6v12M20 10v4"/></svg></button>
+                    <button class="send rip" id="sendBtn" aria-label="Envoyer" title="Envoyer"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
                   </div>
                   <!-- options contextuelles propres à l'outil choisi, masqué tant que vide -->
                   <div class="opt-row" id="toolOpts"></div>
                   <div class="toolbar" id="toolbar" role="toolbar" aria-label="Outils">
-                    <button class="tools-btn" id="toolsBtn" aria-haspopup="true" aria-expanded="false" aria-label="Ajouter et outils" data-tip="Ajouter · outils"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
-                    <button class="tool" id="toolModel" data-tip="Modèle"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5l2.4 6.1 6.1 2.4-6.1 2.4L12 19.5l-2.4-6.1L3.5 11l6.1-2.4z"/></svg><span id="toolModelLbl">MZ Auto</span></button>
+                    <button class="tools-btn" id="toolsBtn" aria-haspopup="true" aria-expanded="false" aria-label="Ajouter et outils" title="Ajouter · outils"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+                    <button class="tool" id="toolModel" title="Choisir le modèle"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5l2.4 6.1 6.1 2.4-6.1 2.4L12 19.5l-2.4-6.1L3.5 11l6.1-2.4z"/></svg><span id="toolModelLbl">MZ Auto</span></button>
                     <span class="tb-spacer"></span>
                     <span class="counter" id="counter">0 mots</span>
-                    <button class="tool ghost" id="magicWand" aria-label="Améliorer le prompt" data-tip="Améliorer le prompt"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 4-1 1M4 15l1-1M5 5l14 14M5 19l9-9-3-3 9-9"/></svg></button>
+                    <button class="tool ghost" id="magicWand" aria-label="Améliorer le prompt" title="Améliorer le prompt"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 4-1 1M4 15l1-1M5 5l14 14M5 19l9-9-3-3 9-9"/></svg></button>
                   </div>
                 </div>
                 <div class="hint"><span>MZai peut se tromper. <b>Vérifie les informations importantes.</b></span><span class="tok-count" id="tokCount" data-tip="Tokens utilisés cette session">0 tokens</span></div>
@@ -1241,7 +1259,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     <footer class="composer-dock" id="dockChat" aria-label="Saisie"></footer>
 
     <!-- SCRIM : frère de la sidebar, même stacking-context, z(scrim) < z(sidebar) -->
-    <div class="scrim" id="scrim" hidden></div>
+    <div class="scrim" id="scrim"></div>
 
   </div><!-- /.shell -->
 </div><!-- /#app -->
@@ -2162,7 +2180,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 
   /* contrôleur de génération (avec arrêt) */
   let curStop=null;
-  function setGenerating(g){generating=g;const b=$('#sendBtn');if(g){b.classList.remove('idle');b.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>';b.setAttribute('data-tip','Arrêter')}else{b.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>';b.setAttribute('data-tip','Envoyer');typeof updateCount==='function'&&updateCount()}}
+  function setGenerating(g){generating=g;const b=$('#sendBtn');if(g){b.classList.remove('idle');b.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>';b.setAttribute('title','Arrêter')}else{b.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>';b.setAttribute('title','Envoyer');typeof updateCount==='function'&&updateCount()}}
   const MEMORY_KEY='mzai:memory';
   function getMemory(){try{return localStorage.getItem(MEMORY_KEY)||''}catch(e){return''}}
   function setMemory(txt){try{localStorage.setItem(MEMORY_KEY,txt)}catch(e){}}
