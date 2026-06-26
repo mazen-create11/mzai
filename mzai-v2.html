@@ -1049,6 +1049,25 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 .wordmark .zmark{color:var(--accent-strong);font-weight:inherit}
 /* focus des boutons d'en-tête : halo neutre, pas orange (harmonisé avec les voisins) */
 .sb-head .icon-btn:focus-visible,.topbar .icon-btn:focus-visible,.menu-btn:focus-visible{outline:none;background:var(--surface-2);box-shadow:none}
+
+/* onboarding 3 étapes */
+.ob-step{display:flex;flex-direction:column;align-items:center;width:100%}
+.ob-key{display:flex;gap:8px;width:100%;margin-top:6px}
+.ob-key .inp{flex:1;min-width:0}
+.ob-key .btn{flex-shrink:0}
+.ob-keystat{font-size:12.5px;margin-top:9px;min-height:18px;color:var(--ink-soft);text-align:center}
+.ob-keystat.ok{color:var(--success-strong,#2F6347)}
+.ob-keystat.warn{color:var(--warning-strong,#7A560F)}
+.ob-keylink{display:inline-block;margin-top:8px;font-size:13px;color:var(--accent-strong);font-weight:var(--fw-med)}
+.ob-tools{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:8px}
+.ob-tool{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink);background:var(--surface-2);border:1px solid var(--line-strong);border-radius:var(--r-pill);padding:6px 12px}
+.ob-tool svg{color:var(--accent-strong)}
+/* honnêteté intégrations + confidentialité */
+.int-preview-note{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--ink-soft);background:var(--surface-2);border:1px solid var(--line-strong);border-radius:var(--r-md);padding:10px 13px;margin-bottom:14px}
+.int-preview-note svg{color:var(--accent-strong);flex-shrink:0}
+.privacy-card{background:var(--surface-2);border:1px solid var(--line-strong);border-radius:var(--r-md);padding:13px 15px;font-size:13px;line-height:1.6;color:var(--ink-soft)}
+.privacy-card p{margin:0 0 9px}.privacy-card p:last-child{margin-bottom:0}
+.privacy-card b{color:var(--ink);font-weight:var(--fw-semi)}
 </style>
 </head>
 <body>
@@ -1195,7 +1214,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       <section class="view" id="view-integrations" aria-label="Intégrations">
         <header class="vhead"><div class="min0"><div class="vt">Intégrations <span class="tr-count" id="intCount"></span></div><div class="vs">Connecte tes outils et services</div></div></header>
         <div class="vsearch"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4" stroke-linecap="round"/></svg><input id="intSearch" placeholder="Rechercher une intégration…"></div>
-        <div class="vbody"><div id="intList"></div></div>
+        <div class="vbody"><div class="int-preview-note"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01" stroke-linecap="round"/></svg>Préversion — sélectionne les intégrations qui t'intéressent ; la connexion réelle arrive bientôt.</div><div id="intList"></div></div>
       </section>
 
       <!-- PROJETS -->
@@ -1328,6 +1347,13 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   <div class="m-body set-body">
     <div class="field"><label>Modèle par défaut</label><button type="button" class="inp model-field" id="setModelBtn" data-popanchor><span class="mf-dot" id="setModelDot"></span><span id="setModelLbl">MZ Auto</span><svg class="mf-chev" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button></div>
     <div class="field" id="set-api"><label>Clés API</label><div id="apiList"></div></div>
+    <div class="field" id="set-privacy"><label>Confidentialité</label>
+      <div class="privacy-card">
+        <p><b>100% sur ton appareil.</b> Conversations, projets, persona et clés sont stockés en local (localStorage de ce navigateur). MAZ n'a aucun serveur : rien n'est envoyé à MAZ.</p>
+        <p>Quand tu envoies un message, l'appel part <b>directement</b> de ton navigateur vers le fournisseur du modèle choisi : <b>OpenRouter</b> (texte), <b>SiliconFlow</b> (image · voix · transcription), <b>Kling</b> (vidéo). Leurs serveurs traitent ta requête selon leurs propres conditions.</p>
+        <p>Tes clés restent locales et ne quittent ton appareil que vers ces fournisseurs. Tu peux tout exporter (JSON) ou tout effacer ci-dessous.</p>
+      </div>
+    </div>
     <div class="row"><div><div class="rl">Thème</div><div class="rd">Apparence de l'interface</div></div><div class="seg" id="segTheme"></div></div>
     <div class="row"><div><div class="rl">Animations</div><div class="rd">Effets et transitions</div></div><div class="toggle on" data-set="anim"></div></div>
     <div class="row"><div><div class="rl">Densité</div><div class="rd">Espacement de l'interface</div></div><div class="seg" id="segDensity"><div class="sg" data-d="cozy">Cozy</div><div class="sg" data-d="dense">Dense</div></div></div>
@@ -1408,13 +1434,29 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   <div class="m-body"><div id="cpList"></div></div>
 </div></div>
 
-<!-- ONBOARDING -->
+<!-- ONBOARDING (3 étapes : thème → clé + test → prêt) -->
 <div class="ov" id="onboard"><div class="modal sm"><div class="ob-box">
   <div class="ob-dots" id="obDots"></div>
-  <div class="ob-logo"><span class="mark" style="width:46px;height:46px;border-radius:13px;font-size:24px">M</span></div>
-  <div class="ob-t">Bienvenue sur MZai</div>
-  <div class="ob-d">Ton intelligence, sans limites. Choisis un thème pour commencer.</div>
-  <div class="ob-themes" id="obThemes"></div>
+  <div class="ob-step" data-step="0">
+    <div class="ob-logo"><span class="wordmark" style="font-size:30px;letter-spacing:-.5px">MA<span class="zmark">Z</span></span></div>
+    <div class="ob-t">Bienvenue sur MAZ</div>
+    <div class="ob-d">Ton IA premium — 100% sur ton appareil, rien n'est envoyé ailleurs que vers le modèle que tu choisis. Choisis ton thème.</div>
+    <div class="ob-themes" id="obThemes"></div>
+  </div>
+  <div class="ob-step" data-step="1" hidden>
+    <div class="ob-logo"><span class="mark" style="width:46px;height:46px;border-radius:13px"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="var(--ink-on-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.6 7.6a5 5 0 1 0-2 2L13 13l2 2 2-2 2 2 2-2-2-2 2.6-2.6"/></svg></span></div>
+    <div class="ob-t">Connecte ton IA</div>
+    <div class="ob-d">MAZ utilise <b>ta</b> clé (gratuite à créer) — c'est ce qui garde tes conversations privées. Colle ta clé <b>OpenRouter</b> pour discuter ; image, voix et vidéo s'ajoutent ensuite dans Réglages.</div>
+    <div class="ob-key"><input id="obKey" class="inp" type="password" placeholder="Colle ta clé OpenRouter…" autocomplete="off" spellcheck="false"><button class="btn primary" id="obTest" type="button">Tester</button></div>
+    <div class="ob-keystat" id="obKeyStat" role="status" aria-live="polite"></div>
+    <a class="ob-keylink" href="https://openrouter.ai/keys" target="_blank" rel="noopener">Créer une clé gratuite sur OpenRouter →</a>
+  </div>
+  <div class="ob-step" data-step="2" hidden>
+    <div class="ob-logo"><span class="mark" style="width:46px;height:46px;border-radius:13px;font-size:24px">✦</span></div>
+    <div class="ob-t">Tout est prêt</div>
+    <div class="ob-d">Pose ta question, ou choisis un outil sous le champ. « MZ Auto » sélectionne le meilleur modèle pour toi — et tu vois lequel sous chaque réponse.</div>
+    <div class="ob-tools" id="obTools"></div>
+  </div>
   <div class="ob-foot"><div class="ob-skip" id="obSkip">Passer</div><div style="display:flex;gap:9px"><div class="btn" id="obBack">Retour</div><div class="btn primary" id="obNext">Continuer</div></div></div>
 </div></div></div>
 
@@ -1712,7 +1754,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     $('#intCount').textContent=on+' connectée'+(on>1?'s':'')+' sur '+INTEGRATIONS.length;
     if(!f.length){$('#intList').innerHTML=`<div class="cp-empty">Aucune intégration pour « ${esc(filter)} »</div>`;return}
     const cats=[];f.forEach(o=>{if(!cats.includes(o.x.cat))cats.push(o.x.cat)});
-    $('#intList').innerHTML=cats.map(cat=>`<div class="int-cat-h">${esc(cat)}</div>`+f.filter(o=>o.x.cat===cat).map(({x,i})=>`<div class="irow"><div class="iic">${GLYPH[x.ic]?`<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${GLYPH[x.ic]}</svg>`:''}</div><div style="min-width:0;flex:1"><div class="inm">${esc(x.n)}</div><div class="idesc">${x.on?`<span class="istat"><span class="idot"></span>Connecté · sync il y a ${2+(i%9)}min</span>`:esc(x.d)}</div></div><div class="toggle${x.on?' on':''}" data-int="${i}"></div></div>`).join('')).join('');
+    $('#intList').innerHTML=cats.map(cat=>`<div class="int-cat-h">${esc(cat)}</div>`+f.filter(o=>o.x.cat===cat).map(({x,i})=>`<div class="irow"><div class="iic">${GLYPH[x.ic]?`<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${GLYPH[x.ic]}</svg>`:''}</div><div style="min-width:0;flex:1"><div class="inm">${esc(x.n)}</div><div class="idesc">${x.on?`<span class="istat"><span class="idot"></span>Activé · préversion</span>`:esc(x.d)}</div></div><div class="toggle${x.on?' on':''}" data-int="${i}"></div></div>`).join('')).join('');
     $$('#intList .toggle').forEach(t=>t.addEventListener('click',()=>{const i=t.dataset.int;INTEGRATIONS[i].on=!INTEGRATIONS[i].on;saveIntState();renderIntegrations($('#intSearch').value||'');toast(INTEGRATIONS[i].n+(INTEGRATIONS[i].on?' connecté':' déconnecté'))}));
   }
   /* project create modal */
@@ -3147,25 +3189,46 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   })();
 
   /* ===== onboarding première visite ===== */
-  let obStep=0,obTheme=normTheme(DB.get('theme','light'));
+  let obStep=0,obTheme=normTheme(DB.get('theme','light'));const OB_LAST=2;
   function startOnboarding(){obStep=0;obTheme=normTheme(DB.get('theme','light'));
+    $('#obDots').innerHTML=[0,1,2].map(i=>`<span class="ob-dot${i===0?' on':''}"></span>`).join('');
     $('#obThemes').innerHTML=[['light','Clair','#FAF8F3'],['dark','Sombre','#1A1916']].map(([k,n,bg])=>`<div class="ob-theme${k===obTheme?' on':''}" data-th="${k}"><div class="ob-sw" style="background:${bg};border:1px solid var(--line-strong);border-radius:var(--r-sm);height:34px"></div><div class="ob-nm">${n}</div></div>`).join('');
     $$('#obThemes .ob-theme').forEach(el=>el.onclick=()=>{$$('#obThemes .ob-theme').forEach(x=>x.classList.remove('on'));el.classList.add('on');obTheme=el.dataset.th;applyTheme(obTheme,true);renderThemePicker()});
+    $('#obTools').innerHTML=[['Assistant','persona'],['Image','eye'],['Documents','note'],['Traduction','globe'],['Voix','spark'],['Code','code']].map(([n,g])=>`<span class="ob-tool"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH[g]||GLYPH.spark}</svg>${n}</span>`).join('');
+    const ok=$('#obKey');if(ok)ok.value=KEYS.openrouter||'';$('#obKeyStat').textContent='';$('#obKeyStat').className='ob-keystat';
     obShow();$('#onboard').classList.add('show');
   }
   function obShow(){
     $$('#onboard .ob-step').forEach(s=>s.hidden=+s.dataset.step!==obStep);
     $$('#onboard .ob-dot').forEach((d,i)=>d.classList.toggle('on',i===obStep));
     $('#obBack').style.display=obStep===0?'none':'';
-    $('#obNext').textContent='Commencer ✦';
+    $('#obSkip').style.display=obStep===OB_LAST?'none':'';
+    $('#obNext').textContent=obStep===OB_LAST?'Commencer ✦':'Continuer';
+    if(obStep===1)setTimeout(()=>{const k=$('#obKey');k&&k.focus()},80);
   }
+  async function obTest(){
+    const k=$('#obKey').value.trim(),st=$('#obKeyStat');
+    if(!k){st.className='ob-keystat warn';st.textContent='Colle d\'abord ta clé OpenRouter.';return;}
+    st.className='ob-keystat';st.textContent='Vérification…';
+    try{
+      const r=await fetch('https://openrouter.ai/api/v1/auth/key',{headers:{'Authorization':'Bearer '+k}});
+      if(r.ok){KEYS.openrouter=k;DB.set('apikeys',KEYS);renderApiList();syncModel();st.className='ob-keystat ok';st.textContent='✓ Clé valide — tu es connecté !';}
+      else if(r.status===401){st.className='ob-keystat warn';st.textContent='Clé refusée (401). Recopie-la depuis openrouter.ai/keys.';}
+      else{st.className='ob-keystat warn';st.textContent='Réponse '+r.status+' — réessaie dans un instant.';}
+    }catch(e){st.className='ob-keystat warn';st.textContent='Connexion impossible. Tu peux continuer et coller la clé dans Réglages.';}
+  }
+  function obNext(){if(obStep<OB_LAST){obStep++;obShow();}else obFinish();}
+  function obBack(){if(obStep>0){obStep--;obShow();}}
   function obFinish(){
+    const k=$('#obKey')?$('#obKey').value.trim():'';if(k&&k!==KEYS.openrouter){KEYS.openrouter=k;DB.set('apikeys',KEYS);renderApiList();syncModel();}
     DB.set('theme',obTheme);DB.set('onboarded',true);$('#onboard').classList.remove('show');
     prompt&&prompt.focus();
   }
-  $('#obNext').addEventListener('click',obFinish);
+  $('#obNext').addEventListener('click',obNext);
+  $('#obBack').addEventListener('click',obBack);
   $('#obBack').style.display='none';
   $('#obSkip').addEventListener('click',obFinish);
+  $('#obTest').addEventListener('click',obTest);
 
   /* ===== PWA : installable ===== */
   let deferredPrompt=null;
