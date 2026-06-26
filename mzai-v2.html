@@ -1800,7 +1800,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     if(v==='persona')fillPersona();else if(v==='prompts')renderPromptsView();else if(v==='help')renderHelp();   // vues in-place (ex-modales)
     $('#app').dataset.view=v;                 // pilote le dock (#dockChat visible seulement en chat) + le clavier mobile
     const navv=v==='project'?'projects':v;
-    $$('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.view===navv));
+    $$('.nav-item').forEach(n=>{const on=n.dataset.view===navv;n.classList.toggle('active',on);if(on)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current')});
     moveComposer(v);                          // relog le composer dans le bon dock
     syncTopTitle();                           // titre de conv dans le topbar (chat) / masqué (home)
     if(window.innerWidth<=1024){$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show')}
@@ -2269,7 +2269,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 
   /* contrôleur de génération (avec arrêt) */
   let curStop=null;
-  function setGenerating(g){generating=g;const b=$('#sendBtn');if(g){b.classList.remove('idle');b.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>';b.setAttribute('title','Arrêter');b.setAttribute('aria-label','Arrêter la génération')}else{b.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>';b.setAttribute('title','Envoyer');b.setAttribute('aria-label','Envoyer');typeof updateCount==='function'&&updateCount()}}
+  function setGenerating(g){generating=g;const _ch=$('#chat');if(_ch)_ch.setAttribute('aria-busy',g?'true':'false');const b=$('#sendBtn');if(g){b.classList.remove('idle');b.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>';b.setAttribute('title','Arrêter');b.setAttribute('aria-label','Arrêter la génération')}else{b.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>';b.setAttribute('title','Envoyer');b.setAttribute('aria-label','Envoyer');typeof updateCount==='function'&&updateCount()}}
   const MEMORY_KEY='mzai:memory';
   function getMemory(){try{return localStorage.getItem(MEMORY_KEY)||''}catch(e){return''}}
   function setMemory(txt){try{localStorage.setItem(MEMORY_KEY,txt)}catch(e){}}
@@ -2316,7 +2316,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   async function runGen(node, _, opts){
     setGenerating(true);
     const col=node.querySelector('.col'),bubble=node.querySelector('.bubble');
-    let stopped=false,fin=false,reasonText="",reasonBox=null,fullText="",ctrl=null,idle=null,timedOut=false,injTotal=0,injUsed=0,resolvedModel=opts.model,wasAuto=false,finishReason="";const t0=performance.now();
+    let stopped=false,fin=false,reasonText="",reasonBox=null,fullText="",ctrl=null,idle=null,timedOut=false,injTotal=0,injUsed=0,resolvedModel=opts.model,wasAuto=false,finishReason="",streamEl=null,gotChunk=false,_scrollP=false;const t0=performance.now();
+    const _scrollSoon=()=>{if(_scrollP)return;_scrollP=true;requestAnimationFrame(()=>{_scrollP=false;scrollDown();});};   // un seul scroll par frame
     const truncNote=()=>finishReason==='length'?'\n\n_✂️ Réponse tronquée (limite de longueur atteinte) — écris « continue » pour la suite._':'';
     const finish=(text,meta)=>{
       if(fin)return;fin=true;meta=meta||{};clearTimeout(idle);
@@ -2394,12 +2395,13 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       let modelId = mData.api||opts.model;
       if(opts.search && isOR) modelId += ':online';  // plugin web réel d'OpenRouter
       if(needsVision && isOR) modelId = VISION_DOC;   // doc scanné / photo → modèle vision OCR
-      const body = {model:modelId, messages, stream:SETTINGS.stream, max_tokens:4096};
+      const _ctx=(modelById(opts.model).ctx||'').toLowerCase();const maxTok=(/m|auto/.test(_ctx)||parseInt(_ctx)>=128)?8192:4096;   // moins de troncature pour les gros contextes
+      const body = {model:modelId, messages, stream:SETTINGS.stream, max_tokens:maxTok};
       if(opts.reason && isOR) body.reasoning={enabled:true};  // chaîne de raisonnement réelle
       if(isOR) body.usage={include:true};                      // tokens + coût réels
       else if(SETTINGS.stream) body.stream_options={include_usage:true};
       ctrl=new AbortController();
-      const arm=()=>{clearTimeout(idle);idle=setTimeout(()=>{timedOut=true;try{ctrl.abort()}catch(e){}},90000);};  // garde-temps d'inactivité : un serveur muet ne bloque plus l'UI
+      const arm=()=>{clearTimeout(idle);idle=setTimeout(()=>{timedOut=true;try{ctrl.abort()}catch(e){}},gotChunk?90000:180000);};  // 180s avant le 1er token (modèles à raisonnement lent), 90s entre tokens ensuite
       arm();
       const res = await fetch(endpoint, { method:'POST', headers, body: JSON.stringify(body), signal:ctrl.signal });
 
@@ -2439,12 +2441,12 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           if(data.choices&&data.choices[0]&&data.choices[0].finish_reason)finishReason=data.choices[0].finish_reason;
           const d = data.choices?.[0]?.delta || {};
           const rd = d.reasoning ?? d.reasoning_content;
-          if(rd){ reasonText += rd; if(!reasonBox)reasonBox=insertReason(col,opts.model,'',true); reasonBox.querySelector('.rc-in').textContent=reasonText; scrollDown(); }
+          if(rd){ gotChunk=true; reasonText += rd; if(!reasonBox)reasonBox=insertReason(col,opts.model,'',true); reasonBox.querySelector('.rc-in').textContent=reasonText; _scrollSoon(); }
           if(d.annotations) sources = sources.concat(collectSources(d.annotations));
           if(d.content) {
-            fullText += d.content;
-            if(!qcMode){bubble.innerHTML = esc(fullText) + '<span class="caret"></span>';}
-            scrollDown();
+            fullText += d.content; gotChunk=true;
+            if(!qcMode){ if(!streamEl){bubble.innerHTML='<span class="stxt"></span><span class="caret"></span>';streamEl=bubble.querySelector('.stxt');} streamEl.appendChild(document.createTextNode(d.content)); }  // incrémental : on n'ajoute que le delta (pas de re-rendu O(n²))
+            _scrollSoon();
           }
         } catch(e) { parseErrors++; if(parseErrors<=3) console.warn('[MAZ SSE] fragment illisible :', e.message); }
       };
@@ -2629,6 +2631,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     let done=false;curStop=()=>{done=true;node.remove();setGenerating(false);curStop=null};
     try{
       if(!hasKey('siliconflow'))throw new Error('Clé SiliconFlow manquante');
+      if(text.length>2000){text=text.slice(0,2000);toast('Texte long : seuls les 2000 premiers caractères sont lus.');}   // garde-fou CosyVoice
       const res=await fetch(SF_HOST+'/v1/audio/speech',{method:'POST',headers:{'Authorization':'Bearer '+KEYS.siliconflow,'Content-Type':'application/json'},body:JSON.stringify({model:'FunAudioLLM/CosyVoice2-0.5B',input:text,voice:'FunAudioLLM/CosyVoice2-0.5B:alex',response_format:'mp3'})});
       if(!res.ok)throw new Error('HTTP '+res.status+' · '+(await res.text().catch(()=>'')).slice(0,200));
       const _blob=await res.blob();if(done)return;
@@ -2756,8 +2759,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     if(currentMode==='transcribe'){  // Transcription : fichier audio → SF ; sinon micro live
       const af=ATTACH.find(f=>f.file&&(/^audio\//.test(f.file.type)||/\.(mp3|wav|m4a|ogg|flac|aac|webm|opus)$/i.test(f.name)));
       if(af){const file=af.file;if(af.url)URL.revokeObjectURL(af.url);ATTACH=ATTACH.filter(x=>x!==af);renderAttach();if(!activeId)createConvo();const c=convoById(activeId);showView('chat');genTranscribe(c,file);return}
-      if(asrOn){asrRec&&asrRec.stop();return}
-      return toast('Transcription : importe un fichier audio ou lance le micro live');
+      if(asrOn)asrRec&&asrRec.stop();   // on arrête le micro mais on n'abandonne pas le texte dicté
+      if(!prompt.value.trim())return toast('Transcription : importe un audio ou dicte au micro (⫶⫶)');
+      // sinon : du texte a été dicté → on l'envoie comme message normal (le « insérer comme message » demandé)
     }
     const v=prompt.value.trim();if(!v&&!ATTACH.length)return toast('Écris un message');
     const rawFiles=[...ATTACH];ATTACH=[];renderAttach();
@@ -2777,6 +2781,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     if(c.msgs.filter(m=>m.role==='user').length===1)c.title=makeTitle(ut);
     c.model=currentModel;c.ts=now();saveConvos();renderRecents();
     showView('chat');addUser(ut,files);refreshCtxBanner();renderChatHead(c);prompt.value='';autoGrow();updateCount();
+    if(currentMode==='doc'){const hasDoc=files.some(f=>f.textContent||f.b64||(f.ocrPages&&f.ocrPages.length))||c.msgs.some(m=>(m.files||[]).some(f=>f.textContent||f.b64||(f.ocrPages&&f.ocrPages.length)));if(!hasDoc)toast('Astuce : joins un document (📎) pour que l\'outil l\'analyse');}
     if(currentMode==='voice')genVoice(c,ut);else if(currentMode==='image'||currentMode==='video')genMedia(c,ut,currentMode);else genReply(c);
     }finally{_sending=false;}
   }
