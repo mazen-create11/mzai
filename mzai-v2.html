@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>MAZ — Intelligence</title>
 <!-- theme-color adaptatif (chrome navigateur) aligné sur la DA « Encre & Crème » -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' data: blob: https://openrouter.ai https://api.siliconflow.com https://api.klingai.com https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com; worker-src 'self' blob:; frame-src 'self' blob: data:; manifest-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' data: blob: https://openrouter.ai https://api.siliconflow.com https://api.klingai.com https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src 'self' blob: data:; manifest-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="theme-color" content="#FAF8F3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1A1916" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1178,7 +1178,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
                   <div class="opt-row" id="modeChip"></div>
                   <div class="input-row">
                     <button class="clip" id="attachBtn" aria-label="Joindre un fichier" title="Joindre un fichier"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 11.5 12.5 20a5 5 0 0 1-7-7l8.5-8.5a3.5 3.5 0 0 1 5 5L10.5 18a2 2 0 0 1-3-3l7.5-7.5"/></svg></button>
-                    <textarea id="prompt" rows="1" placeholder="Pose ta question à MAZ…"></textarea>
+                    <textarea id="prompt" rows="1" placeholder="Pose ta question à MAZ…" aria-label="Message à MAZ"></textarea>
                     <button class="clip" id="dictateBtn" aria-label="Dictée vocale" title="Dictée vocale"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
                     <button class="clip" id="liveBtn" aria-label="Transcription live" title="Transcription live (dictée continue)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 10v4M8 6v12M12 3v18M16 6v12M20 10v4"/></svg></button>
                     <button class="send rip" id="sendBtn" aria-label="Envoyer" title="Envoyer"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
@@ -1895,7 +1895,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function themeLabel(){return normTheme(DB.get('theme','light'))==='dark'?'Sombre':'Clair'}
   function renderProfilePop(){
     const email=(USER.email&&USER.email.trim())?USER.email:'Compte local';
-    const ini=(USER.name||'M').trim()[0].toUpperCase();
+    const ini=((USER.name||'').trim()[0]||'M').toUpperCase();
     const items=[
       ['set','Paramètres',SET_GEAR],
       ['persona','Mon IA',GLYPH.persona],
@@ -1929,7 +1929,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 
   /* ===== utilisateur ===== */
   function applyUser(){
-    const ini=(USER.name||'M').trim()[0].toUpperCase();
+    const ini=((USER.name||'').trim()[0]||'M').toUpperCase();
     const av=$('.profile .avatar');if(av){av.textContent=ini;av.style.background=USER.avColor}
     const nm=$('.profile .name');if(nm)nm.textContent=USER.name;
     const sb=$('.profile .sub');if(sb)sb.textContent=USER.role;
@@ -1940,7 +1940,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   let pfColor=USER.avColor;
   function openProfile(){
     pfColor=USER.avColor;$('#pfName').value=USER.name;$('#pfEmail').value=USER.email;$('#pfRole').value=USER.role;
-    $('#pfAv').textContent=(USER.name||'M').trim()[0].toUpperCase();$('#pfAv').style.background=USER.avColor;
+    $('#pfAv').textContent=((USER.name||'').trim()[0]||'M').toUpperCase();$('#pfAv').style.background=USER.avColor;
     $('#pfNameP').textContent=USER.name;$('#pfEmailP').textContent=USER.email;
     $('#pfColors').innerHTML=PCOLORS.map(c=>`<div class="swatch${c===pfColor?' on':''}" data-c="${c}" style="background:${c}"></div>`).join('');
     $$('#pfColors .swatch').forEach(s=>s.onclick=()=>{$$('#pfColors .swatch').forEach(x=>x.classList.remove('on'));s.classList.add('on');pfColor=s.dataset.c;$('#pfAv').style.background=pfColor});
@@ -2200,7 +2200,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     x=x.replace(/ (\d+) /g,(_,i)=>{const b=blocks[i];const prev=/^(html|svg|xml|markup)$/i.test(b.lang)||/<(!doctype|html|body|div|section|svg|main|header|button|h1)[\s>]/i.test(b.code);return `<div class="codeblock"><div class="cb-top"><span class="cb-lang">${esc(b.lang)}</span><div class="cb-btns">${prev?`<button class="cb-prev" data-code="${encodeURIComponent(b.code)}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>Aperçu</button>`:''}<button class="cb-copy" data-code="${encodeURIComponent(b.code)}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copier</button></div></div><pre><code>${hl(b.code)}</code></pre></div>`});
     return x;
   }
-  const scrollDown=()=>{chat.scrollTop=chat.scrollHeight};
+  let stickBottom=true;
+  chat.addEventListener('scroll',()=>{stickBottom=(chat.scrollHeight-chat.scrollTop-chat.clientHeight)<100;});  // l'utilisateur peut remonter lire pendant le streaming
+  const scrollDown=(force)=>{if(force||stickBottom)chat.scrollTop=chat.scrollHeight};
   const isOn=name=>name==='Recherche'?!!opts.search:name==='Réflexion'?!!opts.reason:false;  // état lu depuis le sélecteur d'outils (opts), plus depuis le DOM
   function attHTML(f,removable,idx){
     const name=typeof f==='string'?f:f.name,isImg=typeof f==='object'&&f.isImg,url=typeof f==='object'?(f.b64||f.url):null;
@@ -2208,13 +2210,13 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     if(isImg&&url)return `<span class="att-chip img" data-tip="${esc(name)}"><img src="${esc(safeMediaUrl(url))}" alt="${esc(name)}">${rm}</span>`;
     return `<span class="att-chip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--c2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${fileIcon(name)}</svg><span class="an">${esc(name)}</span>${rm}</span>`;
   }
-  function addUser(text,files){const m=document.createElement('div');m.className='msg user';m.innerHTML='<div class="av">'+esc((USER.name||'M').trim()[0].toUpperCase())+'</div><div class="col"><div class="bubble"></div></div>';const col=m.querySelector('.col');m.querySelector('.bubble').textContent=text;if(files&&files.length){const at=document.createElement('div');at.style.cssText='display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end;margin-top:2px';at.innerHTML=files.map(f=>attHTML(f,false)).join('');col.appendChild(at)}
+  function addUser(text,files){const m=document.createElement('div');m.className='msg user';m.innerHTML='<div class="av">'+esc(((USER.name||'').trim()[0]||'M').toUpperCase())+'</div><div class="col"><div class="bubble"></div></div>';const col=m.querySelector('.col');m.querySelector('.bubble').textContent=text;if(files&&files.length){const at=document.createElement('div');at.style.cssText='display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end;margin-top:2px';at.innerHTML=files.map(f=>attHTML(f,false)).join('');col.appendChild(at)}
     const a=document.createElement('div');a.className='actions';
     a.innerHTML='<div class="act" data-a="edit" data-tip="Modifier"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div><div class="act" data-a="copy" data-tip="Copier"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></div>';
     col.appendChild(a);
     a.querySelector('[data-a=copy]').addEventListener('click',()=>{navigator.clipboard?.writeText(m.querySelector('.bubble').textContent);toast('Copié')});
     a.querySelector('[data-a=edit]').addEventListener('click',()=>editUser(m));
-    chat.appendChild(m);scrollDown()}
+    chat.appendChild(m);stickBottom=true;scrollDown(true)}
   function editUser(node){
     if(generating)return toast('Attends la fin de la réponse');
     const c=convoById(activeId);if(!c)return;
@@ -2255,7 +2257,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     }catch(e){}
   }
   function genReply(c){const reason=isOn('Réflexion'),search=isOn('Recherche'),model=currentModel,node=addAINode(model);runGen(node,REPLIES[ri++%REPLIES.length],{reason,search,model,onDone:(t,meta)=>{const userMsg=(c.msgs.filter(m=>m.role==='user').pop()||{}).text||'';c.msgs.push({role:'ai',text:t,model:meta.resolved||model,auto:!!meta.auto,reason,search,reasonText:meta.reasonText||'',sources:meta.sources||[],usage:meta.usage||null,ms:meta.ms||0});c.ts=now();saveConvos();renderRecents();if(c.msgs.filter(m=>m.role==='user').length===1)autoTitle(c);genSuggestions(node.querySelector('.col'),t,userMsg);}})}
-  function addAINode(modelId){const m=modelById(modelId||currentModel),n=document.createElement('div');n.className='msg ai';n.innerHTML='<div class="av" style="background:linear-gradient(140deg,#C46B4A,#8E3D22)"><span class="av-mz">'+MARK+'</span></div><div class="col"><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>';chat.appendChild(n);scrollDown();return n}
+  function addAINode(modelId){const m=modelById(modelId||currentModel),n=document.createElement('div');n.className='msg ai';n.innerHTML='<div class="av" style="background:linear-gradient(140deg,#C46B4A,#8E3D22)"><span class="av-mz">'+MARK+'</span></div><div class="col"><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>';chat.appendChild(n);scrollDown(true);return n}
   const aiReady=n=>{n&&n.classList&&n.classList.add('rendered')};   // bascule l'avatar du spinner « réflexion » au glyphe MZ
   function reasoningBlock(modelId,content,live){
     const m=modelById(modelId||currentModel);
@@ -2420,7 +2422,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           const ocr=[].concat(...(m.files||[]).map(f=>f.ocrPages||[]));  // pages PDF rastérisées (scanné)
           const docs=(m.files||[]).filter(f=>!f.isImg&&f.textContent&&!(f.ocrPages&&f.ocrPages.length));
           let txt=m.text.length>4000?m.text.slice(0,4000)+'…[tronqué]':m.text;
-          if(docs.length)txt+='\n\n'+docs.map(f=>{const cut=f.textContent.slice(0,cap);injTotal+=f.textContent.length;injUsed+=cut.length;return '**Fichier : '+f.name+'**\n```\n'+cut+'\n```'}).join('\n\n');
+          if(docs.length)txt+='\n\n'+docs.map(f=>{const cut=f.textContent.slice(0,cap).replace(/```/g,'`​`​`');injTotal+=f.textContent.length;injUsed+=cut.length;return '**Fichier : '+f.name+'**\n```\n'+cut+'\n```'}).join('\n\n');
           if(ocr.length)txt+='\n\n[Document scanné joint en images — lis-les directement pour répondre.]';
           const imgParts=[...imgs.map(f=>({type:'image_url',image_url:{url:f.b64}})),...ocr.map(u=>({type:'image_url',image_url:{url:u}}))];
           if(imgParts.length)return{role:m.role==='ai'?'assistant':'user',content:[{type:'text',text:txt},...imgParts]};
@@ -2480,7 +2482,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           if(data.choices&&data.choices[0]&&data.choices[0].finish_reason)finishReason=data.choices[0].finish_reason;
           const d = data.choices?.[0]?.delta || {};
           const rd = d.reasoning ?? d.reasoning_content;
-          if(rd){ gotChunk=true; reasonText += rd; if(!reasonBox)reasonBox=insertReason(col,opts.model,'',true); reasonBox.querySelector('.rc-in').textContent=reasonText; _scrollSoon(); }
+          if(rd){ gotChunk=true; reasonText += rd; if(!reasonBox)reasonBox=insertReason(col,opts.model,'',true); reasonBox.querySelector('.rc-in').appendChild(document.createTextNode(rd)); _scrollSoon(); }   // incrémental (plus de re-rendu O(n²))
           if(d.annotations) sources = sources.concat(collectSources(d.annotations));
           if(d.content) {
             fullText += d.content; gotChunk=true;
@@ -2676,8 +2678,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(!res.ok)throw new Error('HTTP '+res.status+' · '+(await res.text().catch(()=>'')).slice(0,200));
       const _blob=await res.blob();if(done)return;
       const url=await new Promise((rs,rj)=>{const fr=new FileReader();fr.onload=()=>rs(fr.result);fr.onerror=()=>rj(new Error('lecture audio'));fr.readAsDataURL(_blob)});
-      const mid='m'+newId();await MEDIA.put(mid,url);   // audio stocké en IndexedDB (hors localStorage), persiste au reload
-      const media={type:'audio',prompt:text,model,mid};  // CONVOS ne garde qu'une référence légère
+      const mid='m'+newId();const okIdb=await MEDIA.put(mid,url);   // audio en IndexedDB (hors localStorage), persiste au reload
+      const media=okIdb?{type:'audio',prompt:text,model,mid}:{type:'audio',prompt:text,model,url};  // repli inline si IDB indisponible (jamais de mid sans blob)
       bubble.classList.add('media-b');bubble.innerHTML=mediaBubbleHTML(media);wireMedia(bubble,media,node);hydrateMedia(bubble);
       c.msgs.push({role:'ai',media,model});c.ts=now();saveConvos();renderRecents();setGenerating(false);curStop=null;scrollDown();
     }catch(e){if(!done){bubble.innerHTML="<div class='api-err'><b>Erreur voix</b><br>"+esc(e.message)+"</div>";setGenerating(false);curStop=null}}
@@ -2760,7 +2762,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     (c.msgs||[]).forEach(m=>(m.files||[]).forEach(f=>{ if(f&&f._mid&&!f.b64&&!f.ocrPages) tasks.push(MEDIA.get(f._mid).then(v=>{if(!v)return;if(f._ocr){try{f.ocrPages=JSON.parse(v)}catch(e){}}else{f.b64=v}})); }));
     if(tasks.length)await Promise.all(tasks);
   }
-  async function openConvo(id){const c=convoById(id);if(!c)return;activeId=id;activeProject=c.pid||null;if(c.model&&MODELS.some(m=>m.id===c.model)){currentModel=c.model;syncModel()}chat.innerHTML='';showView('chat');await rehydrateFiles(c);if(activeId!==id)return;c.msgs.forEach(m=>m.role==='user'?addUser(m.text,m.files):renderAIStored(m));refreshCtxBanner();renderChatHead(c);renderRecents();scrollDown()}
+  async function openConvo(id){const c=convoById(id);if(!c)return;activeId=id;activeProject=c.pid||null;if(c.model&&MODELS.some(m=>m.id===c.model)){currentModel=c.model;syncModel()}chat.innerHTML='';showView('chat');await rehydrateFiles(c);if(activeId!==id)return;c.msgs.forEach(m=>m.role==='user'?addUser(m.text,m.files):renderAIStored(m));refreshCtxBanner();renderChatHead(c);renderRecents();stickBottom=true;scrollDown(true)}
   function renderChatHead(c){
     let h=chat.querySelector('.conv-head');
     if(!c){if(h)h.remove();return}
@@ -3403,7 +3405,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     e.preventDefault();t.click();
   });
   /* a11y : reflète l'état réel des interrupteurs/segments après bascule */
-  document.addEventListener('click',e=>{const t=e.target&&e.target.closest('.toggle,.sg,.ob-theme,.ps-preset,.ptype,.chip');if(!t)return;setTimeout(()=>{const on=t.classList.contains('on')||t.classList.contains('active');if(t.matches('.toggle'))t.setAttribute('aria-checked',on?'true':'false');else t.setAttribute('aria-pressed',on?'true':'false');},0);});
+  document.addEventListener('click',e=>{const t=e.target&&e.target.closest('.toggle,.sg,.ob-theme,.ps-preset,.ptype,.chip');if(!t)return;setTimeout(()=>{const grp=t.parentElement?t.parentElement.querySelectorAll('.toggle,.sg,.ob-theme,.ps-preset,.ptype,.chip'):[t];(grp.length?grp:[t]).forEach(el=>{const on=el.classList.contains('on')||el.classList.contains('active');if(el.matches('.toggle'))el.setAttribute('aria-checked',on?'true':'false');else el.setAttribute('aria-pressed',on?'true':'false');});},0);});
   /* ===== accessibilité : modales (aria-modal + piège de focus + retour focus) ===== */
   (function(){
     const SEL='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
