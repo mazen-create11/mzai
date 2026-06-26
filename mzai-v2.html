@@ -1193,6 +1193,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
               <button class="sug" data-mode="translate"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h7M9 3v2c0 4-2.5 7-5 8M5 9c0 2.5 2.5 4.5 5 5M13 21l4-9 4 9M14.5 17h5"/></svg>Traduction</button>
               <button class="sug" data-mode="voice"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/></svg>Voix</button>
               <button class="sug" data-toggle="search"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>Recherche web</button>
+              <button class="sug" data-toggle="reason"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>Réflexion</button>
             </div>
           </div>
         </div>
@@ -3112,16 +3113,22 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       fr.onload=ev=>{
         try{
           const data=JSON.parse(ev.target.result);
-          const convos=data.conversations||data.convos||(Array.isArray(data)?data:[]);
-          if(!convos.length)return toast('Fichier vide ou format inconnu');
-          let added=0;
+          const convos=(data&&(data.conversations||data.convos))||(Array.isArray(data)?data:[]);
+          if(!Array.isArray(convos)||!convos.length)return toast('Fichier vide ou format inconnu');
+          const okMsg=m=>m&&typeof m==='object'&&(m.role==='user'||m.role==='ai')&&typeof m.text==='string';
+          let added=0,skipped=0;
           convos.forEach(c=>{
-            if(c&&c.msgs&&c.msgs.length&&!CONVOS.find(x=>x.id===c.id)){
-              CONVOS.push({...c,id:c.id||newId(),ts:c.ts||now()});added++;
-            }
+            if(!c||typeof c!=='object'||!Array.isArray(c.msgs)){skipped++;return;}
+            const msgs=c.msgs.filter(okMsg).map(m=>{const o={role:m.role,text:String(m.text)};if(typeof m.model==='string')o.model=m.model;if(typeof m.ts==='number')o.ts=m.ts;if(m.auto)o.auto=true;if(Array.isArray(m.sources))o.sources=m.sources.filter(s=>s&&typeof s.url==='string');return o;});
+            if(!msgs.length){skipped++;return;}
+            let id=(typeof c.id==='string'&&c.id)?c.id:newId();
+            if(CONVOS.find(x=>x.id===id)){skipped++;return;}  // doublon
+            CONVOS.push({id,title:(typeof c.title==='string'&&c.title.trim())?c.title.slice(0,120):'Conversation importée',msgs,ts:typeof c.ts==='number'?c.ts:now(),pinned:!!c.pinned,tags:Array.isArray(c.tags)?c.tags.slice(0,6).map(String):[]});
+            added++;
           });
-          saveConvos();renderRecents();renderLibrary('');
-          toast(added?added+' conversation'+(added>1?'s':'')+' importée'+(added>1?'s':''):'Déjà à jour (aucun doublon)');
+          if(added&&!DB.set('convos',CONVOS))return toast('Stockage plein — impossible d\'importer. Allège tes conversations.');
+          renderRecents();renderLibrary('');
+          toast(added?added+' conversation'+(added>1?'s':'')+' importée'+(added>1?'s':'')+(skipped?' · '+skipped+' ignorée'+(skipped>1?'s':''):''):'Aucune conversation valide à importer');
         }catch(e){toast('Fichier invalide — JSON attendu');}
       };
       fr.readAsText(file);
