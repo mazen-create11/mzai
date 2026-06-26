@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-<title>MZai — Intelligence</title>
+<title>MAZ — Intelligence</title>
 <!-- theme-color adaptatif (chrome navigateur) aligné sur la DA « Encre & Crème » -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' data: blob: https://openrouter.ai https://api.siliconflow.com https://api.klingai.com https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com; worker-src 'self' blob:; frame-src 'self' blob: data:; manifest-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="theme-color" content="#FAF8F3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1A1916" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="MZai">
+<meta name="apple-mobile-web-app-title" content="MAZ">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23FAF8F3'/%3E%3Ctext x='90' y='131' font-family='Georgia,serif' font-size='118' font-weight='700' text-anchor='middle' fill='%23B85335'%3EM%3C/text%3E%3C/svg%3E">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23FAF8F3'/%3E%3Ctext x='90' y='131' font-family='Georgia,serif' font-size='118' font-weight='700' text-anchor='middle' fill='%23B85335'%3EM%3C/text%3E%3C/svg%3E">
-<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22MZai%22%2C%22short_name%22%3A%22MZai%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23FAF8F3%22%2C%22theme_color%22%3A%22%23FAF8F3%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%253D%2527http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2527%2520viewBox%253D%25270%25200%2520180%2520180%2527%253E%253Crect%2520width%253D%2527180%2527%2520height%253D%2527180%2527%2520rx%253D%252740%2527%2520fill%253D%2527%2523FAF8F3%2527%252F%253E%253Ctext%2520x%253D%252790%2527%2520y%253D%2527131%2527%2520font-family%253D%2527Georgia%252Cserif%2527%2520font-size%253D%2527118%2527%2520font-weight%253D%2527700%2527%2520text-anchor%253D%2527middle%2527%2520fill%253D%2527%2523B85335%2527%253EM%253C%252Ftext%253E%253C%252Fsvg%253E%22%2C%22sizes%22%3A%22any%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22MAZ%22%2C%22short_name%22%3A%22MAZ%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23FAF8F3%22%2C%22theme_color%22%3A%22%23FAF8F3%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%253D%2527http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2527%2520viewBox%253D%25270%25200%2520180%2520180%2527%253E%253Crect%2520width%253D%2527180%2527%2520height%253D%2527180%2527%2520rx%253D%252740%2527%2520fill%253D%2527%2523FAF8F3%2527%252F%253E%253Ctext%2520x%253D%252790%2527%2520y%253D%2527131%2527%2520font-family%253D%2527Georgia%252Cserif%2527%2520font-size%253D%2527118%2527%2520font-weight%253D%2527700%2527%2520text-anchor%253D%2527middle%2527%2520fill%253D%2527%2523B85335%2527%253EM%253C%252Ftext%253E%253C%252Fsvg%253E%22%2C%22sizes%22%3A%22any%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Hanken+Grotesk:ital,wght@0,400;0,450;0,500;0,600;0,700;1,500;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script>try{var t=JSON.parse(localStorage.getItem('mzai:theme'));document.documentElement.dataset.theme=(t==='dark'?'dark':'light')}catch(e){document.documentElement.dataset.theme='light'}</script>
 <style>
 /* ============================================================
-   MZai V2 — DESIGN SYSTEM « Encre & Crème »
+   MAZ V2 — DESIGN SYSTEM « Encre & Crème »
    Thème CLAIR par défaut · Dark via [data-theme="dark"] (toggle explicite).
    Source de vérité des tokens : design system consolidé.
    Contrastes texte d'info routés vers --ink-soft / --ink-faint assombri.
@@ -1029,7 +1029,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 .scrim:not(.show){pointer-events:none}
 .scrim.show{opacity:1;pointer-events:auto}
 
-/* ===== header sidebar façon Claude : MZai + recherche + toggle EN HAUT ===== */
+/* ===== header sidebar façon Claude : MAZ + recherche + toggle EN HAUT ===== */
 .sb-head .icon-btn{flex-shrink:0;color:var(--ink-soft)}
 .sb-head .icon-btn:hover{color:var(--ink);background:var(--surface-2)}
 .sidebar.collapsed .sb-head{justify-content:center;gap:0;padding-inline:0}
@@ -1077,7 +1077,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 <body>
 
 <!-- ====================================================================
-  MZai V2 — SHELL (DA « Encre & Crème », anti-découpe)
+  MAZ V2 — SHELL (DA « Encre & Crème », anti-découpe)
   Grille racine #app : sidebar (col 1, drawer mobile) + .shell (col 2).
   .shell = topbar / #main (vues empilées) / #dockChat (composer ancré).
   #scrim = frère de la sidebar DANS .shell (z scrim < z sidebar).
@@ -1134,7 +1134,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       <h1 class="tb-title" id="convTitle" hidden></h1>
       <span class="tb-spacer"></span>
       <button class="model-pill" id="modelPill" data-tip="Changer de modèle">
-        <span class="live"></span><span class="lbl" id="modelPillLbl">MZ Auto</span>
+        <span class="live"></span><span class="lbl" id="modelPillLbl">MAZ Auto</span>
         <svg class="chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
       </button>
       <button class="icon-btn" id="themeBtn" aria-label="Basculer le thème clair/sombre" data-tip="Thème">
@@ -1170,7 +1170,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
                   <div class="opt-row" id="modeChip"></div>
                   <div class="input-row">
                     <button class="clip" id="attachBtn" aria-label="Joindre un fichier" title="Joindre un fichier"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 11.5 12.5 20a5 5 0 0 1-7-7l8.5-8.5a3.5 3.5 0 0 1 5 5L10.5 18a2 2 0 0 1-3-3l7.5-7.5"/></svg></button>
-                    <textarea id="prompt" rows="1" placeholder="Pose ta question à MZai…"></textarea>
+                    <textarea id="prompt" rows="1" placeholder="Pose ta question à MAZ…"></textarea>
                     <button class="clip" id="dictateBtn" aria-label="Dictée vocale" title="Dictée vocale"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
                     <button class="clip" id="liveBtn" aria-label="Transcription live" title="Transcription live (dictée continue)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 10v4M8 6v12M12 3v18M16 6v12M20 10v4"/></svg></button>
                     <button class="send rip" id="sendBtn" aria-label="Envoyer" title="Envoyer"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
@@ -1179,13 +1179,13 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
                   <div class="opt-row" id="toolOpts"></div>
                   <div class="toolbar" id="toolbar" role="toolbar" aria-label="Outils">
                     <button class="tools-btn" id="toolsBtn" aria-haspopup="true" aria-expanded="false" aria-label="Ajouter et outils" title="Ajouter · outils"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
-                    <button class="tool" id="toolModel" title="Choisir le modèle"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5l2.4 6.1 6.1 2.4-6.1 2.4L12 19.5l-2.4-6.1L3.5 11l6.1-2.4z"/></svg><span id="toolModelLbl">MZ Auto</span></button>
+                    <button class="tool" id="toolModel" title="Choisir le modèle"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5l2.4 6.1 6.1 2.4-6.1 2.4L12 19.5l-2.4-6.1L3.5 11l6.1-2.4z"/></svg><span id="toolModelLbl">MAZ Auto</span></button>
                     <span class="tb-spacer"></span>
                     <span class="counter" id="counter">0 mots</span>
                     <button class="tool ghost" id="magicWand" aria-label="Améliorer le prompt" title="Améliorer mon prompt (le reformule en mieux)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5 14 10"/><path d="M16 3.2l1 2.6 2.6 1-2.6 1-1 2.6-1-2.6-2.6-1 2.6-1z"/><path d="M6 6.5l.5 1.3 1.3.5-1.3.5L6 10.6l-.5-1.3L4.2 8.8l1.3-.5z"/></svg></button>
                   </div>
                 </div>
-                <div class="hint"><span>MZai peut se tromper. <b>Vérifie les informations importantes.</b></span><span class="tok-count" id="tokCount" data-tip="Tokens utilisés cette session">0 tokens</span></div>
+                <div class="hint"><span>MAZ peut se tromper. <b>Vérifie les informations importantes.</b></span><span class="tok-count" id="tokCount" data-tip="Tokens utilisés cette session">0 tokens</span></div>
               </div><!-- /#composer -->
 
             </div><!-- /#dockHome -->
@@ -1260,18 +1260,18 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         <header class="vhead">
           <button class="back-btn" id="psBack" aria-label="Retour" data-tip="Retour"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
           <div class="prj-headic" id="psAv">M</div>
-          <div class="min0"><div class="vt">Mon IA</div><div class="vs">Personnalise le comportement de MZai</div></div>
+          <div class="min0"><div class="vt">Mon IA</div><div class="vs">Personnalise le comportement de MAZ</div></div>
           <span class="tb-spacer"></span>
           <button class="vbtn ghost" id="psReset">Réinitialiser</button>
           <button class="vbtn" id="psSave"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Enregistrer</button>
         </header>
         <div class="vbody"><div class="view-form">
-          <div class="field"><label>Nom de l'assistant</label><input class="inp" id="psName" placeholder="MZai"></div>
+          <div class="field"><label>Nom de l'assistant</label><input class="inp" id="psName" placeholder="MAZ"></div>
           <div class="field"><label>Personnalités</label><div class="seg" id="psPresets"></div></div>
           <div class="field"><label>Ton</label><div class="seg" id="psTone"></div></div>
           <div class="field"><label>Longueur des réponses</label><div class="seg" id="psLength"></div></div>
           <div class="field"><label>Traits</label><div class="seg" id="psTraits"></div></div>
-          <div class="field"><label>Instructions système</label><textarea class="inp" id="psSys" placeholder="Comment MZai doit-il répondre ?"></textarea></div>
+          <div class="field"><label>Instructions système</label><textarea class="inp" id="psSys" placeholder="Comment MAZ doit-il répondre ?"></textarea></div>
         </div></div>
       </section>
 
@@ -1350,7 +1350,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 <div class="ov" id="settings"><div class="modal">
   <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82M4.6 9a1.65 1.65 0 0 0-.33-1.82"/></svg></div><div class="m-tt"><div class="m-t">Réglages</div><div class="m-s">Modèle, clés API et préférences</div></div><div class="m-x" id="setClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
   <div class="m-body set-body">
-    <div class="field"><label>Modèle par défaut</label><button type="button" class="inp model-field" id="setModelBtn" data-popanchor><span class="mf-dot" id="setModelDot"></span><span id="setModelLbl">MZ Auto</span><svg class="mf-chev" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button></div>
+    <div class="field"><label>Modèle par défaut</label><button type="button" class="inp model-field" id="setModelBtn" data-popanchor><span class="mf-dot" id="setModelDot"></span><span id="setModelLbl">MAZ Auto</span><svg class="mf-chev" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button></div>
     <div class="field" id="set-api"><label>Clés API</label><div id="apiList"></div></div>
     <div class="field" id="set-privacy"><label>Confidentialité</label>
       <div class="privacy-card">
@@ -1370,7 +1370,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 
 <!-- PROFILE -->
 <div class="ov" id="profileModal"><div class="modal sm">
-  <div class="m-head"><div class="m-ic" id="pfAv">M</div><div class="m-tt"><div class="m-t">Profil</div><div class="m-s">Ton identité dans MZai</div></div><div class="m-x" id="pfClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
+  <div class="m-head"><div class="m-ic" id="pfAv">M</div><div class="m-tt"><div class="m-t">Profil</div><div class="m-s">Ton identité dans MAZ</div></div><div class="m-x" id="pfClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
   <div class="m-body">
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:18px;gap:2px"><div class="m-t" id="pfNameP">Mazen</div><div class="m-s" id="pfEmailP"></div></div>
     <div class="field"><label>Nom</label><input class="inp" id="pfName" placeholder="Ton nom"></div>
@@ -1459,7 +1459,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   <div class="ob-step" data-step="2" hidden>
     <div class="ob-logo"><span class="mark" style="width:46px;height:46px;border-radius:13px;font-size:24px">✦</span></div>
     <div class="ob-t">Tout est prêt</div>
-    <div class="ob-d">Pose ta question, ou choisis un outil sous le champ. « MZ Auto » sélectionne le meilleur modèle pour toi — et tu vois lequel sous chaque réponse.</div>
+    <div class="ob-d">Pose ta question, ou choisis un outil sous le champ. « MAZ Auto » sélectionne le meilleur modèle pour toi — et tu vois lequel sous chaque réponse.</div>
     <div class="ob-tools" id="obTools"></div>
   </div>
   <div class="ob-foot"><div class="ob-skip" id="obSkip" role="button" tabindex="0">Passer</div><div style="display:flex;gap:9px"><div class="btn" id="obBack" role="button" tabindex="0">Retour</div><div class="btn primary" id="obNext" role="button" tabindex="0">Continuer</div></div></div>
@@ -1536,7 +1536,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   const saveIntState=()=>DB.set('intstate',Object.fromEntries(INTEGRATIONS.map(x=>[x.n,x.on])));
   /* ===== fournisseurs IA (logos de marque) ===== */
   const PROVIDERS={
-    mz:{name:'MZai',ac:'#B85335',logo:'<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2.5l2.4 6.1 6.1 2.4-6.1 2.4L12 19.5l-2.4-6.1L3.5 11l6.1-2.4z"/></svg>'},
+    mz:{name:'MAZ',ac:'#B85335',logo:'<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2.5l2.4 6.1 6.1 2.4-6.1 2.4L12 19.5l-2.4-6.1L3.5 11l6.1-2.4z"/></svg>'},
     google:{name:'Google',ac:'#4285F4',site:'gemini.google.com',logo:'<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2C12 7 17 12 22 12C17 12 12 17 12 22C12 17 7 12 2 12C7 12 12 7 12 2Z"/></svg>'},
     openai:{name:'OpenAI',ac:'#10a37f',site:'platform.openai.com',logo:'<svg viewBox="0 0 256 260" width="17" height="17" fill="currentColor"><path d="M239.184 106.203a64.716 64.716 0 0 0-5.576-53.103C219.452 28.459 191 15.784 163.213 21.74A65.586 65.586 0 0 0 52.096 45.22a64.716 64.716 0 0 0-43.23 31.36c-14.31 24.602-11.061 55.634 8.033 76.74a64.665 64.665 0 0 0 5.525 53.102c14.174 24.65 42.644 37.324 70.446 31.36a64.72 64.72 0 0 0 48.754 21.744c28.481.025 53.714-18.361 62.414-45.481a64.767 64.767 0 0 0 43.229-31.36c14.137-24.558 10.875-55.423-8.083-76.483Zm-97.56 136.338a48.397 48.397 0 0 1-31.105-11.255l1.535-.87 51.67-29.825a8.595 8.595 0 0 0 4.247-7.367v-72.85l21.845 12.636c.218.111.37.32.409.563v60.367c-.056 26.818-21.783 48.545-48.601 48.601Zm-104.466-44.61a48.345 48.345 0 0 1-5.781-32.589l1.534.921 51.722 29.826a8.339 8.339 0 0 0 8.441 0l63.181-36.425v25.221a.87.87 0 0 1-.358.665l-52.335 30.184c-23.257 13.398-52.97 5.431-66.404-17.803ZM23.549 85.38a48.499 48.499 0 0 1 25.58-21.333v61.39a8.288 8.288 0 0 0 4.195 7.316l62.874 36.272-21.845 12.636a.819.819 0 0 1-.767 0L41.353 151.53c-23.211-13.454-31.171-43.144-17.804-66.405v.256Zm179.466 41.695-63.08-36.63L161.73 77.86a.819.819 0 0 1 .768 0l52.233 30.184a48.6 48.6 0 0 1-7.316 87.635v-61.391a8.544 8.544 0 0 0-4.4-7.213Zm21.742-32.69-1.535-.922-51.619-30.081a8.39 8.39 0 0 0-8.492 0L99.98 99.808V74.587a.716.716 0 0 1 .307-.665l52.233-30.133a48.652 48.652 0 0 1 72.236 50.391v.205ZM88.061 139.097l-21.845-12.585a.87.87 0 0 1-.41-.614V65.685a48.652 48.652 0 0 1 79.757-37.346l-1.535.87-51.67 29.825a8.595 8.595 0 0 0-4.246 7.367l-.051 72.697Zm11.868-25.58 28.138-16.217 28.188 16.218v32.434l-28.086 16.218-28.188-16.218-.052-32.434Z"/></svg>'},
     anthropic:{name:'Anthropic',ac:'#d97757',site:'console.anthropic.com',logo:'<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M13.827 3.52h3.603L24 20h-3.603l-6.57-16.48zm-7.258 0h3.767L16.906 20h-3.674l-1.343-3.461H5.017l-1.344 3.46H0L6.57 3.522zm4.132 9.959L8.453 7.687 6.205 13.48H10.7z"/></svg>'},
@@ -1572,7 +1572,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     return (PROVIDERS[m.provider]||PROVIDERS.mz).logo;
   }
   const MODELS=[
-    {id:'MZ Auto',provider:'mz',d:'Routeur intelligent · choisit le meilleur modèle',tag:'Smart',spd:3,ctx:'Auto',use:'Laisse MZai router selon la tâche.'},
+    {id:'MAZ Auto',provider:'mz',d:'Routeur intelligent · choisit le meilleur modèle',tag:'Smart',spd:3,ctx:'Auto',use:'Laisse MAZ router selon la tâche.'},
     {id:'DeepSeek V4 Pro',provider:'openrouter',api:'deepseek/deepseek-v4-pro',d:'Flagship raisonnement & tâches complexes',tag:'Pro',spd:2,ctx:'1M',use:'Raisonnement, analyse profonde, problèmes durs.'},
     {id:'DeepSeek V4 Flash',provider:'openrouter',api:'deepseek/deepseek-v4-flash',d:'Rapide et économique · quotidien',tag:'Flash',spd:4,ctx:'1M',use:'Réponses rapides, volume, brouillons.'},
     {id:'Qwen3 Max Thinking',provider:'openrouter',api:'qwen/qwen3-max-thinking',d:'Raisonnement profond Alibaba',tag:'Think',spd:2,ctx:'256K',use:'Maths, logique, calcul étape par étape.'},
@@ -1596,13 +1596,13 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   ];
 
   /* ===== état modèle / persona / clés ===== */
-  let currentModel=DB.get('model','MZ Auto');
+  let currentModel=DB.get('model','MAZ Auto');if(currentModel==='MZ Auto')currentModel='MAZ Auto';
   if(!MODELS.some(m=>m.id===currentModel))currentModel=MODELS[0].id;
-  const PERSONA=DB.get('persona',{name:'MZai',tone:'Direct',length:'Équilibré',sys:'',traits:[]});
+  const PERSONA=DB.get('persona',{name:'MAZ',tone:'Direct',length:'Équilibré',sys:'',traits:[]});
   const SETTINGS=DB.get('settings',{anim:true,stream:true,enter:true,showReason:false,webSearch:false,density:'cozy'});
   /* Clés chargées depuis keys.local.js (gitignored) → "toujours connecté" en local,
      sans aucun secret dans index.html. Fichier absent (ex: hébergé) → saisie dans Paramètres. */
-  if(!window.MZAI_KEYS)console.info('[MZai] keys.local.js absent — ajoute tes clés API dans Réglages › Clés API (stockées uniquement sur cet appareil).');
+  if(!window.MZAI_KEYS)console.info('[MAZ] keys.local.js absent — ajoute tes clés API dans Réglages › Clés API (stockées uniquement sur cet appareil).');
   const DEFAULT_KEYS=Object.assign({openrouter:'',siliconflow:'',kling_ak:'',kling_sk:''},window.MZAI_KEYS||{});
   const KEYS=Object.assign({},DEFAULT_KEYS,DB.get('apikeys',{}));
   Object.keys(DEFAULT_KEYS).forEach(k=>{if(DEFAULT_KEYS[k]&&!KEYS[k])KEYS[k]=DEFAULT_KEYS[k]});
@@ -1686,9 +1686,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   }
   function togglePin(id){const c=convoById(id);if(!c)return;c.pinned=!c.pinned;saveConvos();renderRecents();renderLibrary($('#libSearch')?.value||'');toast(c.pinned?'Conversation épinglée':'Désépinglée')}
   function editTags(id){const c=convoById(id);if(!c)return;const v=window.prompt('Tags (séparés par des virgules)',(c.tags||[]).join(', '));if(v===null)return;c.tags=v.split(',').map(s=>s.trim()).filter(Boolean).slice(0,6);saveConvos();renderLibrary($('#libSearch')?.value||'');toast('Tags mis à jour')}
-  function exportConvo(id){const c=convoById(id);if(!c)return;const md='# '+c.title+'\n\n'+c.msgs.map(m=>(m.role==='user'?'**Toi**\n\n':'**'+(m.model||'MZai')+'**\n\n')+m.text).join('\n\n---\n\n')+'\n';const blob=new Blob([md],{type:'text/markdown'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(c.title||'conversation').replace(/[^\wÀ-ſ-]+/g,'_').slice(0,50)+'.md';a.click();URL.revokeObjectURL(u);toast('Conversation exportée (.md)')}
+  function exportConvo(id){const c=convoById(id);if(!c)return;const md='# '+c.title+'\n\n'+c.msgs.map(m=>(m.role==='user'?'**Toi**\n\n':'**'+(m.model||'MAZ')+'**\n\n')+m.text).join('\n\n---\n\n')+'\n';const blob=new Blob([md],{type:'text/markdown'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(c.title||'conversation').replace(/[^\wÀ-ſ-]+/g,'_').slice(0,50)+'.md';a.click();URL.revokeObjectURL(u);toast('Conversation exportée (.md)')}
   const ASSISTANTS = [
-    { id: 'aide', name: 'Aide MZai', desc: 'Prise en main, fonctions & réglages', color: '#B85335', icon: 'help', prompt: "Tu es l'assistant d'aide intégré de MZai, une application de chat IA premium. Tu connais parfaitement l'app et tu guides l'utilisateur pas à pas dans l'interface. Fonctions clés : le sélecteur de modèle en haut à droite (DeepSeek, Qwen, Kimi, GLM, MiniMax — et « MZ Auto » qui choisit automatiquement le meilleur modèle selon la demande) ; les modes Image, Vidéo et Voix dans la barre d'outils sous le champ de saisie ; les Projets (espaces avec contexte permanent) ; la Bibliothèque (historique et recherche) ; « Mon IA » (⌘J) pour définir nom, ton, longueur et instructions système ; et les clés API à coller dans Réglages › Clés API (OpenRouter pour le texte, SiliconFlow pour l'image/voix, Kling pour la vidéo). Réponds de façon claire, concrète et bienveillante, en indiquant toujours où cliquer. Si une fonction nécessite une clé API non renseignée, explique calmement où l'ajouter." },
+    { id: 'aide', name: 'Aide MAZ', desc: 'Prise en main, fonctions & réglages', color: '#B85335', icon: 'help', prompt: "Tu es l'assistant d'aide intégré de MAZ, une application de chat IA premium. Tu connais parfaitement l'app et tu guides l'utilisateur pas à pas dans l'interface. Fonctions clés : le sélecteur de modèle en haut à droite (DeepSeek, Qwen, Kimi, GLM, MiniMax — et « MAZ Auto » qui choisit automatiquement le meilleur modèle selon la demande) ; les modes Image, Vidéo et Voix dans la barre d'outils sous le champ de saisie ; les Projets (espaces avec contexte permanent) ; la Bibliothèque (historique et recherche) ; « Mon IA » (⌘J) pour définir nom, ton, longueur et instructions système ; et les clés API à coller dans Réglages › Clés API (OpenRouter pour le texte, SiliconFlow pour l'image/voix, Kling pour la vidéo). Réponds de façon claire, concrète et bienveillante, en indiquant toujours où cliquer. Si une fonction nécessite une clé API non renseignée, explique calmement où l'ajouter." },
     { id: 'dev', name: 'Développeur Senior', desc: 'Code propre, architecture & debug', color: '#6366f1', icon: 'code', prompt: 'Tu es un développeur senior expert. Tu fournis du code propre, moderne, testé et optimisé, et tu expliques brièvement tes choix techniques. Tu repères les bugs et proposes le correctif minimal. Tu privilégies la lisibilité et la robustesse.' },
     { id: 'copy', name: 'Copywriter', desc: 'Textes qui vendent, emails & hooks', color: '#f43f5e', icon: 'pen', prompt: 'Tu es un copywriter professionnel. Tu écris des textes persuasifs, vivants et orientés conversion, avec des accroches fortes. Tu utilises les structures éprouvées (AIDA, PAS, BAB) sans jargon ni clichés IA, et tu proposes plusieurs variantes quand c\'est utile.' },
     { id: 'seo', name: 'Expert SEO', desc: 'Mots-clés, structure & contenu Google', color: '#10b981', icon: 'search', prompt: 'Tu es un expert SEO. Tu trouves des mots-clés pertinents avec intention de recherche, tu structures les pages (titres, balises, maillage) et tu rédiges un contenu lisible qui plaît à Google comme aux IA génératives (EEAT, citabilité).' },
@@ -1923,19 +1923,19 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   $('#blUpgrade').addEventListener('click',()=>$('#billingModal').classList.remove('show'));
   /* aide */
   const HELP_LINKS=JSON.parse(`[["Documentation","Guides de prise en main, outils, modèles et réglages, pas à pas avec captures.","note"],["Raccourcis clavier","⌘J (Mon IA), / pour les commandes, ⌘K recherche et plus pour aller plus vite.","keyboard"],["Nous contacter","Une question, un bug, une idée ? Écris-nous à support@mzai.app, réponse rapide.","mail"],["Statut des services","Disponibilité en temps réel des modèles et fournisseurs (OpenRouter, SiliconFlow, Kling).","globe"],["Confidentialité","Tout reste en local sur ton appareil. Détail de ce qui est stocké et jamais envoyé.","shield"]]`);
-  const FAQ=JSON.parse(`[["Comment changer de modèle ?","Clique sur la pastille du modèle en haut à droite (« MZ Auto » par défaut), ou sur le bouton Modèles sous le champ de saisie, puis choisis ton modèle texte, image, vidéo ou voix."],["C'est quoi MZ Auto ?","MZ Auto est le routeur intelligent : il choisit automatiquement le meilleur modèle selon ta tâche (raisonnement, code, rapidité…). Laisse-le sélectionné, ou force un modèle précis dans le sélecteur si tu veux garder la main."],["Où ajouter mes clés API ?","Menu Plus › Connexions API (ou Réglages › Clés API). Colle OpenRouter pour le texte, SiliconFlow pour image, voix et transcription, et Kling (Access Key + Secret Key) pour la vidéo. Les clés restent sur ton appareil."],["Mes données sont-elles privées ?","Oui. Conversations, projets, persona et clés sont stockés en local (localStorage) sur ton appareil. Rien ne part vers un serveur, sauf l'appel direct au modèle quand tu envoies un message avec ta propre clé."],["Comment personnaliser Mon IA ?","Ouvre Mon IA via le raccourci ⌘J (ou le menu latéral). Définis le nom, le ton, la longueur des réponses, les traits et les instructions système : c'est appliqué à toutes tes conversations."],["À quoi servent les Projets ?","Un Projet est un espace de travail avec un Contexte permanent (marque, ton, cible, contraintes) injecté dans chaque réponse. Va dans Projets › Nouveau projet, remplis le contexte ; les conversations s'y rattachent automatiquement."],["Quels outils propose MZai ?","10 outils : Assistant, Image, Vidéo, Voix (TTS), Code/Canvas (aperçu live HTML), Documents (PDF/DOCX/XLSX), Traduction, Transcription, Recherche web sourcée et Réflexion. Sélectionne-les dans la barre d'outils sous le champ de saisie."],["Comment utiliser les commandes /prompt ?","Tape « / » au début du champ de saisie pour afficher les commandes (traduire, résumer, coder, image…). Choisis-en une pour pré-remplir un prompt prêt à compléter."],["Comment exporter mes données ?","Réglages › Exporter mes données pour tout récupérer en JSON (conversations + réglages). Pour une seule conversation, survole-la dans la Bibliothèque et clique sur l'icône Exporter (.md)."],["Puis-je installer MZai comme une app (PWA) ?","Oui. Sur Chrome/Edge, clique sur l'icône d'installation dans la barre d'adresse ; sur iPhone (Safari), Partager › Sur l'écran d'accueil. MZai s'ouvre alors en fenêtre dédiée, hors navigateur."],["Pourquoi un outil me demande une clé API ?","Chaque type de génération passe par son fournisseur : texte (OpenRouter), image/voix/transcription (SiliconFlow), vidéo (Kling). Si la clé correspondante manque, ajoute-la dans Connexions API et réessaie."]]`);
+  const FAQ=JSON.parse(`[["Comment changer de modèle ?","Clique sur la pastille du modèle en haut à droite (« MAZ Auto » par défaut), ou sur le bouton Modèles sous le champ de saisie, puis choisis ton modèle texte, image, vidéo ou voix."],["C'est quoi MAZ Auto ?","MAZ Auto est le routeur intelligent : il choisit automatiquement le meilleur modèle selon ta tâche (raisonnement, code, rapidité…). Laisse-le sélectionné, ou force un modèle précis dans le sélecteur si tu veux garder la main."],["Où ajouter mes clés API ?","Menu Plus › Connexions API (ou Réglages › Clés API). Colle OpenRouter pour le texte, SiliconFlow pour image, voix et transcription, et Kling (Access Key + Secret Key) pour la vidéo. Les clés restent sur ton appareil."],["Mes données sont-elles privées ?","Oui. Conversations, projets, persona et clés sont stockés en local (localStorage) sur ton appareil. Rien ne part vers un serveur, sauf l'appel direct au modèle quand tu envoies un message avec ta propre clé."],["Comment personnaliser Mon IA ?","Ouvre Mon IA via le raccourci ⌘J (ou le menu latéral). Définis le nom, le ton, la longueur des réponses, les traits et les instructions système : c'est appliqué à toutes tes conversations."],["À quoi servent les Projets ?","Un Projet est un espace de travail avec un Contexte permanent (marque, ton, cible, contraintes) injecté dans chaque réponse. Va dans Projets › Nouveau projet, remplis le contexte ; les conversations s'y rattachent automatiquement."],["Quels outils propose MAZ ?","10 outils : Assistant, Image, Vidéo, Voix (TTS), Code/Canvas (aperçu live HTML), Documents (PDF/DOCX/XLSX), Traduction, Transcription, Recherche web sourcée et Réflexion. Sélectionne-les dans la barre d'outils sous le champ de saisie."],["Comment utiliser les commandes /prompt ?","Tape « / » au début du champ de saisie pour afficher les commandes (traduire, résumer, coder, image…). Choisis-en une pour pré-remplir un prompt prêt à compléter."],["Comment exporter mes données ?","Réglages › Exporter mes données pour tout récupérer en JSON (conversations + réglages). Pour une seule conversation, survole-la dans la Bibliothèque et clique sur l'icône Exporter (.md)."],["Puis-je installer MAZ comme une app (PWA) ?","Oui. Sur Chrome/Edge, clique sur l'icône d'installation dans la barre d'adresse ; sur iPhone (Safari), Partager › Sur l'écran d'accueil. MAZ s'ouvre alors en fenêtre dédiée, hors navigateur."],["Pourquoi un outil me demande une clé API ?","Chaque type de génération passe par son fournisseur : texte (OpenRouter), image/voix/transcription (SiliconFlow), vidéo (Kling). Si la clé correspondante manque, ajoute-la dans Connexions API et réessaie."]]`);
   function openHelp(){showView('help')}            // ex-modale → vue in-place
   function renderHelp(){
     $('#helpLinks').innerHTML=HELP_LINKS.map((l,i)=>`<div class="help-link" data-h="${i}"><div class="hl-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH[l[2]]||GLYPH.spark}</svg></div><div style="min-width:0"><div class="hl-t">${l[0]}</div><div class="hl-d">${l[1]}</div></div></div>`).join('');
-    $('#faqList').innerHTML='<button class="help-cta" id="helpAssistant"><span class="hc-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/></svg></span><div class="min0"><div class="hc-t">Demander à l\'assistant MZai</div><div class="hc-d">Une question précise ? L\'IA te guide pas à pas, en direct.</div></div><svg class="hc-go" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></button>'
+    $('#faqList').innerHTML='<button class="help-cta" id="helpAssistant"><span class="hc-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/></svg></span><div class="min0"><div class="hc-t">Demander à l\'assistant MAZ</div><div class="hc-d">Une question précise ? L\'IA te guide pas à pas, en direct.</div></div><svg class="hc-go" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></button>'
       +FAQ.filter(([q])=>!/cl[ée]s?\s*api/i.test(q)).map(([q,a])=>`<div class="faq"><div class="faq-q">${q}<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></div><div class="faq-a"><div>${a}</div></div></div>`).join('');
     $('#helpAssistant').onclick=launchAide;
     $$('#helpLinks .help-link').forEach(el=>el.onclick=()=>{const i=+el.dataset.h;if(HELP_LINKS[i][0]==='Raccourcis clavier'){$('#shortcuts').classList.add('show')}else toast(HELP_LINKS[i][0]==='Statut'?'Tous les systèmes sont opérationnels ✓':HELP_LINKS[i][1])});
     $$('#faqList .faq-q').forEach(q=>q.onclick=()=>q.parentElement.classList.toggle('open'));
   }
   $('#hpBack').addEventListener('click',()=>showView(activeId?'chat':'home'));
-  function logout(){if(window.confirm('Se déconnecter de MZai ?'))toast('Déconnecté')}
-  /* Aide : lance l'assistant « Aide MZai » dans une nouvelle conversation */
+  function logout(){if(window.confirm('Se déconnecter de MAZ ?'))toast('Déconnecté')}
+  /* Aide : lance l'assistant « Aide MAZ » dans une nouvelle conversation */
   function launchAide(){const a=ASSISTANTS.find(x=>x.id==='aide');if(!a){openHelp();return}const c=createConvo();c.title=a.name;c.assistant=a.id;saveConvos();openConvo(c.id);if(window.innerWidth<=1024){$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show')}}
   /* Efface toutes les données locales (conversations, réglages, clés API) puis recharge */
   function clearLocalData(){if(!window.confirm('Effacer toutes les données locales (conversations, réglages, clés API) ? Cette action est irréversible.'))return;try{Object.keys(localStorage).filter(k=>k.indexOf('mzai:')===0).forEach(k=>localStorage.removeItem(k))}catch(e){}location.reload()}
@@ -1945,7 +1945,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   /* nouveautés */
   const NEWS=[
     {v:'1.0',d:'Juin 2026',items:[
-      {tag:'new',t:'Modèles chinois en direct',d:'DeepSeek V4 Pro/Flash, Qwen3, Kimi K2.7 et GLM-5.2 via OpenRouter & SiliconFlow. MZ Auto choisit le bon modèle selon ta tâche.'},
+      {tag:'new',t:'Modèles chinois en direct',d:'DeepSeek V4 Pro/Flash, Qwen3, Kimi K2.7 et GLM-5.2 via OpenRouter & SiliconFlow. MAZ Auto choisit le bon modèle selon ta tâche.'},
       {tag:'new',t:'Raisonnement visible',d:'La chaîne de pensée du modèle s\'affiche en direct dans un bloc dépliable.'},
       {tag:'new',t:'Recherche web réelle',d:'Réponses sourcées avec citations cliquables quand la recherche est activée.'},
       {tag:'new',t:'Mon IA — Persona Studio',d:'Définis nom, ton, longueur, traits et instructions système.'},
@@ -2056,8 +2056,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   const TONES=['Direct','Technique','Persuasif','Pédagogue','Neutre','Cash','Chaleureux'];
   const LENGTHS=['Concis','Équilibré','Détaillé'];
   const TRAITS=['Structuré','Honnête','Pragmatique','Rigoureux','Créatif','Vif','Patient','Clair','Factuel','Cash','Chaleureux','Curieux'];
-  /* le nom du persona sert d'identité de style — il ne renomme JAMAIS l'app (qui reste MZai) */
-  function applyPersona(){const nm=PERSONA.name||'MZai';const av=$('#psAv');if(av)av.textContent=nm.trim()[0].toUpperCase()}
+  /* le nom du persona sert d'identité de style — il ne renomme JAMAIS l'app (qui reste MAZ) */
+  function applyPersona(){const nm=PERSONA.name||'MAZ';const av=$('#psAv');if(av)av.textContent=nm.trim()[0].toUpperCase()}
   function fillChipset(host,opts,sel,multi){$(host).innerHTML=opts.map(o=>`<div class="chip${(multi?sel.includes(o):sel===o)?' on':''}" data-v="${o}">${o}</div>`).join('')}
   function openPersona(){showView('persona')}     // ex-modale → vue in-place
   function fillPersona(){
@@ -2074,8 +2074,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   }
   $('#psName').addEventListener('input',e=>$('#psAv').textContent=(e.target.value||'M').trim()[0].toUpperCase());
   $('#psBack').addEventListener('click',()=>showView(activeId?'chat':'home'));
-  $('#psSave').addEventListener('click',()=>{PERSONA.name=($('#psName').value.trim()||'MZai');PERSONA.sys=$('#psSys').value.trim();DB.set('persona',PERSONA);applyPersona();syncModel();toast(PERSONA.name+' est prête ✦')});
-  $('#psReset').addEventListener('click',()=>{Object.assign(PERSONA,{name:'MZai',tone:'Direct',length:'Équilibré',sys:'',traits:[]});DB.set('persona',PERSONA);fillPersona();applyPersona();toast('Persona réinitialisée')});
+  $('#psSave').addEventListener('click',()=>{PERSONA.name=($('#psName').value.trim()||'MAZ');PERSONA.sys=$('#psSys').value.trim();DB.set('persona',PERSONA);applyPersona();syncModel();toast(PERSONA.name+' est prête ✦')});
+  $('#psReset').addEventListener('click',()=>{Object.assign(PERSONA,{name:'MAZ',tone:'Direct',length:'Équilibré',sys:'',traits:[]});DB.set('persona',PERSONA);fillPersona();applyPersona();toast('Persona réinitialisée')});
 
   /* ===== command palette ===== */
   const COMMANDS=[
@@ -2137,7 +2137,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     "Bonne question. Voici comment je m'y prendrais :\n\n- On clarifie l'**objectif** et la cible.\n- On découpe en étapes concrètes.\n- On exécute, puis on mesure.\n\nDis-moi le contexte exact et je détaille chaque point.",
     "### Voici un exemple\nUn petit composant `Button` réutilisable :\n\n```jsx\nexport function Button({ children, onClick }) {\n  return (\n    <button className=\"btn\" onClick={onClick}>\n      {children}\n    </button>\n  );\n}\n```\n\nTu copies, tu colles, c'est prêt. Je peux l'adapter à ton style.",
     "Approche solide :\n\n- Garde l'interface **simple** et lisible.\n- Soigne la *hiérarchie* visuelle.\n- Teste sur mobile dès le départ.\n\nJe peux générer le code complet si tu veux.",
-    "Je suis **MZai**, ton assistant. Une fois l'API branchée, je répondrai pour de vrai avec le modèle "+currentModel+". Pour l'instant je simule — mais l'interface est 100% fonctionnelle ✦"
+    "Je suis **MAZ**, ton assistant. Une fois l'API branchée, je répondrai pour de vrai avec le modèle "+currentModel+". Pour l'instant je simule — mais l'interface est 100% fonctionnelle ✦"
   ];
   let ri=0;
   function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
@@ -2202,7 +2202,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const aiMsg=(c.msgs.find(m=>m.role==='ai')||{}).text||'';
     try{
       const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',
-        headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MZai'},
+        headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MAZ'},
         body:JSON.stringify({model:'deepseek/deepseek-v4-flash',max_tokens:20,temperature:0.3,
           messages:[{role:'system',content:'Génère un titre de 3-5 mots (sans ponctuation ni guillemets) qui résume cette conversation. Réponds UNIQUEMENT avec le titre.'},
             {role:'user',content:'Question : '+userMsg.slice(0,200)+'\nRéponse : '+aiMsg.slice(0,200)}]})});
@@ -2225,7 +2225,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function addSessionTokens(n){if(!n)return;SESSION_TOKENS+=n;localStorage.setItem('mzai:stok',SESSION_TOKENS);_renderTok(true);}
   function addSessionCost(c){c=+c;if(!c||!isFinite(c)||c<0)return;SESSION_COST+=c;localStorage.setItem('mzai:scost',String(SESSION_COST));_renderTok(true);}
   function statsEl(model,ms,usage,live){
-    const known=MODELS.find(m=>m.id===model);const label=known?known.id:model;   // accepte un id connu OU un libellé (« MZ Auto → DeepSeek V4 Pro »)
+    const known=MODELS.find(m=>m.id===model);const label=known?known.id:model;   // accepte un id connu OU un libellé (« MAZ Auto → DeepSeek V4 Pro »)
     const parts=['<b>'+esc(label)+'</b>'];
     if(ms)parts.push((ms/1000).toFixed(1)+'s');
     if(usage){const tot=usage.total_tokens||((usage.prompt_tokens||0)+(usage.completion_tokens||0));if(tot){parts.push(tot.toLocaleString('fr-FR')+' tokens');if(live)addSessionTokens(tot);}const cost=(usage.cost!=null?usage.cost:usage.total_cost);if(cost!=null&&+cost>0){parts.push('$'+(+cost<0.01?(+cost).toFixed(4):(+cost).toFixed(3)));if(live)addSessionCost(+cost);}}
@@ -2274,7 +2274,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const recent=c.msgs.slice(-6).map(m=>(m.role==='user'?'User: ':'IA: ')+m.text.slice(0,300)).join('\n');
     try{
       const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',
-        headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MZai'},
+        headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MAZ'},
         body:JSON.stringify({model:'deepseek/deepseek-v4-flash',max_tokens:120,temperature:0.2,
           messages:[{role:'system',content:"Synthétise en 2-3 phrases les préférences, style et besoins clés de l'utilisateur à retenir pour les prochaines sessions. Concis, factuel, sans intro."},
             {role:'user',content:recent}]})});
@@ -2292,7 +2292,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const base='Tu es un traducteur professionnel et natif. Traduis le message de l\'utilisateur '+(src?'depuis le '+src+' ':'(détecte automatiquement la langue source) ')+'vers le '+tgt+', registre '+T.trReg+'.\n\nRÈGLES STRICTES :\n— Ne traduis QUE le langage naturel. Laisse INCHANGÉS : blocs et inline de code, URLs, e-mails, {{placeholders}}, %s, $variables, balises <…>, nombres et unités.\n— Conserve EXACTEMENT la mise en forme markdown (titres, gras, listes, tableaux), les sauts de ligne et la structure.\n— Adapte les expressions idiomatiques au sens naturel de la langue cible (jamais de mot-à-mot).\n— Si un fichier est joint, traduis son contenu avec ces mêmes règles.'+g;
       if(T.trCheck)return base+'\n\nMODE VÉRIFICATION : réponds UNIQUEMENT par un objet JSON valide entouré d\'un bloc ```json … ```, de la forme {"segments":[{"src":"<segment source>","tgt":"<traduction>","fidelity":"ok"|"doute"}]}. Découpe phrase par phrase (ou paragraphe). Mets "fidelity":"doute" quand le sens est ambigu, idiomatique ou risqué. Aucun texte hors du bloc JSON.';
       return base+'\n\nSortie = la traduction SEULE, sans préambule, sans guillemets, sans commentaire, sans note.';}
-    const p=PERSONA;let s='Tu es '+(p.name||'MZai')+', un assistant IA premium et utile.';
+    const p=PERSONA;let s='Tu es '+(p.name||'MAZ')+', un assistant IA premium et utile.';
     if(c.assistant){const a=ASSISTANTS.find(x=>x.id===c.assistant);if(a)s=a.prompt;}
     else{
       if(p.sys)s+=' '+p.sys;
@@ -2323,7 +2323,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       wireBubble(bubble);addActions(col,copyText,node);
       if(injTotal>0){const b=injBadge(injUsed,injTotal);if(b)col.appendChild(b);}                          // transparence : X / Y caractères de document injectés
       if(currentMode==='doc'&&toolCfg.docAction==='Extraction')addJsonDownload(col,text);                  // export .json structuré
-      if(meta.usage||meta.ms){const s=statsEl(wasAuto?'MZ Auto → '+resolvedModel:resolvedModel,meta.ms,meta.usage,true);if(s)col.appendChild(s);}
+      if(meta.usage||meta.ms){const s=statsEl(wasAuto?'MAZ Auto → '+resolvedModel:resolvedModel,meta.ms,meta.usage,true);if(s)col.appendChild(s);}
       scrollDown();setGenerating(false);curStop=null;
       opts.onDone&&opts.onDone(text,{reasonText,sources:meta.sources,usage:meta.usage,ms:meta.ms,resolved:resolvedModel,auto:wasAuto});
     };
@@ -2334,7 +2334,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const c = convoById(activeId);
       const qcMode=(currentMode==='translate'&&toolCfg.trCheck);  // mode vérification : on masque le JSON brut pendant le stream
       let mData = modelById(opts.model);
-      if(mData.provider==='mz' && KEYS.openrouter){  // MZ Auto → routage selon la demande (transparent : modèle réel révélé sous la réponse)
+      if(mData.provider==='mz' && KEYS.openrouter){  // MAZ Auto → routage selon la demande (transparent : modèle réel révélé sous la réponse)
         const lastMsg=(c.msgs.filter(m=>m.role==='user').pop())||{};
         const lastUser=lastMsg.text||'';
         const t=lastUser.toLowerCase();
@@ -2385,7 +2385,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       );
       const endpoint = isOR ? "https://openrouter.ai/api/v1/chat/completions" : SF_HOST+"/v1/chat/completions";
       const headers={'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'};
-      if(isOR){headers['HTTP-Referer']=location.origin||'https://mzai.app';headers['X-Title']='MZai';}
+      if(isOR){headers['HTTP-Referer']=location.origin||'https://mzai.app';headers['X-Title']='MAZ';}
       bubble.innerHTML=qcMode?'<div class="gen-loading"><div class="gl-ring"></div>Traduction + contrôle qualité…</div>':'<span class="caret"></span>';
       let modelId = mData.api||opts.model;
       if(opts.search && isOR) modelId += ':online';  // plugin web réel d'OpenRouter
@@ -2442,7 +2442,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
             if(!qcMode){bubble.innerHTML = esc(fullText) + '<span class="caret"></span>';}
             scrollDown();
           }
-        } catch(e) { parseErrors++; if(parseErrors<=3) console.warn('[MZai SSE] fragment illisible :', e.message); }
+        } catch(e) { parseErrors++; if(parseErrors<=3) console.warn('[MAZ SSE] fragment illisible :', e.message); }
       };
       while(!stopped) {
         const {done, value} = await reader.read();
@@ -2488,7 +2488,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     if(msg.media){bubble.classList.add('media-b');bubble.innerHTML=mediaBubbleHTML(msg.media);wireMedia(bubble,msg.media,node);return}
     if(msg.reasonText)insertReason(col,msg.model,msg.reasonText,false);
     bubble.classList.add('md');bubble.innerHTML=renderMD(msg.text)+sourcesBlock(msg.model,msg.sources);wireBubble(bubble);addActions(col,msg.text,node);
-    if(msg.usage||msg.ms){const s=statsEl((msg.auto?'MZ Auto → ':'')+msg.model,msg.ms,msg.usage);if(s)col.appendChild(s);}
+    if(msg.usage||msg.ms){const s=statsEl((msg.auto?'MAZ Auto → ':'')+msg.model,msg.ms,msg.usage);if(s)col.appendChild(s);}
   }
   /* ===== helpers media ===== */
   async function blobToB64(blobUrl){const r=await fetch(blobUrl),b=await r.blob();return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(b)})}
@@ -2640,7 +2640,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     if(!KEYS.openrouter)return;
     try{
       const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',
-        headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MZai'},
+        headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MAZ'},
         body:JSON.stringify({model:'deepseek/deepseek-v4-flash',max_tokens:80,temperature:0.7,
           messages:[{role:'system',content:'Génère exactement 3 questions de suivi courtes (max 8 mots chacune) basées sur cette conversation. Retourne UNIQUEMENT les 3 questions séparées par des sauts de ligne, sans numérotation ni ponctuation finale.'},
             {role:'user',content:'Question : '+userText.slice(0,200)+'\nRéponse : '+aiText.slice(0,300)}]})});
@@ -2796,7 +2796,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   let lastTextModel=currentModel;                                          // mémorise le modèle texte choisi
   const MODE_CAT={text:'text',image:'image',video:'video',voice:'voice',doc:'text',translate:'text',transcribe:'text',code:'coder'};
   const MODE_LABEL={image:'Image',video:'Vidéo',voice:'Voix',doc:'Documents',translate:'Traduction',transcribe:'Transcription',code:'Code'};
-  const PLACEHOLDER={text:'Pose ta question à MZai…',image:'Décris l\'image à créer…',video:'Décris la vidéo à créer…',voice:'Texte à lire en voix off…',doc:'Pose ta question sur le document joint…',translate:'Colle le texte à traduire…',transcribe:'Micro live ou importe un fichier audio…',code:'Décris ce que le code doit faire…'};
+  const PLACEHOLDER={text:'Pose ta question à MAZ…',image:'Décris l\'image à créer…',video:'Décris la vidéo à créer…',voice:'Texte à lire en voix off…',doc:'Pose ta question sur le document joint…',translate:'Colle le texte à traduire…',transcribe:'Micro live ou importe un fichier audio…',code:'Décris ce que le code doit faire…'};
   function modelForMode(mode){const cat=MODE_CAT[mode]||'text';
     if(cat==='image')return (MODELS.find(m=>m.kind==='image')||{}).id;
     if(cat==='video')return (MODELS.find(m=>m.kind==='video')||{}).id;
@@ -2899,7 +2899,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   async function chatOR(messages,model,opt){
     if(!KEYS.openrouter)throw new Error('Clé OpenRouter manquante — ajoute-la dans Réglages › Clés API');
     const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',
-      headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MZai'},
+      headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MAZ'},
       body:JSON.stringify(Object.assign({model:model||'deepseek/deepseek-v4-flash',messages},opt||{}))});
     if(!res.ok)throw new Error('HTTP '+res.status+' · '+(await res.text().catch(()=>'')).slice(0,160));
     const d=await res.json();return (d.choices?.[0]?.message?.content||'').trim();
@@ -3306,8 +3306,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   /* ===== PWA : installable ===== */
   let deferredPrompt=null;
   window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;$('#installBtn')&&($('#installBtn').style.display='flex')});
-  window.addEventListener('appinstalled',()=>{toast('MZai installée ✦');$('#installBtn')&&($('#installBtn').style.display='none')});
-  async function installApp(){if(deferredPrompt){deferredPrompt.prompt();const r=await deferredPrompt.userChoice;deferredPrompt=null;$('#installBtn')&&($('#installBtn').style.display='none');toast(r.outcome==='accepted'?'Installation…':'Installation annulée')}else toast('Utilise le menu du navigateur › « Installer MZai »')}
+  window.addEventListener('appinstalled',()=>{toast('MAZ installée ✦');$('#installBtn')&&($('#installBtn').style.display='none')});
+  async function installApp(){if(deferredPrompt){deferredPrompt.prompt();const r=await deferredPrompt.userChoice;deferredPrompt=null;$('#installBtn')&&($('#installBtn').style.display='none');toast(r.outcome==='accepted'?'Installation…':'Installation annulée')}else toast('Utilise le menu du navigateur › « Installer MAZ »')}
 
   /* ===== clavier mobile : garder le composer visible (visualViewport) ===== */
   (function(){
