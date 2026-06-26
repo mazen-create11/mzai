@@ -1077,7 +1077,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       </button>
 
       <nav class="nav" aria-label="Espaces">
-        <button class="nav-item" data-view="library" data-tip="Bibliothèque"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19V6a2 2 0 0 1 2-2h9l5 5v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M14 4v5h5"/></svg><span class="lbl">Bibliothèque</span></button>
+        <button class="nav-item" data-view="library" data-tip="Discussions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/></svg><span class="lbl">Discussions</span></button>
         <button class="nav-item" data-view="projects" data-tip="Projets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4.5 16.5 12 21l7.5-4.5M4.5 12 12 16.5 19.5 12M12 3 4.5 7.5 12 12l7.5-4.5L12 3z"/></svg><span class="lbl">Projets</span></button>
         <button class="nav-item" data-view="integrations" data-tip="Intégrations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></svg><span class="lbl">Intégrations</span></button>
         <button class="nav-item" data-view="persona" data-tip="Mon IA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 1 5 5c0 1.6-.7 2.6-1.5 3.5C16.3 11.4 18 12.5 18 15a6 6 0 0 1-12 0c0-2.5 1.7-3.6 2.5-4.5C7.7 9.6 7 8.6 7 7a5 5 0 0 1 5-5z"/></svg><span class="lbl">Mon IA</span><kbd>⌘J</kbd></button>
@@ -1156,7 +1156,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
                     <button class="tool" id="toolModel" title="Choisir le modèle"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5l2.4 6.1 6.1 2.4-6.1 2.4L12 19.5l-2.4-6.1L3.5 11l6.1-2.4z"/></svg><span id="toolModelLbl">MZ Auto</span></button>
                     <span class="tb-spacer"></span>
                     <span class="counter" id="counter">0 mots</span>
-                    <button class="tool ghost" id="magicWand" aria-label="Améliorer le prompt" title="Améliorer le prompt"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 4-1 1M4 15l1-1M5 5l14 14M5 19l9-9-3-3 9-9"/></svg></button>
+                    <button class="tool ghost" id="magicWand" aria-label="Améliorer le prompt" title="Améliorer mon prompt (le reformule en mieux)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/><path d="M19 13.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/></svg></button>
                   </div>
                 </div>
                 <div class="hint"><span>MZai peut se tromper. <b>Vérifie les informations importantes.</b></span><span class="tok-count" id="tokCount" data-tip="Tokens utilisés cette session">0 tokens</span></div>
@@ -1182,9 +1182,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       </section>
 
       <!-- BIBLIOTHÈQUE -->
-      <section class="view" id="view-library" aria-label="Bibliothèque">
-        <header class="vhead"><div class="min0"><div class="vt">Bibliothèque</div><div class="vs">Conversations &amp; ressources sauvegardées</div></div></header>
-        <div class="vsearch"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4" stroke-linecap="round"/></svg><input id="libSearch" placeholder="Rechercher dans la bibliothèque…"></div>
+      <section class="view" id="view-library" aria-label="Discussions">
+        <header class="vhead"><div class="min0"><div class="vt">Discussions</div><div class="vs">Toutes tes conversations</div></div></header>
+        <div class="vsearch"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4" stroke-linecap="round"/></svg><input id="libSearch" placeholder="Rechercher une discussion…"></div>
         <div class="vbody"><div id="libList"></div></div>
       </section>
 
@@ -2031,7 +2031,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   const COMMANDS=[
     {s:'Navigation',items:[
       {t:'Accueil',d:'Retour à l’écran principal',ic:'<path d="M3 12l9-9 9 9M5 10v10h14V10"/>',run:goHome},
-      {t:'Bibliothèque',d:'Conversations et fichiers',ic:'<path d="M4 19V6a2 2 0 0 1 2-2h9l5 5v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/>',run:()=>showView('library')},
+      {t:'Discussions',d:'Toutes tes conversations',ic:'<path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/>',run:()=>showView('library')},
       {t:'Projets',d:'Espaces de travail',ic:'<path d="M4.5 16.5 12 21l7.5-4.5M12 3 4.5 7.5 12 12l7.5-4.5z"/>',run:()=>showView('projects')},
       {t:'Intégrations',d:'Outils connectés',ic:'<path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7"/>',run:()=>showView('integrations')}
     ]},
