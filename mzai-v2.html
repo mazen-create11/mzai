@@ -2215,12 +2215,15 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     return `<div class="reason${live?' live':''}"><div class="rt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.brain}</svg><span class="rt-lbl">${lbl}</span><svg class="cv" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></div><div class="rc"><div class="rc-in real">${content!=null?esc(content):''}</div></div></div>`;
   }
   let SESSION_TOKENS=parseInt(localStorage.getItem('mzai:stok')||'0',10);
-  function addSessionTokens(n){if(!n)return;SESSION_TOKENS+=n;localStorage.setItem('mzai:stok',SESSION_TOKENS);const el=$('#tokCount');if(!el)return;el.textContent=SESSION_TOKENS.toLocaleString('fr-FR')+' tokens';el.classList.remove('pulse');void el.offsetWidth;el.classList.add('pulse');setTimeout(()=>el.classList.remove('pulse'),600);}
+  let SESSION_COST=parseFloat(localStorage.getItem('mzai:scost')||'0')||0;
+  function _renderTok(pulse){const el=$('#tokCount');if(!el)return;el.textContent=SESSION_TOKENS.toLocaleString('fr-FR')+' tokens'+(SESSION_COST>0?' · $'+SESSION_COST.toFixed(SESSION_COST<0.1?4:2):'');el.setAttribute('data-tip','Tokens'+(SESSION_COST>0?' et coût':'')+' cumulés cette session');if(pulse){el.classList.remove('pulse');void el.offsetWidth;el.classList.add('pulse');setTimeout(()=>el.classList.remove('pulse'),600);}}
+  function addSessionTokens(n){if(!n)return;SESSION_TOKENS+=n;localStorage.setItem('mzai:stok',SESSION_TOKENS);_renderTok(true);}
+  function addSessionCost(c){c=+c;if(!c||!isFinite(c)||c<0)return;SESSION_COST+=c;localStorage.setItem('mzai:scost',String(SESSION_COST));_renderTok(true);}
   function statsEl(model,ms,usage,live){
     const known=MODELS.find(m=>m.id===model);const label=known?known.id:model;   // accepte un id connu OU un libellé (« MZ Auto → DeepSeek V4 Pro »)
     const parts=['<b>'+esc(label)+'</b>'];
     if(ms)parts.push((ms/1000).toFixed(1)+'s');
-    if(usage){const tot=usage.total_tokens||((usage.prompt_tokens||0)+(usage.completion_tokens||0));if(tot){parts.push(tot.toLocaleString('fr-FR')+' tokens');if(live)addSessionTokens(tot);}const cost=(usage.cost!=null?usage.cost:usage.total_cost);if(cost!=null&&+cost>0)parts.push('$'+(+cost<0.01?(+cost).toFixed(4):(+cost).toFixed(3)));}
+    if(usage){const tot=usage.total_tokens||((usage.prompt_tokens||0)+(usage.completion_tokens||0));if(tot){parts.push(tot.toLocaleString('fr-FR')+' tokens');if(live)addSessionTokens(tot);}const cost=(usage.cost!=null?usage.cost:usage.total_cost);if(cost!=null&&+cost>0){parts.push('$'+(+cost<0.01?(+cost).toFixed(4):(+cost).toFixed(3)));if(live)addSessionCost(+cost);}}
     if(parts.length<2)return null;
     const d=document.createElement('div');d.className='msg-stats';d.innerHTML=parts.join('<span class="ms-dot"></span>');return d;
   }
@@ -3217,7 +3220,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     $$('.set-body .toggle[data-set]').forEach(t=>t.classList.toggle('on',!!SETTINGS[t.dataset.set]));
     opts.search=!!SETTINGS.webSearch;opts.reason=!!SETTINGS.showReason;renderModeChip();syncToolUI();  // état initial des toggles depuis les préférences
     applyAnim();applyDensity();applyUser();applyPersona();syncModel();updateCount();
-    const _tc=$('#tokCount');if(_tc&&SESSION_TOKENS>0)_tc.textContent=SESSION_TOKENS.toLocaleString('fr-FR')+' tokens';
+    if(SESSION_TOKENS>0||SESSION_COST>0)_renderTok(false);
     autoLabelAll();
     if(!DB.get('onboarded',false))setTimeout(startOnboarding,400);
   })();
