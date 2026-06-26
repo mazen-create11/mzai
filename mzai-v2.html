@@ -1517,23 +1517,26 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   /* ===== data ===== */
   const now=()=>Date.now();
   let CONVOS=DB.get('convos',null);
-  if(!CONVOS){CONVOS=[];DB.set('convos',CONVOS)}   /* app vierge au 1er lancement */
+  if(!CONVOS){
+    const _raw=localStorage.getItem('mzai:convos');
+    if(_raw){ try{localStorage.setItem('mzai:convos.bak',_raw)}catch(e){} CONVOS=[]; setTimeout(()=>toast('Historique illisible — copie de secours conservée'),1200); }  /* corrompu : on NE réécrit PAS, la valeur brute est sauvegardée pour récupération */
+    else { CONVOS=[];DB.set('convos',CONVOS) }   /* app vierge au 1er lancement */
+  }
   let activeId=null,generating=false;
   let _saveT = null;
-  // localStorage ne reçoit JAMAIS les données lourdes (images b64 / pages OCR) : elles vivent en IndexedDB (réf _mid). Évite le dépassement de quota ~5 Mo → perte de session.
-  function _convosForStorage(){
-    return CONVOS.map(c=>{
-      if(!(c.msgs&&c.msgs.some(m=>(m.files||[]).some(f=>f&&f._mid&&(f.b64||f.ocrPages||f._txt))))) return c;
-      const cc=Object.assign({},c);
-      cc.msgs=c.msgs.map(m=>{
-        if(!(m.files&&m.files.some(f=>f&&f._mid&&(f.b64||f.ocrPages||f._txt)))) return m;
-        const mm=Object.assign({},m);
-        mm.files=m.files.map(f=>{if(f&&f._mid){const ff=Object.assign({},f);delete ff.b64;delete ff.ocrPages;delete ff.file;if(f._txt)delete ff.textContent;return ff;}return f;});
-        return mm;
-      });
-      return cc;
+  // localStorage ne reçoit JAMAIS les données lourdes (images b64 / pages OCR / texte de doc) : elles vivent en IndexedDB (réf _mid). Évite le dépassement de quota ~5 Mo → perte de session.
+  function _stripConvo(c){
+    if(!(c.msgs&&c.msgs.some(m=>(m.files||[]).some(f=>f&&f._mid&&(f.b64||f.ocrPages||f._txt))))) return c;
+    const cc=Object.assign({},c);
+    cc.msgs=c.msgs.map(m=>{
+      if(!(m.files&&m.files.some(f=>f&&f._mid&&(f.b64||f.ocrPages||f._txt)))) return m;
+      const mm=Object.assign({},m);
+      mm.files=m.files.map(f=>{if(f&&f._mid){const ff=Object.assign({},f);delete ff.b64;delete ff.ocrPages;delete ff.file;if(f._txt)delete ff.textContent;return ff;}return f;});
+      return mm;
     });
+    return cc;
   }
+  function _convosForStorage(){return CONVOS.map(_stripConvo);}
   const saveConvos=()=>{clearTimeout(_saveT);_saveT=setTimeout(()=>DB.set('convos',_convosForStorage()),800)};
   const saveConvosSync=()=>{clearTimeout(_saveT);DB.set('convos',_convosForStorage())};
   // flush du dernier message si l'onglet se ferme dans la fenêtre de débounce (800 ms)
@@ -1542,7 +1545,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   const convoById=id=>CONVOS.find(c=>c.id===id);
   const sortedConvos=()=>[...CONVOS].sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0)||b.ts-a.ts);
   let TRASH=DB.get('trash',[]);
-  const saveTrash=()=>DB.set('trash',TRASH);
+  const saveTrash=()=>DB.set('trash',TRASH.map(_stripConvo));   // la corbeille non plus ne stocke pas les données lourdes
   const newId=()=>'c'+now().toString(36)+Math.floor(performance.now()%1e6).toString(36);
   const makeTitle=t=>{t=(t||'').trim().replace(/\s+/g,' ');return t?(t.length>34?t.slice(0,34)+'…':t):'Nouvelle conversation'};
   function ago(ts){const s=(now()-ts)/1000;if(s<60)return"maintenant";if(s<3600)return Math.floor(s/60)+'min';if(s<86400)return Math.floor(s/3600)+'h';const d=Math.floor(s/86400);return d===1?'hier':d+'j'}
@@ -2272,7 +2275,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(t&&t.length>2&&t.length<60){c.title=t;saveConvos();renderRecents();renderChatHead(c);}
     }catch(e){}
   }
-  function genReply(c){const reason=isOn('Réflexion'),search=isOn('Recherche'),model=currentModel,node=addAINode(model);runGen(node,REPLIES[ri++%REPLIES.length],{reason,search,model,onDone:(t,meta)=>{const userMsg=(c.msgs.filter(m=>m.role==='user').pop()||{}).text||'';c.msgs.push({role:'ai',text:t,model:meta.resolved||model,auto:!!meta.auto,reason,search,reasonText:meta.reasonText||'',sources:meta.sources||[],usage:meta.usage||null,ms:meta.ms||0});c.ts=now();saveConvos();renderRecents();if(c.msgs.filter(m=>m.role==='user').length===1)autoTitle(c);genSuggestions(node.querySelector('.col'),t,userMsg);}})}
+  function genReply(c){const reason=isOn('Réflexion'),search=isOn('Recherche'),model=currentModel,node=addAINode(model);runGen(node,REPLIES[ri++%REPLIES.length],{reason,search,model,onDone:(t,meta)=>{if(meta.error)return;const userMsg=(c.msgs.filter(m=>m.role==='user').pop()||{}).text||'';c.msgs.push({role:'ai',text:t,model:meta.resolved||model,auto:!!meta.auto,reason,search,reasonText:meta.reasonText||'',sources:meta.sources||[],usage:meta.usage||null,ms:meta.ms||0});c.ts=now();saveConvos();renderRecents();if(c.msgs.filter(m=>m.role==='user').length===1)autoTitle(c);genSuggestions(node.querySelector('.col'),t,userMsg);}})}
   function addAINode(modelId){const m=modelById(modelId||currentModel),n=document.createElement('div');n.className='msg ai';n.innerHTML='<div class="av" style="background:linear-gradient(140deg,#C46B4A,#8E3D22)"><span class="av-mz">'+MARK+'</span></div><div class="col"><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>';chat.appendChild(n);scrollDown(true);return n}
   const aiReady=n=>{n&&n.classList&&n.classList.add('rendered')};   // bascule l'avatar du spinner « réflexion » au glyphe MZ
   function reasoningBlock(modelId,content,live){
@@ -2387,7 +2390,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(currentMode==='doc'&&toolCfg.docAction==='Extraction')addJsonDownload(col,text);                  // export .json structuré
       if(meta.usage||meta.ms){const s=statsEl(wasAuto?'MAZ Auto → '+resolvedModel:resolvedModel,meta.ms,meta.usage,true);if(s)col.appendChild(s);}
       scrollDown();setGenerating(false);curStop=null;
-      opts.onDone&&opts.onDone(text,{reasonText,sources:meta.sources,usage:meta.usage,ms:meta.ms,resolved:resolvedModel,auto:wasAuto});
+      opts.onDone&&opts.onDone(text,{reasonText,sources:meta.sources,usage:meta.usage,ms:meta.ms,resolved:resolvedModel,auto:wasAuto,error:meta.error});
     };
     curStop=()=>{stopped=true;if(ctrl){try{ctrl.abort()}catch(e){}}};
     bubble.innerHTML='<div class="gen-loading"><div class="gl-ring"></div>Génération en cours…</div>';
@@ -2421,7 +2424,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(!isOR && !isSF){ return finish(REPLIES[ri++%REPLIES.length]); }  // pas de clé chinoise pour ce modèle → simulation propre
 
       const apiKey = isOR ? KEYS['openrouter'] : KEYS['siliconflow'];
-      if(!apiKey){ bubble.classList.remove('md'); return finish('⚠️ Clé API manquante pour '+(isOR?'OpenRouter':'SiliconFlow')+'. Ajoute-la dans Paramètres › Connexions API.'); }
+      if(!apiKey){ bubble.classList.remove('md'); return finish('⚠️ Clé API manquante pour '+(isOR?'OpenRouter':'SiliconFlow')+'. Ajoute-la dans Paramètres › Connexions API.',{error:true}); }
 
       // Truncation intelligente : garde les 24 derniers messages, tronque les longs
       const allMsgs=c.msgs.filter(m=>m.text);
@@ -2468,7 +2471,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         else if(res.status===401) msg="🔑 **Clé API refusée.** Vérifie-la dans Paramètres › Connexions API.";
         else if(res.status===429) msg="⏳ **Trop de requêtes.** Attends quelques secondes puis réessaie.";
         else { let d=''; try{ d=((JSON.parse(raw).error)||{}).message||''; }catch(e){} msg="**Erreur API "+res.status+"** — "+(d||raw.slice(0,160)); }
-        bubble.classList.remove('md'); return finish(msg);
+        bubble.classList.remove('md'); return finish(msg,{error:true});
       }
       
       const collectSources=(arr)=>(arr||[]).filter(a=>a&&a.url_citation).map(a=>({url:a.url_citation.url,title:a.url_citation.title}));
@@ -2476,12 +2479,12 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(!SETTINGS.stream) {
         const data = await res.json();
         if(!data || !data.choices || !data.choices.length || !data.choices[0].message){  // garde : réponse malformée
-          bubble.classList.remove('md'); return finish('⚠️ Réponse vide ou malformée renvoyée par le modèle. Réessaie ou choisis un autre modèle.');
+          bubble.classList.remove('md'); return finish('⚠️ Réponse vide ou malformée renvoyée par le modèle. Réessaie ou choisis un autre modèle.',{error:true});
         }
         const m0 = data.choices[0].message;
         if(m0.reasoning||m0.reasoning_content){reasonText=m0.reasoning||m0.reasoning_content;insertReason(col,opts.model,reasonText,false);}
         if(!(m0.content||'').trim()){  // garde : aucun texte
-          bubble.classList.remove('md'); return finish('_Le modèle n\'a renvoyé aucun texte. Réessaie, ou choisis un autre modèle._',{ms:performance.now()-t0,usage:data.usage});
+          bubble.classList.remove('md'); return finish('_Le modèle n\'a renvoyé aucun texte. Réessaie, ou choisis un autre modèle._',{ms:performance.now()-t0,usage:data.usage,error:true});
         }
         finishReason=data.choices[0].finish_reason||'';
         return finish(m0.content+truncNote(),{ms:performance.now()-t0,usage:data.usage,sources:collectSources(m0.annotations)});
@@ -2518,7 +2521,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       }
       if(buffer && buffer.trim()) processLine(buffer.trim());   // flush : dernier event reçu sans \n final (sinon tokens perdus)
       if(!stopped && !fullText.trim()){  // aucune réponse reçue (serveur muet, tout filtré…)
-        bubble.classList.remove('md'); return finish('_Le modèle n\'a renvoyé aucun texte. Réessaie, ou choisis un autre modèle._',{ms:performance.now()-t0,usage});
+        bubble.classList.remove('md'); return finish('_Le modèle n\'a renvoyé aucun texte. Réessaie, ou choisis un autre modèle._',{ms:performance.now()-t0,usage,error:true});
       }
       const _tail = (parseErrors>0 ? '\n\n_⚠️ Réponse peut-être incomplète ('+parseErrors+' fragment(s) illisible(s) côté flux)._' : '')+truncNote();
       finish(fullText+_tail,{ms:performance.now()-t0,usage,sources});
@@ -2741,7 +2744,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(generating||!node)return;const c=convoById(activeId);if(!c)return;
       for(let k=c.msgs.length-1;k>=0;k--){if(c.msgs[k].role==='ai'){c.msgs.splice(k,1);break}}
       node.remove();const model=currentModel,reason=isOn('Réflexion'),search=isOn('Recherche'),nn=addAINode(model);
-      runGen(nn,REPLIES[ri++%REPLIES.length],{reason,search,model,onDone:(t,meta)=>{c.msgs.push({role:'ai',text:t,model,reason,search,reasonText:meta.reasonText||'',sources:meta.sources||[],usage:meta.usage||null,ms:meta.ms||0});c.model=model;c.ts=now();saveConvos();renderRecents()}});
+      runGen(nn,REPLIES[ri++%REPLIES.length],{reason,search,model,onDone:(t,meta)=>{if(meta.error)return;c.msgs.push({role:'ai',text:t,model:meta.resolved||model,auto:!!meta.auto,reason,search,reasonText:meta.reasonText||'',sources:meta.sources||[],usage:meta.usage||null,ms:meta.ms||0});c.model=model;c.ts=now();saveConvos();renderRecents()}});
       toast('Régénéré avec '+model);
     });
     a.querySelector('[data-a=like]').addEventListener('click',e=>{e.currentTarget.classList.toggle('on');toast('Merci pour le retour')});
@@ -2801,10 +2804,13 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function projContextOf(c){if(!c||!c.pid)return null;const p=projById(c.pid);return p&&(p.context||(p.files&&p.files.length))?p:null}
   function refreshCtxBanner(){const ex=chat.querySelector('.ctx-banner');if(ex)ex.remove();const p=projContextOf(convoById(activeId));if(!p)return;const nf=(p.files||[]).length;const b=document.createElement('div');b.className='ctx-banner';b.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+GLYPH.brain+'</svg>Contexte de <b>'+esc(p.name)+'</b> appliqué'+(nf?' · '+nf+' fichier'+(nf>1?'s':''):'');chat.insertBefore(b,chat.firstChild)}
   function renameConvo(id){const c=convoById(id);if(!c)return;const v=window.prompt('Renommer la conversation',c.title);if(v&&v.trim()){c.title=v.trim();saveConvos();renderRecents();renderLibrary($('#libSearch')?.value||'');if(activeId===id)renderChatHead(c)}}
-  function deleteConvo(id){const c=convoById(id);if(!c)return;CONVOS=CONVOS.filter(x=>x.id!==id);c._del=now();TRASH.unshift(c);if(TRASH.length>50)TRASH=TRASH.slice(0,50);saveTrash();if(activeId===id){activeId=null;chat.innerHTML='';goHome()}saveConvos();renderRecents();renderLibrary($('#libSearch')?.value||'');toastUndo('Déplacée vers la corbeille',()=>restoreConvo(id))}
+  // libère les blobs IndexedDB des convos supprimées, s'ils ne sont plus référencés ailleurs
+  function _collectMids(c){const ids=[];(c.msgs||[]).forEach(m=>{if(m.media&&m.media.mid)ids.push(m.media.mid);(m.files||[]).forEach(f=>{if(f&&f._mid)ids.push(f._mid)})});return ids;}
+  function _mediaPurge(gone){const dead=new Set();(gone||[]).forEach(c=>_collectMids(c).forEach(id=>dead.add(id)));if(!dead.size)return;const alive=new Set();[...CONVOS,...TRASH].forEach(c=>_collectMids(c).forEach(id=>alive.add(id)));dead.forEach(id=>{if(!alive.has(id))MEDIA.del(id)});}
+  function deleteConvo(id){const c=convoById(id);if(!c)return;CONVOS=CONVOS.filter(x=>x.id!==id);c._del=now();TRASH.unshift(c);let _drop=[];if(TRASH.length>50){_drop=TRASH.slice(50);TRASH=TRASH.slice(0,50);}saveTrash();if(activeId===id){activeId=null;chat.innerHTML='';goHome()}saveConvos();renderRecents();renderLibrary($('#libSearch')?.value||'');if(_drop.length)_mediaPurge(_drop);toastUndo('Déplacée vers la corbeille',()=>restoreConvo(id))}
   function restoreConvo(id){const i=TRASH.findIndex(c=>c.id===id);if(i<0)return;const c=TRASH.splice(i,1)[0];delete c._del;CONVOS.push(c);saveTrash();saveConvos();renderRecents();renderLibrary($('#libSearch')?.value||'');renderTrash();toast('Conversation restaurée')}
-  function purgeConvo(id){if(!window.confirm('Supprimer définitivement cette conversation ?'))return;TRASH=TRASH.filter(c=>c.id!==id);saveTrash();renderTrash();toast('Supprimée définitivement')}
-  function emptyTrash(){if(!TRASH.length)return;if(!window.confirm('Vider la corbeille ? '+TRASH.length+' conversation(s) seront supprimées définitivement.'))return;TRASH=[];saveTrash();renderTrash();toast('Corbeille vidée')}
+  function purgeConvo(id){if(!window.confirm('Supprimer définitivement cette conversation ?'))return;const _gone=TRASH.find(c=>c.id===id);TRASH=TRASH.filter(c=>c.id!==id);saveTrash();if(_gone)_mediaPurge([_gone]);renderTrash();toast('Supprimée définitivement')}
+  function emptyTrash(){if(!TRASH.length)return;if(!window.confirm('Vider la corbeille ? '+TRASH.length+' conversation(s) seront supprimées définitivement.'))return;const _gone=TRASH;TRASH=[];saveTrash();_mediaPurge(_gone);renderTrash();toast('Corbeille vidée')}
   function renderTrash(){
     $('#trashCount').textContent=TRASH.length+' élément'+(TRASH.length>1?'s':'');
     $('#trashEmpty').style.display=TRASH.length?'':'none';
@@ -2949,8 +2955,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   }
   function syncToolUI(){
     const _txt=MODE_CAT[currentMode]==='text';
-    $$('#popTools .pi[data-mode]').forEach(p=>p.classList.toggle('sel',p.dataset.mode===currentMode));
-    $$('#popTools .pi[data-toggle]').forEach(p=>{p.style.display=_txt?'':'none';p.classList.toggle('sel',_txt&&!!opts[p.dataset.toggle])});
+    $$('#popTools .pi[data-mode]').forEach(p=>{const on=p.dataset.mode===currentMode;p.classList.toggle('sel',on);p.setAttribute('aria-pressed',on?'true':'false')});
+    $$('#popTools .pi[data-toggle]').forEach(p=>{const on=_txt&&!!opts[p.dataset.toggle];p.style.display=_txt?'':'none';p.classList.toggle('sel',on);p.setAttribute('aria-pressed',on?'true':'false')});
   }
   /* bouton « + Outils » → popover (réutilise showPop/.pop, ancre .pop-on, jamais .open) */
   $('#toolsBtn').setAttribute('data-popanchor','');
@@ -3226,13 +3232,13 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       importMode=false;
       const file=fs[0];
       const fr=new FileReader();
-      fr.onload=ev=>{
+      fr.onload=async ev=>{
         try{
           const data=JSON.parse(ev.target.result);
           const convos=(data&&(data.conversations||data.convos))||(Array.isArray(data)?data:[]);
           if(!Array.isArray(convos)||!convos.length)return toast('Fichier vide ou format inconnu');
           const okMsg=m=>m&&typeof m==='object'&&(m.role==='user'||m.role==='ai')&&(typeof m.text==='string'||(m.media&&typeof m.media==='object')||Array.isArray(m.files));
-          let added=0,skipped=0;
+          let added=0,skipped=0;const addedIds=new Set();
           convos.forEach(c=>{
             if(!c||typeof c!=='object'||!Array.isArray(c.msgs)){skipped++;return;}
             const msgs=c.msgs.filter(okMsg).map(m=>{const o={role:m.role,text:typeof m.text==='string'?m.text:''};if(typeof m.model==='string')o.model=m.model;if(typeof m.ts==='number')o.ts=m.ts;if(m.auto)o.auto=true;if(m.reason)o.reason=true;if(m.search)o.search=true;if(typeof m.reasonText==='string')o.reasonText=m.reasonText;if(m.usage&&typeof m.usage==='object')o.usage=m.usage;if(typeof m.ms==='number')o.ms=m.ms;if(m.media&&typeof m.media==='object'){const md=Object.assign({},m.media);if(typeof md.url==='string')md.url=safeMediaUrl(md.url);o.media=md;}if(Array.isArray(m.files))o.files=m.files.map(f=>{if(f&&typeof f==='object'){const ff=Object.assign({},f);if(typeof ff.url==='string')ff.url=safeMediaUrl(ff.url);if(typeof ff.b64==='string'&&!/^data:(image|audio|video)\//i.test(ff.b64))ff.b64='';delete ff.file;return ff;}return{name:String(f&&f.name||'fichier')};});if(Array.isArray(m.sources))o.sources=m.sources.filter(s=>s&&typeof s.url==='string').map(s=>({url:safeUrl(s.url),title:typeof s.title==='string'?s.title:''}));return o;});
@@ -3241,9 +3247,19 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
             if(CONVOS.find(x=>x.id===id)){skipped++;return;}  // doublon
             const conv={id,title:(typeof c.title==='string'&&c.title.trim())?c.title.slice(0,120):'Conversation importée',msgs,ts:typeof c.ts==='number'?c.ts:now(),pinned:!!c.pinned,tags:Array.isArray(c.tags)?c.tags.slice(0,6).map(String):[]};
             if(typeof c.pid==='string'&&projById(c.pid))conv.pid=c.pid;if(typeof c.assistant==='string')conv.assistant=c.assistant;if(typeof c.model==='string')conv.model=c.model;
-            CONVOS.push(conv);
+            CONVOS.push(conv);addedIds.add(id);
             added++;
           });
+          // déporte les charges lourdes importées (b64 image, data-URL audio/vidéo, gros texte) vers IndexedDB → pas de bloat permanent du localStorage
+          for(const conv of CONVOS){ if(!addedIds.has(conv.id))continue;
+            for(const m of conv.msgs){
+              if(m.media&&typeof m.media.url==='string'&&/^data:/i.test(m.media.url)&&!m.media.mid){const id='m'+newId();if(await MEDIA.put(id,m.media.url)){m.media.mid=id;delete m.media.url;}}
+              if(Array.isArray(m.files))for(const f of m.files){
+                if(f&&typeof f.b64==='string'&&/^data:/i.test(f.b64)&&!f._mid){const id='f'+newId();if(await MEDIA.put(id,f.b64)){f._mid=id;delete f.b64;}}
+                else if(f&&typeof f.textContent==='string'&&f.textContent.length>20000&&!f._mid){const id='f'+newId();if(await MEDIA.put(id,f.textContent)){f._mid=id;f._txt=true;delete f.textContent;}}
+              }
+            }
+          }
           // round-trip : restaure aussi projets / prompts / mémoire si présents (jamais les clés)
           let extra=0;
           if(Array.isArray(data.projects))data.projects.forEach(p=>{if(p&&typeof p==='object'&&typeof p.name==='string'&&!PROJECTS.find(x=>x.id===p.id)){const t=ptypeOf(p.type);PROJECTS.push({id:(typeof p.id==='string'&&p.id)||'p'+newId(),name:p.name.slice(0,80),desc:typeof p.desc==='string'?p.desc:'',type:t.k,icon:t.icon,color:t.color,context:typeof p.context==='string'?p.context:'',files:Array.isArray(p.files)?p.files:[],ts:typeof p.ts==='number'?p.ts:now()});extra++;}});
@@ -3254,7 +3270,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           if(data.persona&&typeof data.persona==='object'){const p=data.persona;if(typeof p.name==='string')PERSONA.name=p.name.slice(0,40);if(typeof p.sys==='string')PERSONA.sys=p.sys;if(typeof p.tone==='string')PERSONA.tone=p.tone;if(typeof p.length==='string')PERSONA.length=p.length;if(Array.isArray(p.traits))PERSONA.traits=p.traits.slice(0,8).map(String);DB.set('persona',PERSONA);applyPersona&&applyPersona();}
           if(data.settings&&typeof data.settings==='object'){['density','anim','enter','stream','memory','webSearch','showReason'].forEach(k=>{if(k in data.settings)SETTINGS[k]=data.settings[k];});DB.set('settings',SETTINGS);applyDensity&&applyDensity();applyAnim&&applyAnim();}
           if(typeof data.model==='string'&&MODELS.find(m=>m.id===data.model)){currentModel=data.model;syncModel&&syncModel();}
-          if(added&&!DB.set('convos',CONVOS))return toast('Stockage plein — impossible d\'importer. Allège tes conversations.');
+          if(added&&!DB.set('convos',_convosForStorage()))return toast('Stockage plein — impossible d\'importer. Allège tes conversations.');
           renderRecents();renderLibrary('');
           toast(added?added+' conversation'+(added>1?'s':'')+' importée'+(added>1?'s':'')+(skipped?' · '+skipped+' ignorée'+(skipped>1?'s':''):'')+(extra?' · '+extra+' projet(s)':''):(extra?extra+' projet(s) importé(s)':'Aucune conversation valide à importer'));
         }catch(e){toast('Fichier invalide — JSON attendu');}
@@ -3307,7 +3323,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   /* transcription live dans la barre (façon Claude) — réutilise la voie Web Speech continue */
   const liveBtn=$('#liveBtn');liveBtn&&liveBtn.addEventListener('click',()=>toggleLiveTranscribe(liveBtn));
   $('#addProject').addEventListener('click',openProjModal);
-  $('#libSearch').addEventListener('input',e=>renderLibrary(e.target.value));
+  let _libT=0;$('#libSearch').addEventListener('input',e=>{const v=e.target.value;clearTimeout(_libT);_libT=setTimeout(()=>renderLibrary(v),160)});   // débounce : pas de rebuild complet à chaque frappe
   $('#intSearch').addEventListener('input',e=>renderIntegrations(e.target.value));
 
   /* a11y : étiquette automatiquement les champs sans label (depuis placeholder / label du .field) */
@@ -3315,7 +3331,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     $$('input,textarea,select').forEach(el=>{
       if(el.getAttribute('aria-label')||el.getAttribute('aria-labelledby')||el.closest('label')||(el.id&&document.querySelector('label[for="'+el.id+'"]')))return;
       const ph=el.getAttribute('placeholder');const fl=el.closest('.field')?(el.closest('.field').querySelector('label')||{}).textContent:'';
-      const lab=(ph||fl||el.dataset.opt||'Champ').toString().trim();if(lab)el.setAttribute('aria-label',lab);
+      const lab=(fl||ph||el.dataset.opt||'Champ').toString().trim();if(lab)el.setAttribute('aria-label',lab);   // le label visible prime sur le placeholder (WCAG 2.5.3 « Label in Name »)
     });
   }
   /* a11y : rend les contrôles d'action (divs/spans cliquables) focusables + nommés + activables au clavier (cf. handler keydown role=button) */
