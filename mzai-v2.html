@@ -1631,7 +1631,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   const DEFAULT_KEYS=Object.assign({openrouter:'',siliconflow:'',kling_ak:'',kling_sk:''},window.MZAI_KEYS||{});
   const KEYS=Object.assign({},DEFAULT_KEYS,DB.get('apikeys',{}));
   Object.keys(DEFAULT_KEYS).forEach(k=>{if(DEFAULT_KEYS[k]&&!KEYS[k])KEYS[k]=DEFAULT_KEYS[k]});
-  DB.set('apikeys',KEYS);
+  // Les clés fournies par keys.local.js restent EN MÉMOIRE : on ne les recopie pas dans localStorage (un XSS/CDN compromis ne peut pas les exfiltrer). Seules les clés saisies par l'utilisateur sont persistées.
+  function persistKeys(){const o={};for(const k in KEYS){if(!(window.MZAI_KEYS&&window.MZAI_KEYS[k]))o[k]=KEYS[k]}DB.set('apikeys',o)}
+  persistKeys();
   const SF_HOST='https://api.siliconflow.com';
   const USER=DB.get('user',{name:'Mazen',email:'mazenchaban09@gmail.com',role:'Compte développeur',avColor:ARGILE_AV});
   if(/#7fa9dc|#5e86c9|#6ba3ff|#b6c4d8|#6b7e97|#2c4a8f/i.test(USER.avColor||'')){USER.avColor=ARGILE_AV;DB.set('user',USER)}   /* migration : avatar bleu/ardoise hérité → argile DA */
@@ -1963,7 +1965,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   /* Aide : lance l'assistant « Aide MAZ » dans une nouvelle conversation */
   function launchAide(){const a=ASSISTANTS.find(x=>x.id==='aide');if(!a){openHelp();return}const c=createConvo();c.title=a.name;c.assistant=a.id;saveConvos();openConvo(c.id);if(window.innerWidth<=1024){$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show')}}
   /* Efface toutes les données locales (conversations, réglages, clés API) puis recharge */
-  function clearLocalData(){if(!window.confirm('Effacer toutes les données locales (conversations, réglages, clés API) ? Cette action est irréversible.'))return;try{Object.keys(localStorage).filter(k=>k.indexOf('mzai:')===0).forEach(k=>localStorage.removeItem(k))}catch(e){}location.reload()}
+  function clearLocalData(){if(!window.confirm('Effacer toutes les données locales (conversations, réglages, clés API) ? Cette action est irréversible.'))return;try{Object.keys(localStorage).filter(k=>k.indexOf('mzai:')===0).forEach(k=>localStorage.removeItem(k))}catch(e){}try{MEDIA.clear&&MEDIA.clear()}catch(e){}try{indexedDB.deleteDatabase('maz-media')}catch(e){}setTimeout(()=>location.reload(),60)}
 
   /* comparateur de modèles retiré (V2) — voir renderModelPicker pour le choix du modèle */
 
@@ -2055,9 +2057,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     rows+=`<div class="api-row api-kling" data-key="kling"><span class="api-logo" style="color:#ff5c28">${PROVIDERS.kling.logo}</span><div class="api-meta"><div class="api-name">Kling AI</div><div class="api-sub">kling.ai · vidéo</div></div><div class="kling-fields"><input class="api-in" data-kf="kling_ak" type="password" autocomplete="off" placeholder="Access Key…" value="${esc(KEYS.kling_ak||'')}"><input class="api-in" data-kf="kling_sk" type="password" autocomplete="off" placeholder="Secret Key…" value="${esc(KEYS.kling_sk||'')}"></div><span class="api-st${klingOk?' on':''}" data-tip="${klingOk?'Connecté':'2 clés requises'}"></span></div>`;
     $('#apiList').innerHTML=rows;
     $$('#apiList .api-row:not(.api-kling)').forEach(row=>{const pk=row.dataset.key,inp=row.querySelector('.api-in'),st=row.querySelector('.api-st');
-      inp.addEventListener('input',()=>{KEYS[pk]=inp.value.trim();DB.set('apikeys',KEYS);st.classList.toggle('on',hasKey(pk));st.setAttribute('data-tip',hasKey(pk)?'Connecté':'Non connecté');renderModelPicker();syncModel()});
+      inp.addEventListener('input',()=>{KEYS[pk]=inp.value.trim();persistKeys();st.classList.toggle('on',hasKey(pk));st.setAttribute('data-tip',hasKey(pk)?'Connecté':'Non connecté');renderModelPicker();syncModel()});
     });
-    $$('#apiList [data-kf]').forEach(inp=>{inp.addEventListener('input',()=>{KEYS[inp.dataset.kf]=inp.value.trim();DB.set('apikeys',KEYS);const st=$('#apiList .api-kling .api-st'),ok=hasKey('kling');if(st){st.classList.toggle('on',ok);st.setAttribute('data-tip',ok?'Connecté':'2 clés requises')}renderModelPicker();syncModel()})});
+    $$('#apiList [data-kf]').forEach(inp=>{inp.addEventListener('input',()=>{KEYS[inp.dataset.kf]=inp.value.trim();persistKeys();const st=$('#apiList .api-kling .api-st'),ok=hasKey('kling');if(st){st.classList.toggle('on',ok);st.setAttribute('data-tip',ok?'Connecté':'2 clés requises')}renderModelPicker();syncModel()})});
   }
   renderApiList();
   $('#setExport').addEventListener('click',()=>{const data={version:2,model:currentModel,persona:PERSONA,settings:SETTINGS,conversations:CONVOS,projects:PROJECTS,prompts:PROMPTS,memory:getMemory(),exportedAt:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='mzai-export.json';a.click();URL.revokeObjectURL(u);toast('Données exportées')});
@@ -2455,7 +2457,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const decoder = new TextDecoder();
       let buffer = "", usage=null, sources=[], parseErrors=0;
       const processLine = (t)=>{
-        if(!t.startsWith('data:') || t === 'data: [DONE]') return;
+        if(!t.startsWith('data:') || /^data:\s*\[DONE\]\s*$/.test(t)) return;   // absorbe data:[DONE] avec ou sans espace
         try {
           const data = JSON.parse(t.slice(t.indexOf(':')+1).trim());
           if(data.usage) usage = data.usage;
@@ -2539,12 +2541,13 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function hashColors(str){let h=0;for(let i=0;i<str.length;i++)h=(h*31+str.charCodeAt(i))>>>0;const hue=h%360;return[`hsl(${hue} 78% 62%)`,`hsl(${(hue+38)%360} 72% 46%)`,`hsl(${(hue+205)%360} 68% 52%)`,`hsl(${(hue+150)%360} 70% 40%)`]}
   /* ===== médias lourds (audio voix) → IndexedDB, hors localStorage ~5 Mo ===== */
   const MEDIA=(()=>{
-    let p=null;const cache=new Map();
+    let p=null;const cache=new Map();const CAP=16;   // cache RAM borné (LRU) : la persistance reste en IndexedDB, on ne garde que les derniers blobs en mémoire
+    function keep(k,v){cache.delete(k);cache.set(k,v);while(cache.size>CAP)cache.delete(cache.keys().next().value);}
     function db(){if(p)return p;p=new Promise((res,rej)=>{let r;try{r=indexedDB.open('maz-media',1)}catch(e){return rej(e)}r.onupgradeneeded=()=>{try{r.result.createObjectStore('m')}catch(e){}};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});return p;}
     async function st(mode){const d=await db();return d.transaction('m',mode).objectStore('m');}
     return {cache,
-      async put(k,v){cache.set(k,v);try{const s=await st('readwrite');return await new Promise(res=>{const q=s.put(v,k);q.onsuccess=()=>res(true);q.onerror=()=>res(false)})}catch(e){return false}},
-      async get(k){if(cache.has(k))return cache.get(k);try{const s=await st('readonly');const v=await new Promise(res=>{const q=s.get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null)});if(v)cache.set(k,v);return v;}catch(e){return null}},
+      async put(k,v){keep(k,v);try{const s=await st('readwrite');return await new Promise(res=>{const q=s.put(v,k);q.onsuccess=()=>res(true);q.onerror=()=>res(false)})}catch(e){return false}},
+      async get(k){if(cache.has(k)){const v=cache.get(k);keep(k,v);return v;}try{const s=await st('readonly');const v=await new Promise(res=>{const q=s.get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null)});if(v)keep(k,v);return v;}catch(e){return null}},
       async del(k){cache.delete(k);try{const s=await st('readwrite');s.delete(k)}catch(e){}},
       async clear(){cache.clear();try{const s=await st('readwrite');s.clear()}catch(e){}}};
   })();
@@ -2994,7 +2997,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           if(!res.ok){lastErr='HTTP '+res.status+' · '+(await res.text().catch(()=>'')).slice(0,180);continue;}
           text='';const reader=res.body.getReader(),dec=new TextDecoder();let buf='';
           while(!stopped){const{done,value}=await reader.read();if(done)break;buf+=dec.decode(value,{stream:true});const lines=buf.split('\n');buf=lines.pop();
-            for(const ln of lines){const tl=ln.trim();if(!tl.startsWith('data:')||tl==='data: [DONE]')continue;try{const j=JSON.parse(tl.slice(tl.indexOf(':')+1).trim());const dc=j.choices?.[0]?.delta?.content;if(dc){text+=dc;bubble.innerHTML=esc(text)+'<span class="caret"></span>';scrollDown();}}catch(e){}}}
+            for(const ln of lines){const tl=ln.trim();if(!tl.startsWith('data:')||/^data:\s*\[DONE\]\s*$/.test(tl))continue;try{const j=JSON.parse(tl.slice(tl.indexOf(':')+1).trim());const dc=j.choices?.[0]?.delta?.content;if(dc){text+=dc;bubble.innerHTML=esc(text)+'<span class="caret"></span>';scrollDown();}}catch(e){}}}
           ok=true;break;
         }catch(e){if(e.name==='AbortError')throw e;lastErr=e.message;}
       }
@@ -3100,7 +3103,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   let _pdfjs=null;
   async function loadPdfjs(){
     if(_pdfjs)return _pdfjs;
-    await new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';s.onload=res;s.onerror=()=>rej(new Error('CDN pdf.js injoignable'));document.head.appendChild(s)});
+    await new Promise((res,rej)=>{const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';s.integrity='sha512-q+4liFwdPC/bNdhUpZx6aXDx/h77yEQtn4I1slHydcbZK34nLaR3cAeYSJshoxIOq3mjEf7xJE8YWIUHMn+oCQ==';s.crossOrigin='anonymous';s.onload=res;s.onerror=()=>rej(new Error('CDN pdf.js injoignable ou intégrité invalide'));document.head.appendChild(s)});
     if(!window.pdfjsLib)throw new Error('pdf.js indisponible');
     window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     return (_pdfjs=window.pdfjsLib);
@@ -3331,7 +3334,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     st.className='ob-keystat';st.textContent='Vérification…';
     try{
       const r=await fetch('https://openrouter.ai/api/v1/auth/key',{headers:{'Authorization':'Bearer '+k}});
-      if(r.ok){KEYS.openrouter=k;DB.set('apikeys',KEYS);renderApiList();syncModel();
+      if(r.ok){KEYS.openrouter=k;persistKeys();renderApiList();syncModel();
         let d=null;try{d=(await r.json()).data}catch(e){}
         const noCredit=d&&((d.limit_remaining!=null&&d.limit_remaining<=0)||(d.limit!=null&&typeof d.usage==='number'&&d.usage>=d.limit));
         if(noCredit){st.className='ob-keystat warn';st.textContent='Clé valide, mais ton crédit OpenRouter semble épuisé — ajoute quelques € sur openrouter.ai, sinon les réponses échoueront.';}
@@ -3344,7 +3347,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function obNext(){if(obStep<OB_LAST){obStep++;obShow();}else obFinish();}
   function obBack(){if(obStep>0){obStep--;obShow();}}
   function obFinish(){
-    const k=$('#obKey')?$('#obKey').value.trim():'';if(k&&k!==KEYS.openrouter){KEYS.openrouter=k;DB.set('apikeys',KEYS);renderApiList();syncModel();}
+    const k=$('#obKey')?$('#obKey').value.trim():'';if(k&&k!==KEYS.openrouter){KEYS.openrouter=k;persistKeys();renderApiList();syncModel();}
     DB.set('theme',obTheme);DB.set('onboarded',true);$('#onboard').classList.remove('show');
     prompt&&prompt.focus();
   }
