@@ -1025,6 +1025,19 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 .scrim{visibility:visible;transition:opacity .25s var(--ease)}
 .scrim:not(.show){pointer-events:none}
 .scrim.show{opacity:1;pointer-events:auto}
+
+/* ===== header sidebar façon Claude : MZai + recherche + toggle EN HAUT ===== */
+.sb-head .icon-btn{flex-shrink:0;color:var(--ink-soft)}
+.sb-head .icon-btn:hover{color:var(--ink);background:var(--surface-2)}
+.sidebar.collapsed .sb-head{justify-content:center;gap:0;padding-inline:0}
+.sidebar.collapsed .sb-head .brand-mini,.sidebar.collapsed .sb-head .sb-search,.sidebar.collapsed .sb-head .tb-spacer{display:none}
+.sidebar.collapsed .sb-head #collapseBtn{margin:0 auto}
+.sidebar.collapsed .sb-foot{flex-direction:row;gap:10px;padding:12px 16px}
+@media (max-width:1024px){.sb-head #collapseBtn{display:none}}   /* mobile : on ouvre/ferme via le topbar */
+/* bibliothèque épurée : titre + date alignés, plus aérée */
+.lrow{padding:13px 14px}
+.lrow .ln{font-size:var(--fs-base);font-weight:var(--fw-med)}
+.lrow .lright{font-size:12px;color:var(--ink-soft)}
 </style>
 </head>
 <body>
@@ -1044,6 +1057,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   <aside class="sidebar" id="sidebar" aria-label="Navigation">
     <header class="sb-head">
       <span class="brand-mini" id="brandHome" role="button" tabindex="0" data-tip="Accueil" aria-label="Accueil" style="cursor:pointer"><span class="wordmark">MZ<i>ai</i></span></span>
+      <span class="tb-spacer"></span>
+      <button class="icon-btn ghost sb-search" id="navSearch" aria-label="Rechercher" title="Rechercher (⌘K)"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg></button>
+      <button class="icon-btn ghost" id="collapseBtn" aria-label="Réduire ou agrandir le panneau" title="Réduire / agrandir le panneau"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></svg></button>
     </header>
 
     <div class="sb-scroll">
@@ -1071,9 +1087,6 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         <span class="who"><span class="name" id="navName">Mazen</span><span class="sub" id="navSub">Premium · local</span></span>
         <svg class="chev" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
       </button>
-      <button class="icon-btn ghost" id="collapseBtn" aria-label="Réduire ou agrandir le panneau" title="Réduire / agrandir le panneau">
-        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></svg>
-      </button>
     </footer>
   </aside>
 
@@ -1082,8 +1095,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 
     <!-- TOPBAR -->
     <header class="topbar">
-      <button class="menu-btn" id="menuBtn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="sidebar" data-tip="Menu">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      <button class="menu-btn" id="menuBtn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="sidebar" title="Menu">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></svg>
       </button>
       <h1 class="tb-title" id="convTitle" hidden></h1>
       <span class="tb-spacer"></span>
@@ -1604,7 +1617,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function renderLibrary(filter=''){
     const raw=filter.trim(),tagF=raw.startsWith('#')?raw.slice(1).toLowerCase():null,q=raw.toLowerCase();
     const f=sortedConvos().filter(c=>tagF?(c.tags||[]).some(t=>t.toLowerCase()===tagF):(c.title.toLowerCase().includes(q)||c.msgs.some(m=>m.text.toLowerCase().includes(q))||(c.tags||[]).some(t=>t.toLowerCase().includes(q))));
-    $('#libList').innerHTML=f.length?f.map(c=>{const last=c.msgs[c.msgs.length-1],snip=last?last.text.replace(/[#*`>-]/g,'').slice(0,60):'';const tags=(c.tags||[]).map(t=>`<span class="ltag" data-tag="${esc(t)}">${esc(t)}</span>`).join('');return `<div class="lrow" data-id="${c.id}"><div class="lic">${c.pinned?'<span class="lic-pin"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">'+GLYPH.pin+'</svg></span>':''}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${LIC.chat}</svg></div><div style="min-width:0;flex:1"><div class="ln">${esc(c.title)}</div><div class="lmeta">${c.msgs.length} message${c.msgs.length>1?'s':''} · ${esc(snip)}…</div>${tags?`<div class="ltags">${tags}</div>`:''}</div><div class="lacts"><span class="la" data-la="pin" data-tip="${c.pinned?'Désépingler':'Épingler'}"><svg width="14" height="14" viewBox="0 0 24 24" fill="${c.pinned?'currentColor':'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.pin}</svg></span><span class="la" data-la="tag" data-tip="Tags"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.tag}</svg></span><span class="la" data-la="export" data-tip="Exporter"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.export}</svg></span><span class="la" data-la="del" data-tip="Corbeille"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.trash}</svg></span></div><div class="lright">${ago(c.ts)}</div></div>`}).join(''):`<div class="cp-empty">${raw?'Aucun résultat pour « '+esc(raw)+' »':'Aucune conversation pour le moment.'}</div>`;
+    $('#libList').innerHTML=f.length?f.map(c=>{const last=c.msgs[c.msgs.length-1],snip=last?last.text.replace(/[#*`>-]/g,'').slice(0,60):'';const tags=(c.tags||[]).map(t=>`<span class="ltag" data-tag="${esc(t)}">${esc(t)}</span>`).join('');return `<div class="lrow" data-id="${c.id}"><div class="lic">${c.pinned?'<span class="lic-pin"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">'+GLYPH.pin+'</svg></span>':''}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${LIC.chat}</svg></div><div style="min-width:0;flex:1"><div class="ln">${esc(c.title)}</div>${tags?`<div class="ltags">${tags}</div>`:''}</div><div class="lacts"><span class="la" data-la="pin" data-tip="${c.pinned?'Désépingler':'Épingler'}"><svg width="14" height="14" viewBox="0 0 24 24" fill="${c.pinned?'currentColor':'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.pin}</svg></span><span class="la" data-la="tag" data-tip="Tags"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.tag}</svg></span><span class="la" data-la="export" data-tip="Exporter"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.export}</svg></span><span class="la" data-la="del" data-tip="Corbeille"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.trash}</svg></span></div><div class="lright">${ago(c.ts)}</div></div>`}).join(''):`<div class="cp-empty">${raw?'Aucun résultat pour « '+esc(raw)+' »':'Aucune conversation pour le moment.'}</div>`;
     $$('#libList .lrow').forEach(r=>{const id=r.dataset.id;
       r.addEventListener('click',e=>{if(e.target.closest('.la')||e.target.closest('.ltag'))return;openConvo(id)});
       r.querySelector('[data-la=pin]').addEventListener('click',e=>{e.stopPropagation();togglePin(id)});
@@ -3005,6 +3018,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 
   /* misc */
   $('#collapseBtn').addEventListener('click',()=>{$('#sidebar').classList.toggle('collapsed')});
+  $('#navSearch')&&$('#navSearch').addEventListener('click',openPalette);
   let ATTACH=[],importMode=false,prjFileMode=false;
   const fileIcon=n=>{const x=(n.split('.').pop()||'').toLowerCase();const map={png:'img',jpg:'img',jpeg:'img',webp:'img',gif:'img',svg:'img',pdf:'doc',doc:'doc',docx:'doc',txt:'doc',md:'doc',js:'code',ts:'code',jsx:'code',css:'code',html:'code',json:'code',py:'code'};return LIC[map[x]||'doc']};
   function renderAttach(){$('#attachRow').innerHTML=ATTACH.map((f,i)=>attHTML(f,true,i)).join('');$$('#attachRow .ax').forEach(x=>x.onclick=e=>{e.stopPropagation();const f=ATTACH[+x.dataset.ax];if(f&&f.url)URL.revokeObjectURL(f.url);ATTACH.splice(+x.dataset.ax,1);renderAttach()});updateCount()}
