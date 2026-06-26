@@ -2163,7 +2163,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(t&&t.length>2&&t.length<60){c.title=t;saveConvos();renderRecents();renderChatHead(c);}
     }catch(e){}
   }
-  function genReply(c){const reason=isOn('Réflexion'),search=isOn('Recherche'),model=currentModel,node=addAINode(model);runGen(node,REPLIES[ri++%REPLIES.length],{reason,search,model,onDone:(t,meta)=>{const userMsg=(c.msgs.filter(m=>m.role==='user').pop()||{}).text||'';c.msgs.push({role:'ai',text:t,model,reason,search,reasonText:meta.reasonText||'',sources:meta.sources||[],usage:meta.usage||null,ms:meta.ms||0});c.ts=now();saveConvos();renderRecents();if(c.msgs.filter(m=>m.role==='user').length===1)autoTitle(c);genSuggestions(node.querySelector('.col'),t,userMsg);}})}
+  function genReply(c){const reason=isOn('Réflexion'),search=isOn('Recherche'),model=currentModel,node=addAINode(model);runGen(node,REPLIES[ri++%REPLIES.length],{reason,search,model,onDone:(t,meta)=>{const userMsg=(c.msgs.filter(m=>m.role==='user').pop()||{}).text||'';c.msgs.push({role:'ai',text:t,model:meta.resolved||model,auto:!!meta.auto,reason,search,reasonText:meta.reasonText||'',sources:meta.sources||[],usage:meta.usage||null,ms:meta.ms||0});c.ts=now();saveConvos();renderRecents();if(c.msgs.filter(m=>m.role==='user').length===1)autoTitle(c);genSuggestions(node.querySelector('.col'),t,userMsg);}})}
   function addAINode(modelId){const m=modelById(modelId||currentModel),n=document.createElement('div');n.className='msg ai';n.innerHTML='<div class="av" style="background:linear-gradient(140deg,#C46B4A,#8E3D22)"><span class="av-mz">'+MARK+'</span></div><div class="col"><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div></div>';chat.appendChild(n);scrollDown();return n}
   const aiReady=n=>{n&&n.classList&&n.classList.add('rendered')};   // bascule l'avatar du spinner « réflexion » au glyphe MZ
   function reasoningBlock(modelId,content,live){
@@ -2173,15 +2173,17 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   }
   let SESSION_TOKENS=parseInt(localStorage.getItem('mzai:stok')||'0',10);
   function addSessionTokens(n){if(!n)return;SESSION_TOKENS+=n;localStorage.setItem('mzai:stok',SESSION_TOKENS);const el=$('#tokCount');if(!el)return;el.textContent=SESSION_TOKENS.toLocaleString('fr-FR')+' tokens';el.classList.remove('pulse');void el.offsetWidth;el.classList.add('pulse');setTimeout(()=>el.classList.remove('pulse'),600);}
-  function statsEl(modelId,ms,usage,live){
-    const m=modelById(modelId),parts=['<b>'+esc(m.id)+'</b>'];
+  function statsEl(model,ms,usage,live){
+    const known=MODELS.find(m=>m.id===model);const label=known?known.id:model;   // accepte un id connu OU un libellé (« MZ Auto → DeepSeek V4 Pro »)
+    const parts=['<b>'+esc(label)+'</b>'];
     if(ms)parts.push((ms/1000).toFixed(1)+'s');
-    if(usage){const tot=usage.total_tokens||((usage.prompt_tokens||0)+(usage.completion_tokens||0));if(tot){parts.push(tot.toLocaleString('fr-FR')+' tokens');if(live)addSessionTokens(tot);}}
+    if(usage){const tot=usage.total_tokens||((usage.prompt_tokens||0)+(usage.completion_tokens||0));if(tot){parts.push(tot.toLocaleString('fr-FR')+' tokens');if(live)addSessionTokens(tot);}const cost=(usage.cost!=null?usage.cost:usage.total_cost);if(cost!=null&&+cost>0)parts.push('$'+(+cost<0.01?(+cost).toFixed(4):(+cost).toFixed(3)));}
     if(parts.length<2)return null;
     const d=document.createElement('div');d.className='msg-stats';d.innerHTML=parts.join('<span class="ms-dot"></span>');return d;
   }
   function sourcesBlock(modelId,srcs){
-    if(!srcs||!srcs.length)return '';
+    srcs=Array.from(new Map((srcs||[]).filter(s=>s&&s.url).map(s=>[s.url,s])).values());  // dédupe par URL
+    if(!srcs.length)return '';
     return `<div class="sources"><div class="src-h">Sources web · ${srcs.length}</div>${srcs.map((s,i)=>{let host=s.url||'';try{host=new URL(s.url).hostname.replace(/^www\./,'')}catch(e){}return `<a class="src" href="${esc(s.url||'#')}" target="_blank" rel="noopener" data-tip="Ouvrir la source"><span class="sn">${i+1}</span><span class="sd">${esc(s.title||host)}</span><span class="su">${esc(host)}</span></a>`}).join('')}</div>`;
   }
   function wireBubble(b){b.querySelectorAll('.cb-copy').forEach(x=>x.addEventListener('click',()=>{navigator.clipboard?.writeText(decodeURIComponent(x.dataset.code));toast('Code copié')}));b.querySelectorAll('.cb-prev').forEach(x=>x.addEventListener('click',()=>openArtifact(decodeURIComponent(x.dataset.code))));b.querySelectorAll('.src').forEach(s=>s.addEventListener('click',()=>toast('Ouverture de la source')))}
@@ -2250,7 +2252,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   async function runGen(node, _, opts){
     setGenerating(true);
     const col=node.querySelector('.col'),bubble=node.querySelector('.bubble');
-    let stopped=false,fin=false,reasonText="",reasonBox=null,fullText="",ctrl=null,idle=null,timedOut=false,injTotal=0,injUsed=0;const t0=performance.now();
+    let stopped=false,fin=false,reasonText="",reasonBox=null,fullText="",ctrl=null,idle=null,timedOut=false,injTotal=0,injUsed=0,resolvedModel=opts.model,wasAuto=false;const t0=performance.now();
     const finish=(text,meta)=>{
       if(fin)return;fin=true;meta=meta||{};clearTimeout(idle);
       if(reasonBox){const ri=reasonBox.querySelector('.rc-in');if(reasonText)ri.textContent=reasonText;reasonBox.classList.remove('open','live');const lbl=reasonBox.querySelector('.rt-lbl');if(lbl)lbl.textContent=modelById(opts.model).id+' a réfléchi'+(meta.ms?' · '+(meta.ms/1000).toFixed(1)+'s':'');}
@@ -2260,9 +2262,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       wireBubble(bubble);addActions(col,copyText,node);
       if(injTotal>0){const b=injBadge(injUsed,injTotal);if(b)col.appendChild(b);}                          // transparence : X / Y caractères de document injectés
       if(currentMode==='doc'&&toolCfg.docAction==='Extraction')addJsonDownload(col,text);                  // export .json structuré
-      if(meta.usage||meta.ms){const s=statsEl(opts.model,meta.ms,meta.usage,true);if(s)col.appendChild(s);}
+      if(meta.usage||meta.ms){const s=statsEl(wasAuto?'MZ Auto → '+resolvedModel:resolvedModel,meta.ms,meta.usage,true);if(s)col.appendChild(s);}
       scrollDown();setGenerating(false);curStop=null;
-      opts.onDone&&opts.onDone(text,{reasonText,sources:meta.sources,usage:meta.usage,ms:meta.ms});
+      opts.onDone&&opts.onDone(text,{reasonText,sources:meta.sources,usage:meta.usage,ms:meta.ms,resolved:resolvedModel,auto:wasAuto});
     };
     curStop=()=>{stopped=true;if(ctrl){try{ctrl.abort()}catch(e){}}};
     bubble.innerHTML='<div class="gen-loading"><div class="gl-ring"></div>Génération en cours…</div>';
@@ -2271,13 +2273,21 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const c = convoById(activeId);
       const qcMode=(currentMode==='translate'&&toolCfg.trCheck);  // mode vérification : on masque le JSON brut pendant le stream
       let mData = modelById(opts.model);
-      if(mData.provider==='mz' && KEYS.openrouter){  // MZ Auto → routage selon la demande
-        const lastUser=((c.msgs.filter(m=>m.role==='user').pop())||{}).text||'';
+      if(mData.provider==='mz' && KEYS.openrouter){  // MZ Auto → routage selon la demande (transparent : modèle réel révélé sous la réponse)
+        const lastMsg=(c.msgs.filter(m=>m.role==='user').pop())||{};
+        const lastUser=lastMsg.text||'';
         const t=lastUser.toLowerCase();
-        const isCode=/```/.test(lastUser)||/\b(code|coder|fonction|function|bug|debug|refactor|déboguer|sql|regex|python|javascript|typescript|css|html|react|component)\b/.test(t);
-        const isHard=lastUser.length>600||/\b(analyse|raisonne|démontre|prouve|stratégie|compare|optimise|architecture|explique en détail)\b/.test(t);
-        const api=isCode?'moonshotai/kimi-k2.7-code':isHard?'deepseek/deepseek-v4-pro':'deepseek/deepseek-v4-flash';
+        const hasImg=(lastMsg.files||[]).some(f=>f.isImg&&f.b64);
+        const isCode=/```/.test(lastUser)||/\b(code|coder|coding|fonction|function|bug|debug|refactor|déboguer|sql|regex|python|javascript|typescript|css|html|react|composant|component|api|endpoint|stack ?trace|compil)\b/.test(t);
+        const isMath=/\b(calcul|équation|equation|intégrale|integral|dérivée|derivee|probabilit|matrice|théorème|theoreme|résous|resous|factorise)\b/.test(t)||/\d\s*[+\-*/^=]\s*[\d(]/.test(lastUser);
+        const isHard=isMath||lastUser.length>600||/\b(analyse|raisonne|démontre|demontre|prouve|stratégie|strateg|compare|optimise|architecture|explique en détail|étape par étape|plan détaillé)\b/.test(t);
+        let api,name;
+        if(hasImg){api=VISION_DOC;name='Qwen3-VL · vision';}
+        else if(isCode){api='moonshotai/kimi-k2.7-code';name='Kimi K2.7 Code';}
+        else if(isHard){api='deepseek/deepseek-v4-pro';name='DeepSeek V4 Pro';}
+        else{api='deepseek/deepseek-v4-flash';name='DeepSeek V4 Flash';}
         mData={...mData,provider:'openrouter',api};
+        wasAuto=true;const rm=MODELS.find(m=>m.api===api);resolvedModel=rm?rm.id:name;
       }
       const isOR = mData.provider === 'openrouter';
       const isSF = mData.provider === 'siliconflow' && mData.kind!=='image' && mData.kind!=='video' && mData.kind!=='audio';
@@ -2337,15 +2347,36 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 
       if(!SETTINGS.stream) {
         const data = await res.json();
+        if(!data || !data.choices || !data.choices.length || !data.choices[0].message){  // garde : réponse malformée
+          bubble.classList.remove('md'); return finish('⚠️ Réponse vide ou malformée renvoyée par le modèle. Réessaie ou choisis un autre modèle.');
+        }
         const m0 = data.choices[0].message;
         if(m0.reasoning||m0.reasoning_content){reasonText=m0.reasoning||m0.reasoning_content;insertReason(col,opts.model,reasonText,false);}
+        if(!(m0.content||'').trim()){  // garde : aucun texte
+          bubble.classList.remove('md'); return finish('_Le modèle n\'a renvoyé aucun texte. Réessaie, ou choisis un autre modèle._',{ms:performance.now()-t0,usage:data.usage});
+        }
         return finish(m0.content,{ms:performance.now()-t0,usage:data.usage,sources:collectSources(m0.annotations)});
       }
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
-      let buffer = "", usage=null, sources=[];
-
+      let buffer = "", usage=null, sources=[], parseErrors=0;
+      const processLine = (t)=>{
+        if(!t.startsWith('data:') || t === 'data: [DONE]') return;
+        try {
+          const data = JSON.parse(t.slice(t.indexOf(':')+1).trim());
+          if(data.usage) usage = data.usage;
+          const d = data.choices?.[0]?.delta || {};
+          const rd = d.reasoning ?? d.reasoning_content;
+          if(rd){ reasonText += rd; if(!reasonBox)reasonBox=insertReason(col,opts.model,'',true); reasonBox.querySelector('.rc-in').textContent=reasonText; scrollDown(); }
+          if(d.annotations) sources = sources.concat(collectSources(d.annotations));
+          if(d.content) {
+            fullText += d.content;
+            if(!qcMode){bubble.innerHTML = esc(fullText) + '<span class="caret"></span>';}
+            scrollDown();
+          }
+        } catch(e) { parseErrors++; if(parseErrors<=3) console.warn('[MZai SSE] fragment illisible :', e.message); }
+      };
       while(!stopped) {
         const {done, value} = await reader.read();
         if(done) break;
@@ -2353,25 +2384,14 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         buffer += decoder.decode(value, {stream: true});
         const lines = buffer.split('\n');
         buffer = lines.pop();  // dernière ligne potentiellement incomplète → on la garde pour le prochain chunk
-        for(const line of lines) {
-          const t = line.trim();
-          if(!t.startsWith('data:') || t === 'data: [DONE]') continue;
-          try {
-            const data = JSON.parse(t.slice(t.indexOf(':')+1).trim());
-            if(data.usage) usage = data.usage;
-            const d = data.choices?.[0]?.delta || {};
-            const rd = d.reasoning ?? d.reasoning_content;
-            if(rd){ reasonText += rd; if(!reasonBox)reasonBox=insertReason(col,opts.model,'',true); reasonBox.querySelector('.rc-in').textContent=reasonText; scrollDown(); }
-            if(d.annotations) sources = sources.concat(collectSources(d.annotations));
-            if(d.content) {
-              fullText += d.content;
-              if(!qcMode){bubble.innerHTML = esc(fullText) + '<span class="caret"></span>';}
-              scrollDown();
-            }
-          } catch(e) {}
-        }
+        for(const line of lines) processLine(line.trim());
       }
-      finish(fullText,{ms:performance.now()-t0,usage,sources});
+      if(buffer && buffer.trim()) processLine(buffer.trim());   // flush : dernier event reçu sans \n final (sinon tokens perdus)
+      if(!stopped && !fullText.trim()){  // aucune réponse reçue (serveur muet, tout filtré…)
+        bubble.classList.remove('md'); return finish('_Le modèle n\'a renvoyé aucun texte. Réessaie, ou choisis un autre modèle._',{ms:performance.now()-t0,usage});
+      }
+      const _tail = parseErrors>0 ? '\n\n_⚠️ Réponse peut-être incomplète ('+parseErrors+' fragment(s) illisible(s) côté flux)._' : '';
+      finish(fullText+_tail,{ms:performance.now()-t0,usage,sources});
     } catch(err) {
       if(timedOut) return finish((fullText||'')+(fullText?'\n\n':'')+'_⚠️ Réponse interrompue : le serveur n\'a plus rien envoyé (délai dépassé)._',{ms:performance.now()-t0});
       if(err.name==='AbortError') return finish(fullText||'_Génération arrêtée._',{ms:performance.now()-t0});
@@ -2401,19 +2421,24 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     if(msg.media){bubble.classList.add('media-b');bubble.innerHTML=mediaBubbleHTML(msg.media);wireMedia(bubble,msg.media,node);return}
     if(msg.reasonText)insertReason(col,msg.model,msg.reasonText,false);
     bubble.classList.add('md');bubble.innerHTML=renderMD(msg.text)+sourcesBlock(msg.model,msg.sources);wireBubble(bubble);addActions(col,msg.text,node);
-    if(msg.usage||msg.ms){const s=statsEl(msg.model,msg.ms,msg.usage);if(s)col.appendChild(s);}
+    if(msg.usage||msg.ms){const s=statsEl((msg.auto?'MZ Auto → ':'')+msg.model,msg.ms,msg.usage);if(s)col.appendChild(s);}
   }
   /* ===== helpers media ===== */
   async function blobToB64(blobUrl){const r=await fetch(blobUrl),b=await r.blob();return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(b)})}
+  let _kJwt=null,_kExp=0,_kKeys='';   // cache du JWT Kling (valide 30min) — évite 40-80 signatures crypto par vidéo
   async function klingJWT(){
     const ak=KEYS.kling_ak||'',sk=KEYS.kling_sk||'';
     if(!ak||!sk)throw new Error('Clés Kling manquantes — configure Access Key + Secret Key dans Paramètres › Connexions API (kling.ai)');
     const now=Math.floor(Date.now()/1000);
+    if(_kJwt && _kKeys===ak+'|'+sk && _kExp-now>120) return _kJwt;   // réutilise tant qu'il reste >2min
     const b64u=obj=>btoa(JSON.stringify(obj)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
-    const hdr=b64u({alg:'HS256',typ:'JWT'}),pay=b64u({iss:ak,exp:now+1800,nbf:now-5}),data=hdr+'.'+pay;
+    const exp=now+1800;
+    const hdr=b64u({alg:'HS256',typ:'JWT'}),pay=b64u({iss:ak,exp,nbf:now-5}),data=hdr+'.'+pay;
     const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(sk),{name:'HMAC',hash:'SHA-256'},false,['sign']);
     const sig=await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(data));
-    return data+'.'+btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    const tok=data+'.'+btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    _kJwt=tok;_kExp=exp;_kKeys=ak+'|'+sk;
+    return tok;
   }
   /* ===== génération média (image / vidéo) ===== */
   let mediaUID=0;
