@@ -1072,6 +1072,10 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 /* badge Démo sur média placeholder (sans clé) */
 .gm-demo{position:absolute;left:10px;bottom:10px;z-index:2;font-size:11px;font-weight:var(--fw-semi);color:var(--ink);background:rgba(250,248,243,.88);border:1px solid var(--line-strong);border-radius:var(--r-pill);padding:3px 10px;backdrop-filter:blur(4px)}
 [data-theme="dark"] .gm-demo{background:rgba(26,25,22,.82)}
+
+/* perf : ne rend pas les messages hors écran (longues conversations) */
+.msg{content-visibility:auto;contain-intrinsic-size:auto 90px}
+.gen-media img.gm-art,.gen-media video.gm-art{decoding:async}
 </style>
 </head>
 <body>
@@ -1673,8 +1677,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   }
   function renderLibrary(filter=''){
     const raw=filter.trim(),tagF=raw.startsWith('#')?raw.slice(1).toLowerCase():null,q=raw.toLowerCase();
-    const f=sortedConvos().filter(c=>tagF?(c.tags||[]).some(t=>t.toLowerCase()===tagF):(c.title.toLowerCase().includes(q)||c.msgs.some(m=>m.text.toLowerCase().includes(q))||(c.tags||[]).some(t=>t.toLowerCase().includes(q))));
-    $('#libList').innerHTML=f.length?f.map(c=>{const last=c.msgs[c.msgs.length-1],snip=last?last.text.replace(/[#*`>-]/g,'').slice(0,60):'';const tags=(c.tags||[]).map(t=>`<span class="ltag" data-tag="${esc(t)}">${esc(t)}</span>`).join('');return `<div class="lrow" data-id="${c.id}"><div class="lic">${c.pinned?'<span class="lic-pin"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">'+GLYPH.pin+'</svg></span>':''}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${LIC.chat}</svg></div><div style="min-width:0;flex:1"><div class="ln">${esc(c.title)}</div>${tags?`<div class="ltags">${tags}</div>`:''}</div><div class="lacts"><span class="la" data-la="pin" data-tip="${c.pinned?'Désépingler':'Épingler'}"><svg width="14" height="14" viewBox="0 0 24 24" fill="${c.pinned?'currentColor':'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.pin}</svg></span><span class="la" data-la="tag" data-tip="Tags"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.tag}</svg></span><span class="la" data-la="export" data-tip="Exporter"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.export}</svg></span><span class="la" data-la="del" data-tip="Corbeille"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.trash}</svg></span></div><div class="lright">${ago(c.ts)}</div></div>`}).join(''):`<div class="cp-empty">${raw?'Aucun résultat pour « '+esc(raw)+' »':'Aucune conversation pour le moment.'}</div>`;
+    const f=sortedConvos().filter(c=>tagF?(c.tags||[]).some(t=>t.toLowerCase()===tagF):((c.title||'').toLowerCase().includes(q)||c.msgs.some(m=>(m.text||'').toLowerCase().includes(q))||(c.tags||[]).some(t=>t.toLowerCase().includes(q))));
+    $('#libList').innerHTML=f.length?f.map(c=>{const tags=(c.tags||[]).map(t=>`<span class="ltag" data-tag="${esc(t)}">${esc(t)}</span>`).join('');return `<div class="lrow" data-id="${c.id}"><div class="lic">${c.pinned?'<span class="lic-pin"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">'+GLYPH.pin+'</svg></span>':''}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${LIC.chat}</svg></div><div style="min-width:0;flex:1"><div class="ln">${esc(c.title)}</div>${tags?`<div class="ltags">${tags}</div>`:''}</div><div class="lacts"><span class="la" data-la="pin" data-tip="${c.pinned?'Désépingler':'Épingler'}"><svg width="14" height="14" viewBox="0 0 24 24" fill="${c.pinned?'currentColor':'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.pin}</svg></span><span class="la" data-la="tag" data-tip="Tags"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.tag}</svg></span><span class="la" data-la="export" data-tip="Exporter"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.export}</svg></span><span class="la" data-la="del" data-tip="Corbeille"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.trash}</svg></span></div><div class="lright">${ago(c.ts)}</div></div>`}).join(''):`<div class="cp-empty">${raw?'Aucun résultat pour « '+esc(raw)+' »':'Aucune conversation pour le moment.'}</div>`;
     $$('#libList .lrow').forEach(r=>{const id=r.dataset.id;
       r.addEventListener('click',e=>{if(e.target.closest('.la')||e.target.closest('.ltag'))return;openConvo(id)});
       r.querySelector('[data-la=pin]').addEventListener('click',e=>{e.stopPropagation();togglePin(id)});
@@ -1686,7 +1690,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   }
   function togglePin(id){const c=convoById(id);if(!c)return;c.pinned=!c.pinned;saveConvos();renderRecents();renderLibrary($('#libSearch')?.value||'');toast(c.pinned?'Conversation épinglée':'Désépinglée')}
   function editTags(id){const c=convoById(id);if(!c)return;const v=window.prompt('Tags (séparés par des virgules)',(c.tags||[]).join(', '));if(v===null)return;c.tags=v.split(',').map(s=>s.trim()).filter(Boolean).slice(0,6);saveConvos();renderLibrary($('#libSearch')?.value||'');toast('Tags mis à jour')}
-  function exportConvo(id){const c=convoById(id);if(!c)return;const md='# '+c.title+'\n\n'+c.msgs.map(m=>(m.role==='user'?'**Toi**\n\n':'**'+(m.model||'MAZ')+'**\n\n')+m.text).join('\n\n---\n\n')+'\n';const blob=new Blob([md],{type:'text/markdown'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(c.title||'conversation').replace(/[^\wÀ-ſ-]+/g,'_').slice(0,50)+'.md';a.click();URL.revokeObjectURL(u);toast('Conversation exportée (.md)')}
+  function exportConvo(id){const c=convoById(id);if(!c)return;const md='# '+c.title+'\n\n'+c.msgs.map(m=>(m.role==='user'?'**Toi**\n\n':'**'+(m.model||'MAZ')+'**\n\n')+(m.text||(m.media?'_['+m.media.type+' généré : '+(m.media.prompt||'')+']_':''))).join('\n\n---\n\n')+'\n';const blob=new Blob([md],{type:'text/markdown'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(c.title||'conversation').replace(/[^\wÀ-ſ-]+/g,'_').slice(0,50)+'.md';a.click();URL.revokeObjectURL(u);toast('Conversation exportée (.md)')}
   const ASSISTANTS = [
     { id: 'aide', name: 'Aide MAZ', desc: 'Prise en main, fonctions & réglages', color: '#B85335', icon: 'help', prompt: "Tu es l'assistant d'aide intégré de MAZ, une application de chat IA premium. Tu connais parfaitement l'app et tu guides l'utilisateur pas à pas dans l'interface. Fonctions clés : le sélecteur de modèle en haut à droite (DeepSeek, Qwen, Kimi, GLM, MiniMax — et « MAZ Auto » qui choisit automatiquement le meilleur modèle selon la demande) ; les modes Image, Vidéo et Voix dans la barre d'outils sous le champ de saisie ; les Projets (espaces avec contexte permanent) ; la Bibliothèque (historique et recherche) ; « Mon IA » (⌘J) pour définir nom, ton, longueur et instructions système ; et les clés API à coller dans Réglages › Clés API (OpenRouter pour le texte, SiliconFlow pour l'image/voix, Kling pour la vidéo). Réponds de façon claire, concrète et bienveillante, en indiquant toujours où cliquer. Si une fonction nécessite une clé API non renseignée, explique calmement où l'ajouter." },
     { id: 'dev', name: 'Développeur Senior', desc: 'Code propre, architecture & debug', color: '#6366f1', icon: 'code', prompt: 'Tu es un développeur senior expert. Tu fournis du code propre, moderne, testé et optimisé, et tu expliques brièvement tes choix techniques. Tu repères les bugs et proposes le correctif minimal. Tu privilégies la lisibilité et la robustesse.' },
@@ -1727,7 +1731,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const cs=CONVOS.filter(c=>c.pid===id).sort((a,b)=>b.ts-a.ts);
     $('#prjHeadIc').style.background=p.color;$('#prjHeadIc').innerHTML=`<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.95)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH[p.icon]||GLYPH.spark}</svg>`;
     $('#prjName').textContent=p.name;$('#prjDesc').textContent=p.desc||'Sans description';
-    const convHTML=cs.length?cs.map(c=>{const last=c.msgs[c.msgs.length-1],snip=last?last.text.replace(/[#*`>-]/g,'').slice(0,64):'';return `<div class="lrow" data-id="${c.id}"><div class="lic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${LIC.chat}</svg></div><div style="min-width:0;flex:1"><div class="ln">${esc(c.title)}</div><div class="lmeta">${c.msgs.length} message${c.msgs.length>1?'s':''} · ${esc(snip)}…</div></div><div class="lright">${ago(c.ts)}</div></div>`}).join(''):`<div class="empty-state"><div class="es-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/></svg></div><div class="es-t">Aucune conversation</div><div class="es-d">Démarre la première conversation de ce projet.</div></div>`;
+    const convHTML=cs.length?cs.map(c=>{const last=c.msgs[c.msgs.length-1],snip=(last&&typeof last.text==='string'&&last.text)?last.text.replace(/[#*`>-]/g,'').slice(0,64):(last&&last.media?'[média généré]':'');return `<div class="lrow" data-id="${c.id}"><div class="lic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${LIC.chat}</svg></div><div style="min-width:0;flex:1"><div class="ln">${esc(c.title)}</div><div class="lmeta">${c.msgs.length} message${c.msgs.length>1?'s':''} · ${esc(snip)}…</div></div><div class="lright">${ago(c.ts)}</div></div>`}).join(''):`<div class="empty-state"><div class="es-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/></svg></div><div class="es-t">Aucune conversation</div><div class="es-d">Démarre la première conversation de ce projet.</div></div>`;
     $('#prjList').innerHTML=projPanelHTML(p)+`<div class="sb-label" style="margin:6px 4px 12px">Conversations</div>`+convHTML;
     bindProjPanel(p);
     $$('#prjList .lrow').forEach(r=>r.addEventListener('click',()=>openConvo(r.dataset.id)));
@@ -2036,7 +2040,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   }
   renderApiList();
   $('#setExport').addEventListener('click',()=>{const data={version:2,model:currentModel,persona:PERSONA,settings:SETTINGS,conversations:CONVOS,projects:PROJECTS,prompts:PROMPTS,memory:getMemory(),exportedAt:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='mzai-export.json';a.click();URL.revokeObjectURL(u);toast('Données exportées')});
-  $('#setClear').addEventListener('click',()=>{if(!window.confirm('Effacer TOUTES les conversations, la corbeille et la mémoire de l\'IA ? (Tes clés API et réglages sont conservés.) Action irréversible.'))return;CONVOS=[];activeId=null;TRASH=[];saveTrash();setMemory('');SESSION_TOKENS=0;SESSION_COST=0;try{localStorage.removeItem('mzai:stok');localStorage.removeItem('mzai:scost')}catch(e){}_renderTok(false);saveConvos();renderRecents();renderLibrary('');typeof renderTrash==='function'&&renderTrash();chat.innerHTML='';goHome();toast('Conversations, corbeille et mémoire effacées')});
+  $('#setClear').addEventListener('click',()=>{if(!window.confirm('Effacer TOUTES les conversations, la corbeille et la mémoire de l\'IA ? (Tes clés API et réglages sont conservés.) Action irréversible.'))return;CONVOS=[];activeId=null;TRASH=[];saveTrash();setMemory('');MEDIA.clear&&MEDIA.clear();SESSION_TOKENS=0;SESSION_COST=0;try{localStorage.removeItem('mzai:stok');localStorage.removeItem('mzai:scost')}catch(e){}_renderTok(false);saveConvos();renderRecents();renderLibrary('');typeof renderTrash==='function'&&renderTrash();chat.innerHTML='';goHome();toast('Conversations, corbeille et mémoire effacées')});
 
   /* ===== persona studio ("Mon IA") ===== */
   const PRESETS=[
@@ -2271,7 +2275,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function setMemory(txt){try{localStorage.setItem(MEMORY_KEY,txt)}catch(e){}}
   async function updateMemory(c){
     if(!KEYS.openrouter||c.msgs.length<4)return;
-    const recent=c.msgs.slice(-6).map(m=>(m.role==='user'?'User: ':'IA: ')+m.text.slice(0,300)).join('\n');
+    const recent=c.msgs.slice(-6).map(m=>(m.role==='user'?'User: ':'IA: ')+(m.text||(m.media?'['+m.media.type+']':'')).slice(0,300)).join('\n');
     try{
       const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',
         headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MAZ'},
@@ -2485,7 +2489,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   }
   function renderAIStored(msg){
     const node=addAINode(msg.model),col=node.querySelector('.col'),bubble=node.querySelector('.bubble');
-    if(msg.media){bubble.classList.add('media-b');bubble.innerHTML=mediaBubbleHTML(msg.media);wireMedia(bubble,msg.media,node);return}
+    if(msg.media){bubble.classList.add('media-b');bubble.innerHTML=mediaBubbleHTML(msg.media);wireMedia(bubble,msg.media,node);hydrateMedia(bubble);return}
     if(msg.reasonText)insertReason(col,msg.model,msg.reasonText,false);
     bubble.classList.add('md');bubble.innerHTML=renderMD(msg.text)+sourcesBlock(msg.model,msg.sources);wireBubble(bubble);addActions(col,msg.text,node);
     if(msg.usage||msg.ms){const s=statsEl((msg.auto?'MAZ Auto → ':'')+msg.model,msg.ms,msg.usage);if(s)col.appendChild(s);}
@@ -2510,11 +2514,23 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   /* ===== génération média (image / vidéo) ===== */
   let mediaUID=0;
   function hashColors(str){let h=0;for(let i=0;i<str.length;i++)h=(h*31+str.charCodeAt(i))>>>0;const hue=h%360;return[`hsl(${hue} 78% 62%)`,`hsl(${(hue+38)%360} 72% 46%)`,`hsl(${(hue+205)%360} 68% 52%)`,`hsl(${(hue+150)%360} 70% 40%)`]}
+  /* ===== médias lourds (audio voix) → IndexedDB, hors localStorage ~5 Mo ===== */
+  const MEDIA=(()=>{
+    let p=null;const cache=new Map();
+    function db(){if(p)return p;p=new Promise((res,rej)=>{let r;try{r=indexedDB.open('maz-media',1)}catch(e){return rej(e)}r.onupgradeneeded=()=>{try{r.result.createObjectStore('m')}catch(e){}};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});return p;}
+    async function st(mode){const d=await db();return d.transaction('m',mode).objectStore('m');}
+    return {cache,
+      async put(k,v){cache.set(k,v);try{const s=await st('readwrite');return await new Promise(res=>{const q=s.put(v,k);q.onsuccess=()=>res(true);q.onerror=()=>res(false)})}catch(e){return false}},
+      async get(k){if(cache.has(k))return cache.get(k);try{const s=await st('readonly');const v=await new Promise(res=>{const q=s.get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null)});if(v)cache.set(k,v);return v;}catch(e){return null}},
+      async del(k){cache.delete(k);try{const s=await st('readwrite');s.delete(k)}catch(e){}},
+      async clear(){cache.clear();try{const s=await st('readwrite');s.clear()}catch(e){}}};
+  })();
+  function hydrateMedia(scope){(scope||document).querySelectorAll('[data-mid]').forEach(el=>{if(el.dataset._hy)return;el.dataset._hy='1';MEDIA.get(el.dataset.mid).then(u=>{if(u)el.src=u})});}
   function mediaBubbleHTML(m){
     const badge=`<span class="gm-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">${GLYPH.spark}</svg>${esc(m.model||currentModel)}</span>`;
     const acts=`<div class="gm-acts"><span class="gm-b" data-gm="dl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.import}</svg>Télécharger</span><span class="gm-b" data-gm="regen"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v4h-4"/></svg>Régénérer</span></div>`;
     if(m.type==='audio'){
-      return `<div class="gen-audio"><span class="ga-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/></svg></span><audio controls src="${esc(safeMediaUrl(m.url))}"></audio></div><div class="gm-cap">« ${esc(m.prompt)} »</div>${acts}`;
+      return `<div class="gen-audio"><span class="ga-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/></svg></span><audio controls ${m.mid?`data-mid="${esc(m.mid)}"`:''} src="${esc(safeMediaUrl(m.url))}"></audio></div><div class="gm-cap">« ${esc(m.prompt)} »</div>${acts}`;
     }
     const vid=m.type==='video';
     let art;
@@ -2526,7 +2542,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   }
   function wireMedia(bubble,m,node){
     bubble.querySelector('.gm-play')&&bubble.querySelector('.gm-play').addEventListener('click',()=>toast('Lecture de la vidéo (aperçu)'));
-    bubble.querySelector('[data-gm=dl]').addEventListener('click',()=>{if(m.url){const ext=m.type==='video'?'mp4':m.type==='audio'?'mp3':'png';const a=document.createElement('a');a.href=m.url;a.download='mzai-'+m.type+'-'+(m.seed||'')+'.'+ext;a.target='_blank';a.click();toast('Téléchargement');return;}const svg=bubble.querySelector('.gm-art');if(!svg)return;const s=new XMLSerializer().serializeToString(svg),blob=new Blob([s],{type:'image/svg+xml'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='mzai-'+m.type+'-'+m.seed+'.svg';a.click();URL.revokeObjectURL(u);toast('Visuel téléchargé')});
+    bubble.querySelector('[data-gm=dl]').addEventListener('click',()=>{const dl=(href)=>{const ext=m.type==='video'?'mp4':m.type==='audio'?'mp3':'png';const a=document.createElement('a');a.href=href;a.download='maz-'+m.type+'-'+(m.seed||'')+'.'+ext;a.target='_blank';a.click();toast('Téléchargement')};if(m.url){dl(m.url);return;}if(m.mid){MEDIA.get(m.mid).then(u=>u?dl(u):toast('Audio indisponible'));return;}const svg=bubble.querySelector('.gm-art');if(!svg)return;const s=new XMLSerializer().serializeToString(svg),blob=new Blob([s],{type:'image/svg+xml'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='mzai-'+m.type+'-'+m.seed+'.svg';a.click();URL.revokeObjectURL(u);toast('Visuel téléchargé')});
     bubble.querySelector('[data-gm=regen]').addEventListener('click',()=>{if(generating)return;const c=convoById(activeId);if(!c)return;for(let k=c.msgs.length-1;k>=0;k--){if(c.msgs[k].role==='ai'){c.msgs.splice(k,1);break}}node&&node.remove();if(m.type==='audio')genVoice(c,m.prompt);else genMedia(c,m.prompt,m.type)});
   }
   async function genMedia(c,promptText,type){
@@ -2616,9 +2632,10 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const res=await fetch(SF_HOST+'/v1/audio/speech',{method:'POST',headers:{'Authorization':'Bearer '+KEYS.siliconflow,'Content-Type':'application/json'},body:JSON.stringify({model:'FunAudioLLM/CosyVoice2-0.5B',input:text,voice:'FunAudioLLM/CosyVoice2-0.5B:alex',response_format:'mp3'})});
       if(!res.ok)throw new Error('HTTP '+res.status+' · '+(await res.text().catch(()=>'')).slice(0,200));
       const _blob=await res.blob();if(done)return;
-      const url=await new Promise((rs,rj)=>{const fr=new FileReader();fr.onload=()=>rs(fr.result);fr.onerror=()=>rj(new Error('lecture audio'));fr.readAsDataURL(_blob)});  // data URL persistante (survit au reload, pas de fuite blob:)
-      const media={type:'audio',prompt:text,model,url};
-      bubble.classList.add('media-b');bubble.innerHTML=mediaBubbleHTML(media);wireMedia(bubble,media,node);
+      const url=await new Promise((rs,rj)=>{const fr=new FileReader();fr.onload=()=>rs(fr.result);fr.onerror=()=>rj(new Error('lecture audio'));fr.readAsDataURL(_blob)});
+      const mid='m'+newId();await MEDIA.put(mid,url);   // audio stocké en IndexedDB (hors localStorage), persiste au reload
+      const media={type:'audio',prompt:text,model,mid};  // CONVOS ne garde qu'une référence légère
+      bubble.classList.add('media-b');bubble.innerHTML=mediaBubbleHTML(media);wireMedia(bubble,media,node);hydrateMedia(bubble);
       c.msgs.push({role:'ai',media,model});c.ts=now();saveConvos();renderRecents();setGenerating(false);curStop=null;scrollDown();
     }catch(e){if(!done){bubble.innerHTML="<div class='api-err'><b>Erreur voix</b><br>"+esc(e.message)+"</div>";setGenerating(false);curStop=null}}
   }
