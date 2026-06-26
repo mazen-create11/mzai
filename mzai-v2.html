@@ -15,7 +15,7 @@
 <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22MZai%22%2C%22short_name%22%3A%22MZai%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23FAF8F3%22%2C%22theme_color%22%3A%22%23FAF8F3%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%2C%253Csvg%2520xmlns%253D%2527http%253A%252F%252Fwww.w3.org%252F2000%252Fsvg%2527%2520viewBox%253D%25270%25200%2520180%2520180%2527%253E%253Crect%2520width%253D%2527180%2527%2520height%253D%2527180%2527%2520rx%253D%252740%2527%2520fill%253D%2527%2523FAF8F3%2527%252F%253E%253Ctext%2520x%253D%252790%2527%2520y%253D%2527131%2527%2520font-family%253D%2527Georgia%252Cserif%2527%2520font-size%253D%2527118%2527%2520font-weight%253D%2527700%2527%2520text-anchor%253D%2527middle%2527%2520fill%253D%2527%2523B85335%2527%253EM%253C%252Ftext%253E%253C%252Fsvg%253E%22%2C%22sizes%22%3A%22any%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Hanken+Grotesk:wght@400;450;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Hanken+Grotesk:ital,wght@0,400;0,450;0,500;0,600;0,700;1,500;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script>try{var t=JSON.parse(localStorage.getItem('mzai:theme'));document.documentElement.dataset.theme=(t==='dark'?'dark':'light')}catch(e){document.documentElement.dataset.theme='light'}</script>
 <style>
 /* ============================================================
@@ -135,7 +135,9 @@ body{
   background:var(--bg); color:var(--ink);
   font-family:var(--font-sans); font-size:var(--fs-base);
   line-height:var(--lh-normal); letter-spacing:var(--tr-snug); font-weight:var(--fw-reg);
-  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; text-rendering:optimizeLegibility;
+  -webkit-text-size-adjust:100%; text-size-adjust:100%;
+  font-feature-settings:"kern" 1,"liga" 1,"calt" 1; font-variant-ligatures:common-ligatures contextual;
 }
 h1,h2,h3,h4{font-family:var(--font-serif); font-weight:var(--fw-semi);
   line-height:var(--lh-tight); letter-spacing:var(--tr-tight); color:var(--ink);
@@ -1156,7 +1158,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
                     <button class="tool" id="toolModel" title="Choisir le modèle"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5l2.4 6.1 6.1 2.4-6.1 2.4L12 19.5l-2.4-6.1L3.5 11l6.1-2.4z"/></svg><span id="toolModelLbl">MZ Auto</span></button>
                     <span class="tb-spacer"></span>
                     <span class="counter" id="counter">0 mots</span>
-                    <button class="tool ghost" id="magicWand" aria-label="Améliorer le prompt" title="Améliorer mon prompt (le reformule en mieux)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/><path d="M19 13.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/></svg></button>
+                    <button class="tool ghost" id="magicWand" aria-label="Améliorer le prompt" title="Améliorer mon prompt (le reformule en mieux)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5 14 10"/><path d="M16 3.2l1 2.6 2.6 1-2.6 1-1 2.6-1-2.6-2.6-1 2.6-1z"/><path d="M6 6.5l.5 1.3 1.3.5-1.3.5L6 10.6l-.5-1.3L4.2 8.8l1.3-.5z"/></svg></button>
                   </div>
                 </div>
                 <div class="hint"><span>MZai peut se tromper. <b>Vérifie les informations importantes.</b></span><span class="tok-count" id="tokCount" data-tip="Tokens utilisés cette session">0 tokens</span></div>
