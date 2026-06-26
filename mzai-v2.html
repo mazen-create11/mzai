@@ -2817,7 +2817,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     }else if(currentMode==='code'){
       h='<span class="opt"><label>Langage</label><select data-opt="codeLang">'+['Auto','HTML/CSS/JS','Python','JavaScript','TypeScript','React','SQL','Rust','Go','Bash'].map(l=>'<option'+(l===toolCfg.codeLang?' selected':'')+'>'+l+'</option>').join('')+'</select></span><span class="opt">Aperçu live pour HTML autonome</span>';
     }
-    host.innerHTML=h;
+    host.innerHTML=h;autoLabelAll();
     host.querySelectorAll('select[data-opt]').forEach(s=>s.onchange=()=>{const k=s.dataset.opt;
       if(k==='mediaModel'){currentModel=s.value;syncModel();syncToolUI()}
       else if(k in toolCfg)toolCfg[k]=s.value;
@@ -3175,6 +3175,14 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   $('#libSearch').addEventListener('input',e=>renderLibrary(e.target.value));
   $('#intSearch').addEventListener('input',e=>renderIntegrations(e.target.value));
 
+  /* a11y : étiquette automatiquement les champs sans label (depuis placeholder / label du .field) */
+  function autoLabelAll(){
+    $$('input,textarea,select').forEach(el=>{
+      if(el.getAttribute('aria-label')||el.getAttribute('aria-labelledby')||el.closest('label')||(el.id&&document.querySelector('label[for="'+el.id+'"]')))return;
+      const ph=el.getAttribute('placeholder');const fl=el.closest('.field')?(el.closest('.field').querySelector('label')||{}).textContent:'';
+      const lab=(ph||fl||el.dataset.opt||'Champ').toString().trim();if(lab)el.setAttribute('aria-label',lab);
+    });
+  }
   /* ===== init : restaure l'état persistant ===== */
   (function init(){
     if(SETTINGS.memory===undefined)SETTINGS.memory=true;
@@ -3185,6 +3193,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     opts.search=!!SETTINGS.webSearch;opts.reason=!!SETTINGS.showReason;renderModeChip();syncToolUI();  // état initial des toggles depuis les préférences
     applyAnim();applyDensity();applyUser();applyPersona();syncModel();updateCount();
     const _tc=$('#tokCount');if(_tc&&SESSION_TOKENS>0)_tc.textContent=SESSION_TOKENS.toLocaleString('fr-FR')+' tokens';
+    autoLabelAll();
     if(!DB.get('onboarded',false))setTimeout(startOnboarding,400);
   })();
 
