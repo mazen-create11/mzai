@@ -1078,6 +1078,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 .skip-link:focus{top:12px;outline:2px solid var(--ink);outline-offset:2px}
 /* perf : ne rend pas les messages hors écran (longues conversations) */
 .msg{content-visibility:auto;contain-intrinsic-size:auto 90px}
+/* médias/code : hauteur très variable → pas d'estimation (évite les sauts de barre de défilement) */
+.msg:has(.media-b),.msg:has(pre),.msg:has(.gen-media){content-visibility:visible;contain-intrinsic-size:auto}
 .gen-media img.gm-art,.gen-media video.gm-art{decoding:async}
 </style>
 </head>
@@ -3303,7 +3305,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     });
   }
   /* a11y : rend les contrôles d'action (divs/spans cliquables) focusables + nommés + activables au clavier (cf. handler keydown role=button) */
-  const A11Y_SEL='.la,.pa,.ax,.mc-x,.pf-x,.gm-b,.help-link,.src,.toggle,.chat-pill,.lrow,.pcard,.irow,.ps-preset,.prchip,.faq-q,.cp-item,.sug,.ob-theme,.slash-i,.pi[data-mode],.pi[data-toggle],.pi[data-pf],.pi[data-add],.ptype,.nw-road,.pp-file .pf-x,.btn,.m-x,.mini-btn,.sg,.ltag,.pr-row,.rt,.swatch,.vbtn';
+  const A11Y_SEL='.la,.pa,.ax,.mc-x,.pf-x,.gm-b,.help-link,.src,.toggle,.chat-pill,.lrow,.pcard,.irow,.ps-preset,.prchip,.faq-q,.cp-item,.sug,.ob-theme,.slash-i,.pi[data-mode],.pi[data-toggle],.pi[data-pf],.pi[data-add],.ptype,.nw-road,.pp-file .pf-x,.btn,.m-x,.mini-btn,.sg,.ltag,.pr-row,.rt,.swatch,.vbtn,.tu';
   function a11yButtons(root){(root||document).querySelectorAll(A11Y_SEL).forEach(el=>{
     if(el.matches('button,a,input,textarea,select'))return;
     if(!el.getAttribute('role'))el.setAttribute('role',el.matches('.toggle')?'switch':'button');
