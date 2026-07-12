@@ -1095,6 +1095,18 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 /* médias/code : hauteur très variable → pas d'estimation (évite les sauts de barre de défilement) */
 .msg:has(.media-b),.msg:has(pre),.msg:has(.gen-media){content-visibility:visible;contain-intrinsic-size:auto}
 .gen-media img.gm-art,.gen-media video.gm-art{decoding:async}
+/* rendu maths léger (sans dépendance) */
+.math-d{margin:12px 0;text-align:center;font-size:1.06em;overflow-x:auto;line-height:2}
+.math-i{white-space:nowrap}
+.math-d,.math-i{font-family:Georgia,"Times New Roman",serif;font-style:italic}
+.math-d .mrm,.math-i .mrm{font-style:normal;font-family:var(--font-sans,inherit)}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 .18em;font-size:.9em}
+.frac .fr-n{border-bottom:1px solid currentColor;padding:0 .35em;line-height:1.35}
+.frac .fr-d{padding:0 .35em;line-height:1.35}
+.sqrt{border-top:1px solid currentColor;padding:0 .12em}
+.math-d sup,.math-i sup,.math-d sub,.math-i sub{font-style:normal}
+/* badge réponse simulée (repli sans clé API) */
+.demo-tag{display:inline-block;font-size:11px;font-weight:600;color:var(--accent-strong);background:var(--accent-tint);border:1px solid var(--accent-ring);border-radius:6px;padding:3px 9px;margin-bottom:9px;letter-spacing:.01em}
 </style>
 </head>
 <body>
@@ -1671,6 +1683,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   if(/#7fa9dc|#5e86c9|#6ba3ff|#b6c4d8|#6b7e97|#2c4a8f/i.test(USER.avColor||'')){USER.avColor=ARGILE_AV;DB.set('user',USER)}   /* migration : avatar bleu/ardoise hérité → argile DA */
   const firstName=()=>(USER.name||'Mazen').trim().split(' ')[0];
   const modelById=id=>MODELS.find(m=>m.id===id)||MODELS[0];
+  {const _bm=modelById(currentModel);if(_bm&&/image|video|audio/.test(_bm.kind||''))currentModel='MAZ Auto';}  // au boot on démarre en conversation texte : un modèle média persisté (FLUX/Wan/voix) retombe sur l'assistant, sinon le 1er message texte partirait en réponse simulée
   const VISION_DOC='qwen/qwen3-vl-8b-instruct';  // modèle vision OpenRouter (OCR docs scannés / photos en mode Documents)
   function injCap(id){const ctx=(modelById(id).ctx||'').toLowerCase();  // budget de caractères injectés dérivé de la fenêtre de contexte du modèle
     return (ctx.includes('m')||ctx.includes('auto'))?400000:parseInt(ctx)>=256?240000:parseInt(ctx)>=128?140000:60000;}
@@ -2222,6 +2235,22 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     return esc(code).replace(/(&quot;[^&]*?&quot;|&#39;[^&]*?&#39;|`[^`]*?`|"[^"\n]*?"|'[^'\n]*?')|(\/\/[^\n]*)|\b(const|let|var|function|return|if|else|for|while|import|from|export|default|class|extends|new|await|async|def|print|lambda|public|private|static|void|true|false|null|None|undefined|this|self|try|catch|throw)\b|\b(\d+(?:\.\d+)?)\b/g,
       (m,str,com,kw,num)=>str?`<span class="t-str">${str}</span>`:com?`<span class="t-com">${com}</span>`:kw?`<span class="t-kw">${kw}</span>`:num?`<span class="t-num">${num}</span>`:m);
   }
+  const MATHSYM={pi:'π',times:'×',cdot:'·',div:'÷',approx:'≈',neq:'≠',leq:'≤',geq:'≥',le:'≤',ge:'≥',infty:'∞',sum:'∑',prod:'∏',int:'∫',partial:'∂',nabla:'∇',alpha:'α',beta:'β',gamma:'γ',delta:'δ',epsilon:'ε',theta:'θ',lambda:'λ',mu:'µ',sigma:'σ',phi:'φ',omega:'ω',Omega:'Ω',Delta:'Δ',Sigma:'Σ',pm:'±',rightarrow:'→',Rightarrow:'⇒',ldots:'…',cdots:'⋯'};
+  // rendu maths léger sans dépendance externe (CSP connect-src verrouillée → pas de KaTeX distant). Traite \[ \], \( \), $$ $$ ; le $…$ simple est volontairement ignoré (ambigu avec les prix en $).
+  function renderMath(s){
+    const rip=t=>t
+      .replace(/\\left|\\right|\\!|\\,|\\;|\\:|\\quad|\\qquad/g,' ')
+      .replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}/g,'<span class="frac"><span class="fr-n">$1</span><span class="fr-d">$2</span></span>')
+      .replace(/\\sqrt\s*\{([^{}]+)\}/g,'√<span class="sqrt">$1</span>')
+      .replace(/\\text\s*\{([^{}]+)\}|\\mathrm\s*\{([^{}]+)\}/g,(_,a,b)=>'<span class="mrm">'+(a||b)+'</span>')
+      .replace(/\^\{([^{}]+)\}/g,'<sup>$1</sup>').replace(/\^(-?\w)/g,'<sup>$1</sup>')
+      .replace(/_\{([^{}]+)\}/g,'<sub>$1</sub>').replace(/_(\w)/g,'<sub>$1</sub>')
+      .replace(/\\(pi|times|cdot|div|approx|neq|leq|geq|le|ge|infty|sum|prod|int|partial|nabla|alpha|beta|gamma|delta|epsilon|theta|lambda|mu|sigma|phi|omega|Omega|Delta|Sigma|pm|rightarrow|Rightarrow|ldots|cdots)\b/g,(m,n)=>MATHSYM[n]||m);
+    return s
+      .replace(/\\\[([\s\S]+?)\\\]/g,(_,e)=>'<div class="math-d">'+rip(e).trim()+'</div>')
+      .replace(/\$\$([\s\S]+?)\$\$/g,(_,e)=>'<div class="math-d">'+rip(e).trim()+'</div>')
+      .replace(/\\\(([\s\S]+?)\\\)/g,(_,e)=>'<span class="math-i">'+rip(e).trim()+'</span>');
+  }
   function renderMD(src){
     const blocks=[];
     src=src.replace(/```(\w+)?\n?([\s\S]*?)```/g,(_,l,c)=>{const id=blocks.length;blocks.push({lang:l||'code',code:c.replace(/\n$/,'')});return ' '+id+' '});
@@ -2232,6 +2261,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     x=x.replace(/(?:^\d+\. .*(?:\n|$))+/gm,m=>'<ol>'+m.trim().split('\n').map(l=>'<li>'+l.replace(/^\d+\. /,'')+'</li>').join('')+'</ol>');
     x=x.replace(/(?:^[-•] .*(?:\n|$))+/gm,m=>'<ul>'+m.trim().split('\n').map(l=>'<li>'+l.replace(/^[-•] /,'')+'</li>').join('')+'</ul>');
     x=x.split(/\n{2,}/).map(p=>{const t=p.trim();if(!t)return'';if(/^<(h3|ul|ol|hr|blockquote|div class="tablewrap")/.test(t)||/^ \d+ $/.test(t))return t;return '<p>'+t.replace(/\n/g,'<br>')+'</p>'}).join('');
+    x=renderMath(x);  // maths APRÈS le markdown, AVANT la réinjection des blocs de code (encore des placeholders) → n'altère jamais le code
     x=x.replace(/ (\d+) /g,(_,i)=>{const b=blocks[i];const prev=/^(html|svg|xml|markup)$/i.test(b.lang)||/<(!doctype|html|body|div|section|svg|main|header|button|h1)[\s>]/i.test(b.code);return `<div class="codeblock"><div class="cb-top"><span class="cb-lang">${esc(b.lang)}</span><div class="cb-btns">${prev?`<button class="cb-prev" data-code="${encodeURIComponent(b.code)}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>Aperçu</button>`:''}<button class="cb-copy" data-code="${encodeURIComponent(b.code)}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copier</button></div></div><pre><code>${hl(b.code)}</code></pre></div>`});
     return x;
   }
@@ -2401,7 +2431,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(reasonBox){const ri=reasonBox.querySelector('.rc-in');if(reasonText)ri.textContent=reasonText;reasonBox.classList.remove('open','live');const lbl=reasonBox.querySelector('.rt-lbl');if(lbl)lbl.textContent=modelById(opts.model).id+' a réfléchi'+(meta.ms?' · '+(meta.ms/1000).toFixed(1)+'s':'');}
       let copyText=text,qcDone=false;
       if(currentMode==='translate'&&toolCfg.trCheck){const j=renderTransQC(bubble,text);if(j!=null){copyText=j;qcDone=true;}}  // côte-à-côte + contrôle qualité
-      if(!qcDone){bubble.classList.add('md');bubble.innerHTML=renderMD(text)+sourcesBlock(opts.model,meta.sources);}
+      if(!qcDone){bubble.classList.add('md');bubble.innerHTML=(meta.demo?'<div class="demo-tag">Mode démonstration — aucune clé API active, réponse simulée</div>':'')+renderMD(text)+sourcesBlock(opts.model,meta.sources);}
       wireBubble(bubble);addActions(col,copyText,node);
       if(injTotal>0){const b=injBadge(injUsed,injTotal);if(b)col.appendChild(b);}                          // transparence : X / Y caractères de document injectés
       if(currentMode==='doc'&&toolCfg.docAction==='Extraction')addJsonDownload(col,text);                  // export .json structuré
@@ -2438,7 +2468,10 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       }
       const isOR = mData.provider === 'openrouter';
       const isSF = mData.provider === 'siliconflow' && mData.kind!=='image' && mData.kind!=='video' && mData.kind!=='audio';
-      if(!isOR && !isSF){ return finish(REPLIES[ri++%REPLIES.length]); }  // pas de clé chinoise pour ce modèle → simulation propre
+      if(!isOR && !isSF){
+        if(MODE_CAT[currentMode]==='text' && opts.model!=='MAZ Auto'){ currentModel='MAZ Auto';syncModel();return runGen(node,_,{...opts,model:'MAZ Auto'}); }  // modèle média égaré en conversation texte → assistant réel (pas de boucle : au 2e passage model=MAZ Auto route vers OpenRouter)
+        return finish(REPLIES[ri++%REPLIES.length],{demo:true});  // vrai cas « sans clé » → réponse simulée, désormais explicitement badgée
+      }
 
       const apiKey = isOR ? KEYS['openrouter'] : KEYS['siliconflow'];
       if(!apiKey){ bubble.classList.remove('md'); return finish('⚠️ Clé API manquante pour '+(isOR?'OpenRouter':'SiliconFlow')+'. Ajoute-la dans Paramètres › Connexions API.',{error:true}); }
@@ -2450,6 +2483,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         const carriers=allMsgs.filter(m=>(m.files||[]).some(f=>f.textContent||f.b64||(f.ocrPages&&f.ocrPages.length))&&!trimmedMsgs.includes(m));
         if(carriers.length)trimmedMsgs=carriers.concat(trimmedMsgs);
       }
+      if(currentMode==='translate'||currentMode==='transcribe')trimmedMsgs=trimmedMsgs.slice(-1);  // tâches one-shot : ne traduire/transcrire QUE le dernier message, jamais l'historique (sinon les prompts média/voix orphelins seraient traduits eux aussi)
       const cap=injCap(opts.model);  // budget d'injection généreux calé sur la fenêtre du modèle
       const needsVision=currentMode==='doc'&&trimmedMsgs.some(m=>(m.files||[]).some(f=>(f.isImg&&f.b64)||(f.ocrPages&&f.ocrPages.length)));
       const messages=[{role:'system',content:buildSystem(c)}].concat(
