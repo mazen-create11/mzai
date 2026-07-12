@@ -1,53 +1,52 @@
-# MAZ — Proxy API (clés jamais exposées)
+# MAZ — Backend (proxy + comptes + sync + médias)
 
-But : l'app MAZ hébergée marche pour tes collègues **sans qu'ils tapent de clé**, et **sans que ta clé soit visible** dans le code public. Le Worker détient les clés et relaie les appels vers OpenRouter + SiliconFlow.
+Worker : **https://maz-proxy.maz-chaban.workers.dev** · D1 `maz-db` · KV `MEDIA`
 
-## Déploiement (une fois, ~5 min)
+## Ce que ça fait
+
+- **Clés API invisibles** : OpenRouter + SiliconFlow en secrets serveur ; le navigateur ne les voit jamais.
+- **Un code d'accès par personne** : l'app en ligne demande le code une fois ; sans code valide, le proxy refuse tout (`REQUIRE_CODE=true`).
+- **Historique qui suit chacun** : conversations synchronisées en D1, isolées par compte, sur tous ses appareils.
+- **Médias permanents** : images/vidéos/voix générées rapatriées côté serveur en KV — plus jamais d'URL expirée.
+- **Conso par compte** : requêtes/jour (serveur) + tokens/coût (rapportés) — prêt pour la facturation.
+
+Les codes sont stockés **hashés** (SHA-256, ~80 bits d'entropie). Un dump de la base ne révèle aucun code.
+
+## Créer un code pour un nouveau collègue/client
 
 ```bash
 cd ~/Desktop/mzai/maz-proxy
+# ADMIN_KEY est dans CODES.local.md (gitignoré)
+curl -s -X POST https://maz-proxy.maz-chaban.workers.dev/admin/user \
+  -H "X-Admin-Key: $ADMIN_KEY" -H "Content-Type: application/json" \
+  -d '{"name":"Prénom Client"}'
+# → renvoie {"code":"maz-XXXX-…"} — montré UNE SEULE FOIS : note-le dans CODES.local.md
+```
+(Si curl a un souci TLS sur ce Mac, la même requête marche depuis la console du navigateur sur la page de l'app.)
 
-# 1. Connexion Cloudflare (crée un compte gratuit si besoin, s'ouvre dans le navigateur)
-npx wrangler login
+## Gérer
 
-# 2. Poser les clés en SECRETS (chiffrées, jamais dans le code) — colle la valeur quand c'est demandé
-npx wrangler secret put OPENROUTER_KEY      # ta clé sk-or-v1-…
-npx wrangler secret put SILICONFLOW_KEY     # ta clé sk-…
-
-# 3. Déployer
-npx wrangler deploy
+```bash
+# lister les comptes + conso
+curl -s https://maz-proxy.maz-chaban.workers.dev/admin/users -H "X-Admin-Key: $ADMIN_KEY"
+# révoquer un accès (le code cesse de marcher immédiatement)
+curl -s -X POST https://maz-proxy.maz-chaban.workers.dev/admin/disable \
+  -H "X-Admin-Key: $ADMIN_KEY" -H "Content-Type: application/json" -d '{"id":"<uid>"}'
 ```
 
-À la fin, wrangler affiche l'URL du Worker, du type :
+## Redéployer après modification
+
+```bash
+cd ~/Desktop/mzai/maz-proxy && npx wrangler deploy
 ```
-https://maz-proxy.TON-COMPTE.workers.dev
-```
 
-## Brancher l'app dessus
+## Quand le volume grossit
 
-Copie cette URL et colle-la dans `mzai-v2.html`, ligne `const PROXY_URL='';` :
-```js
-const PROXY_URL='https://maz-proxy.TON-COMPTE.workers.dev';
-```
-Puis `git push`. C'est tout — l'app en ligne route désormais par le proxy, clés invisibles, et **tes collègues n'ont rien à configurer**.
+- **KV → R2** : KV gratuit ≈ 1 Go de médias. Au-delà : activer R2 dans le dashboard Cloudflare (1 clic), `wrangler r2 bucket create maz-media`, remplacer le binding — l'interface du Worker ne change pas.
+- **D1** : 5 Go gratuits ≈ des années d'historique texte.
 
-En local (toi, avec `keys.local.js`), rien ne change : l'app utilise tes clés en direct (le proxy ne sert qu'en ligne, quand aucune clé locale n'est présente).
+## Limites connues (v1, assumées)
 
-## Ce qui passe par le proxy
-
-- Texte / chat / raisonnement / recherche web (OpenRouter)
-- Image (SiliconFlow — FLUX, Qwen-Image, Z-Image)
-- Vidéo Wan, voix CosyVoice, transcription (SiliconFlow)
-
-La **vidéo Kling** garde son propre proxy (`../kling-proxy/`, signature JWT différente).
-
-## Sécurité & abus
-
-- Seules les origines de `ALLOWED_ORIGINS` (wrangler.toml) peuvent appeler le proxy → bloque les autres sites web.
-- Ce n'est pas une auth par utilisateur : quelqu'un qui a le lookien de l'app peut consommer tes crédits. Tu as dit assumer le coût — OK pour des collègues.
-- **Pour durcir** si besoin : pose un code d'accès partagé
-  ```bash
-  npx wrangler secret put MAZ_PASS
-  ```
-  puis décommente le bloc `MAZ_PASS` dans `worker.js` et ajoute l'en-tête `X-Maz-Pass` côté app (je peux le câbler sur demande).
-- Surveille la conso sur les dashboards OpenRouter / SiliconFlow ; mets un plafond de dépense si dispo.
+- Les **pièces jointes** uploadées par l'utilisateur (PDF, images sources) restent locales à l'appareil — le texte de la conversation se synchronise, pas le fichier source.
+- Sync **last-write-wins** par conversation : éditer la même conversation sur 2 appareils en même temps garde la version la plus récente.
+- La vidéo **Kling** a son propre proxy (`../kling-proxy/`, non déployé — modèles masqués dans l'app tant que non configuré).
