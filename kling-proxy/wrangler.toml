@@ -1,0 +1,12 @@
+name = "maz-kling-proxy"
+main = "worker.js"
+compatibility_date = "2026-07-01"
+
+# Origine(s) autorisée(s) à demander un jeton (séparées par des virgules).
+# Ajoute ton domaine perso ici si tu en mets un.
+[vars]
+ALLOWED_ORIGINS = "https://mazen-create11.github.io"
+
+# ⛔ Les clés Kling ne se mettent PAS ici. Pose-les en secrets chiffrés :
+#   npx wrangler secret put KLING_AK
+#   npx wrangler secret put KLING_SK

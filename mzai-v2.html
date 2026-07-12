@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Hanken+Grotesk:ital,wght@0,400;0,450;0,500;0,600;0,700;1,500;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script>try{var t=JSON.parse(localStorage.getItem('mzai:theme'));document.documentElement.dataset.theme=(t==='dark'?'dark':'light')}catch(e){document.documentElement.dataset.theme='light'}</script>
+<script>try{var t=JSON.parse(localStorage.getItem('mzai:theme'));var d=t==='dark'||(t==null&&window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=d?'dark':'light'}catch(e){document.documentElement.dataset.theme='light'}</script>
 <style>
 /* ============================================================
    MAZ V2 — DESIGN SYSTEM « Encre & Crème »
@@ -54,7 +54,7 @@
   --success:#3F7D5A; --success-tint:#E4EFE7; --success-strong:#2F6347;
   --warning:#9C6F1E; --warning-tint:#F4EAD2; --warning-strong:#7A560F;
   --danger:#B23B3B;  --danger-tint:#F5E1DF;  --danger-strong:#8E2F2F;
-  --info:#3F6A8C;    --info-tint:#E2EBF1;     --info-strong:#2E5471;
+  --info:#6E5C52;    --info-tint:#EFE7DF;     --info-strong:#544539;
 
   /* ── Typo : échelle ~1.2 (minor third), base 15px ── */
   --fs-xs:.75rem; --fs-sm:.8125rem; --fs-base:.9375rem; --fs-md:1.0625rem;
@@ -443,6 +443,13 @@ button{font-family:inherit}
 .actions{display:flex;gap:5px;max-height:0;margin-top:-6px;opacity:0;overflow:hidden;transform:translateY(-2px);transition:max-height .22s var(--ease),margin-top .22s var(--ease),opacity .18s var(--ease),transform .18s var(--ease)}
 .msg.ai:hover .actions,.msg.user:hover .actions{max-height:34px;margin-top:0;opacity:1;transform:none}
 .msg.user .actions{justify-content:flex-end}
+/* Densité compacte (Réglages › Densité) — la classe était togglée sans CSS */
+body.dense .thread,body.dense .chat{gap:12px}
+body.dense .msg{gap:10px}
+body.dense .msg .col{gap:3px}
+body.dense .msg .av{width:28px;height:28px;font-size:12px}
+body.dense .bubble{line-height:1.55}
+body.dense .msg.user .bubble{padding:8px 13px}
 .act{width:29px;height:29px;border-radius:var(--r-xs);border:1px solid var(--line);background:var(--surface);color:var(--ink-faint);display:grid;place-items:center;cursor:pointer;transition:.16s}
 .act:hover{color:var(--accent-strong);border-color:var(--accent)}
 .act.on{color:var(--accent-strong);border-color:var(--accent)}
@@ -491,6 +498,11 @@ button{font-family:inherit}
 .t-str{color:var(--success-strong)}
 .t-com{color:var(--ink-faint);font-style:italic}
 .t-num{color:var(--warning-strong)}
+/* carte d'erreur API (texte, image, voix, transcription) — accordée à la DA */
+.api-err{margin:2px 0;padding:12px 14px;border-radius:var(--r-md);background:var(--danger-tint);border:1px solid var(--danger);color:var(--danger-strong);font-size:var(--fs-sm);line-height:1.5}
+.api-err b{font-weight:var(--fw-semi);color:var(--danger-strong)}
+.api-err .retry{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-family:inherit;font-size:var(--fs-sm);font-weight:var(--fw-med);color:var(--accent-strong);background:var(--surface);border:1px solid var(--line-strong);border-radius:var(--r-xs);padding:5px 11px;cursor:pointer;transition:.15s var(--ease)}
+.api-err .retry:hover{background:var(--surface-2);border-color:var(--accent)}
 
 /* stats réelles sous chaque réponse */
 .msg-stats{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:4px;font-size:11px;color:var(--ink-soft);letter-spacing:.02em;user-select:none}
@@ -909,7 +921,8 @@ textarea.inp{resize:vertical;line-height:1.55;min-height:84px}
   .vbody{padding-inline:16px}
   .composer{padding:10px 12px max(10px,env(safe-area-inset-bottom))}
   #prompt,input,textarea,select,.inp,.api-in,.vsearch input,.pal-search input,.edit-ta,.pp-ctx,.ch-in{font-size:16px}
-  .icon-btn,.menu-btn,.send,.clip,.m-x,.act,.la{min-width:44px;min-height:44px}
+  .icon-btn,.menu-btn,.send,.clip,.m-x,.act,.la,.chat-pill .pa{min-width:44px;min-height:44px}
+  .att-chip .ax,.mc-x{min-width:26px;min-height:26px;padding:4px}   /* croix de chips : zone de contact élargie sans casser le chip */
   .send{border-radius:var(--r-md)}
   .hint{display:none}
   .brand .wordmark{display:none}            /* masquer contrôle secondaire <640 */
@@ -929,6 +942,7 @@ textarea.inp{resize:vertical;line-height:1.55;min-height:84px}
 @media (hover:none){
   .msg .actions{max-height:36px!important;margin-top:0!important;opacity:1!important;transform:none!important}
   .lacts{opacity:1!important;transform:none!important}
+  .chat-pill .pill-acts{display:flex!important}   /* épingler/renommer/supprimer atteignables au tactile */
   .pcard-acts{display:flex!important}
   .conv-head .ch-edit{opacity:1!important}
   .nav-item kbd{display:none}
@@ -1357,7 +1371,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 </div>
 
 <!-- SETTINGS -->
-<div class="ov" id="settings"><div class="modal">
+<div class="ov" id="settings"><div class="modal" role="dialog" aria-modal="true" aria-label="Réglages">
   <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82M4.6 9a1.65 1.65 0 0 0-.33-1.82"/></svg></div><div class="m-tt"><div class="m-t">Réglages</div><div class="m-s">Modèle, clés API et préférences</div></div><div class="m-x" id="setClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
   <div class="m-body set-body">
     <div class="field"><label>Modèle par défaut</label><button type="button" class="inp model-field" id="setModelBtn" data-popanchor><span class="mf-dot" id="setModelDot"></span><span id="setModelLbl">MAZ Auto</span><svg class="mf-chev" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button></div>
@@ -1379,7 +1393,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 </div></div>
 
 <!-- PROFILE -->
-<div class="ov" id="profileModal"><div class="modal sm">
+<div class="ov" id="profileModal"><div class="modal sm" role="dialog" aria-modal="true" aria-label="Profil">
   <div class="m-head"><div class="m-ic" id="pfAv">M</div><div class="m-tt"><div class="m-t">Profil</div><div class="m-s">Ton identité dans MAZ</div></div><div class="m-x" id="pfClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
   <div class="m-body">
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:18px;gap:2px"><div class="m-t" id="pfNameP">Mazen</div><div class="m-s" id="pfEmailP"></div></div>
@@ -1392,7 +1406,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 </div></div>
 
 <!-- PROJECT MODAL -->
-<div class="ov" id="projModal"><div class="modal">
+<div class="ov" id="projModal"><div class="modal" role="dialog" aria-modal="true" aria-label="Projet">
   <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4.5 16.5 12 21l7.5-4.5M4.5 12 12 16.5 19.5 12M12 3 4.5 7.5 12 12l7.5-4.5L12 3z"/></svg></div><div class="m-tt"><div class="m-t">Nouveau projet</div><div class="m-s">Un espace de travail dédié</div></div><div class="m-x" id="pmClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
   <div class="m-body">
     <div class="field"><label>Nom du projet</label><input class="inp" id="pmName" placeholder="Ex : Lancement produit"></div>
@@ -1404,7 +1418,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 </div></div>
 
 <!-- ARTIFACT / CANVAS -->
-<div class="ov" id="artifactModal"><div class="modal">
+<div class="ov" id="artifactModal"><div class="modal" role="dialog" aria-modal="true" aria-label="Aperçu du code">
   <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg></div><div class="m-tt"><div class="m-t">Aperçu</div><div class="m-s">Artifact interactif</div></div>
     <div class="art-seg seg" style="margin-right:4px"><button class="sg on" data-art="preview">Aperçu</button><button class="sg" data-art="code">Code</button></div>
     <div class="art-vp seg" style="margin-right:4px"><button class="sg on" data-vp="desktop">🖥</button><button class="sg" data-vp="mobile">📱</button></div>
@@ -1418,39 +1432,39 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 
 
 <!-- NEWS / ROADMAP -->
-<div class="ov" id="newsModal"><div class="modal">
+<div class="ov" id="newsModal"><div class="modal" role="dialog" aria-modal="true" aria-label="Nouveautés">
   <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 11l18-5v12L3 14v-3zM11.6 16.8a3 3 0 0 1-5.8-1.6"/></svg></div><div class="m-tt"><div class="m-t">Nouveautés</div><div class="m-s">Mises à jour &amp; feuille de route</div></div><div class="m-x" id="nwClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
   <div class="m-body"><div id="newsLog"></div><div class="sb-label" style="margin-left:0;margin-top:18px">Bientôt</div><div id="newsRoad"></div></div>
 </div></div>
 
 <!-- BILLING -->
-<div class="ov" id="billingModal"><div class="modal sm">
+<div class="ov" id="billingModal"><div class="modal sm" role="dialog" aria-modal="true" aria-label="Facturation">
   <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 11l18-5v12L3 14v-3z"/></svg></div><div class="m-tt"><div class="m-t">Activité</div><div class="m-s">Aperçu de ton usage</div></div><div class="m-x" id="blClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
   <div class="m-body"><div id="usageList"></div></div>
   <div class="m-foot"><div class="btn primary" id="blUpgrade">Fermer</div></div>
 </div></div>
 
 <!-- TRASH -->
-<div class="ov" id="trashModal"><div class="modal">
+<div class="ov" id="trashModal"><div class="modal" role="dialog" aria-modal="true" aria-label="Corbeille">
   <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14"/></svg></div><div class="m-tt"><div class="m-t">Corbeille <span class="tr-count" id="trashCount"></span></div><div class="m-s">Restaure ou supprime définitivement</div></div><div class="m-x" id="trClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
   <div class="m-body"><div class="tr-note"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01" stroke-linecap="round"/></svg>Les éléments sont conservés 30 jours.</div><div id="trashList"></div><div class="empty-state" id="trEmpty" style="display:none"><div class="es-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14"/></svg></div><div class="es-t">Corbeille vide</div></div></div>
   <div class="m-foot"><div class="btn danger" id="trashEmpty">Vider la corbeille</div></div>
 </div></div>
 
 <!-- SHORTCUTS -->
-<div class="ov" id="shortcuts"><div class="modal sm">
+<div class="ov" id="shortcuts"><div class="modal sm" role="dialog" aria-modal="true" aria-label="Raccourcis clavier">
   <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M6 8h.01M10 8h.01M14 8h.01M7 12h10M8 16h8"/></svg></div><div class="m-tt"><div class="m-t">Raccourcis clavier</div></div><div class="m-x" id="scClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
   <div class="m-body"><div id="scList"></div></div>
 </div></div>
 
 <!-- COMMAND PALETTE -->
-<div class="ov palette" id="palette"><div class="modal">
+<div class="ov palette" id="palette"><div class="modal" role="dialog" aria-modal="true" aria-label="Palette de commandes">
   <div class="pal-search"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4" stroke-linecap="round"/></svg><input id="cpInput" placeholder="Tape une commande ou recherche…"></div>
   <div class="m-body"><div id="cpList"></div></div>
 </div></div>
 
 <!-- ONBOARDING (3 étapes : thème → clé + test → prêt) -->
-<div class="ov" id="onboard"><div class="modal sm"><div class="ob-box">
+<div class="ov" id="onboard"><div class="modal sm" role="dialog" aria-modal="true" aria-label="Bienvenue"><div class="ob-box">
   <div class="ob-dots" id="obDots"></div>
   <div class="ob-step" data-step="0">
     <div class="ob-logo"><span class="wordmark" style="font-size:30px;letter-spacing:-.5px">MA<span class="zmark">Z</span></span></div>
@@ -1556,18 +1570,18 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   const projById=id=>PROJECTS.find(p=>p.id===id);
   const projCount=id=>CONVOS.filter(c=>c.pid===id).length;
   const projLastTs=p=>{const cs=CONVOS.filter(c=>c.pid===p.id);return cs.length?Math.max(...cs.map(c=>c.ts)):p.ts};
-  const hexOf=g=>{const m=String(g).match(/#[0-9a-fA-F]{3,8}/);return m?m[0]:'#7FA9DC'};
+  const hexOf=g=>{const m=String(g).match(/#[0-9a-fA-F]{3,8}/);return m?m[0]:'#B85335'};
   const ARGILE_AV='linear-gradient(140deg,#C46B4A,#8E3D22)';   /* avatar argile, accordé à la DA */
-  const PCOLORS=[ARGILE_AV,'linear-gradient(140deg,#E4C674,#A8801F)','linear-gradient(140deg,#4CC59C,#0C6B4E)','linear-gradient(140deg,#7FA9DC,#2C4A8F)','linear-gradient(140deg,#C76B82,#7A1E3A)','linear-gradient(140deg,#AD92E2,#553597)','linear-gradient(140deg,#B6C4D8,#6B7E97)'];
+  const PCOLORS=[ARGILE_AV,'linear-gradient(140deg,#D08B5C,#A85E2E)','linear-gradient(140deg,#4CC59C,#0C6B4E)','linear-gradient(140deg,#9E6B8A,#5E3450)','linear-gradient(140deg,#C76B82,#7A1E3A)','linear-gradient(140deg,#B08968,#6B4A32)','linear-gradient(140deg,#C15D3C,#8A3B22)'];
   const PICONS=['spark','bolt','target','globe','code','card','bag','brain','shield','wand'];
   /* types de projet — chaque type porte son icône + sa couleur (plus de choix manuel) */
   const PTYPES=[
-    {k:'web',n:'Site web',icon:'code',color:'linear-gradient(140deg,#7FA9DC,#2C4A8F)'},
-    {k:'ecom',n:'Boutique',icon:'bag',color:'linear-gradient(140deg,#E4C674,#A8801F)'},
-    {k:'content',n:'Contenu',icon:'wand',color:'linear-gradient(140deg,#AD92E2,#553597)'},
+    {k:'web',n:'Site web',icon:'code',color:'linear-gradient(140deg,#C46B4A,#8E3D22)'},
+    {k:'ecom',n:'Boutique',icon:'bag',color:'linear-gradient(140deg,#C76B82,#7A1E3A)'},
+    {k:'content',n:'Contenu',icon:'wand',color:'linear-gradient(140deg,#9E6B8A,#5E3450)'},
     {k:'research',n:'Recherche',icon:'globe',color:'linear-gradient(140deg,#4CC59C,#0C6B4E)'},
-    {k:'marketing',n:'Marketing',icon:'target',color:'linear-gradient(140deg,#C76B82,#7A1E3A)'},
-    {k:'other',n:'Autre',icon:'spark',color:'linear-gradient(140deg,#B6C4D8,#6B7E97)'}
+    {k:'marketing',n:'Marketing',icon:'target',color:'linear-gradient(140deg,#C15D3C,#8A3B22)'},
+    {k:'other',n:'Autre',icon:'spark',color:'linear-gradient(140deg,#B08968,#6B4A32)'}
   ];
   const ptypeOf=k=>PTYPES.find(t=>t.k===k)||PTYPES[0];
   /* migration : type + icône/couleur premium dérivés du type */
@@ -1646,7 +1660,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   /* Clés chargées depuis keys.local.js (gitignored) → "toujours connecté" en local,
      sans aucun secret dans index.html. Fichier absent (ex: hébergé) → saisie dans Paramètres. */
   if(!window.MZAI_KEYS)console.info('[MAZ] keys.local.js absent — ajoute tes clés API dans Réglages › Clés API (stockées uniquement sur cet appareil).');
-  const DEFAULT_KEYS=Object.assign({openrouter:'',siliconflow:'',kling_ak:'',kling_sk:''},window.MZAI_KEYS||{});
+  const DEFAULT_KEYS=Object.assign({openrouter:'',siliconflow:'',kling_ak:'',kling_sk:'',kling_proxy:''},window.MZAI_KEYS||{});
   const KEYS=Object.assign({},DEFAULT_KEYS,DB.get('apikeys',{}));
   Object.keys(DEFAULT_KEYS).forEach(k=>{if(DEFAULT_KEYS[k]&&!KEYS[k])KEYS[k]=DEFAULT_KEYS[k]});
   // Les clés fournies par keys.local.js restent EN MÉMOIRE : on ne les recopie pas dans localStorage (un XSS/CDN compromis ne peut pas les exfiltrer). Seules les clés saisies par l'utilisateur sont persistées.
@@ -1750,12 +1764,12 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function exportConvo(id){const c=convoById(id);if(!c)return;const md='# '+c.title+'\n\n'+c.msgs.map(m=>(m.role==='user'?'**Toi**\n\n':'**'+(m.model||'MAZ')+'**\n\n')+(m.text||(m.media?'_['+m.media.type+' généré : '+(m.media.prompt||'')+']_':''))).join('\n\n---\n\n')+'\n';const blob=new Blob([md],{type:'text/markdown'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=(c.title||'conversation').replace(/[^\wÀ-ſ-]+/g,'_').slice(0,50)+'.md';a.click();URL.revokeObjectURL(u);toast('Conversation exportée (.md)')}
   const ASSISTANTS = [
     { id: 'aide', name: 'Aide MAZ', desc: 'Prise en main, fonctions & réglages', color: '#B85335', icon: 'help', prompt: "Tu es l'assistant d'aide intégré de MAZ, une application de chat IA premium. Tu connais parfaitement l'app et tu guides l'utilisateur pas à pas dans l'interface. Fonctions clés : le sélecteur de modèle en haut à droite (DeepSeek, Qwen, Kimi, GLM, MiniMax — et « MAZ Auto » qui choisit automatiquement le meilleur modèle selon la demande) ; les modes Image, Vidéo et Voix dans la barre d'outils sous le champ de saisie ; les Projets (espaces avec contexte permanent) ; la Bibliothèque (historique et recherche) ; « Mon IA » (⌘J) pour définir nom, ton, longueur et instructions système ; et les clés API à coller dans Réglages › Clés API (OpenRouter pour le texte, SiliconFlow pour l'image/voix, Kling pour la vidéo). Réponds de façon claire, concrète et bienveillante, en indiquant toujours où cliquer. Si une fonction nécessite une clé API non renseignée, explique calmement où l'ajouter." },
-    { id: 'dev', name: 'Développeur Senior', desc: 'Code propre, architecture & debug', color: '#6366f1', icon: 'code', prompt: 'Tu es un développeur senior expert. Tu fournis du code propre, moderne, testé et optimisé, et tu expliques brièvement tes choix techniques. Tu repères les bugs et proposes le correctif minimal. Tu privilégies la lisibilité et la robustesse.' },
+    { id: 'dev', name: 'Développeur Senior', desc: 'Code propre, architecture & debug', color: '#9E6B8A', icon: 'code', prompt: 'Tu es un développeur senior expert. Tu fournis du code propre, moderne, testé et optimisé, et tu expliques brièvement tes choix techniques. Tu repères les bugs et proposes le correctif minimal. Tu privilégies la lisibilité et la robustesse.' },
     { id: 'copy', name: 'Copywriter', desc: 'Textes qui vendent, emails & hooks', color: '#f43f5e', icon: 'pen', prompt: 'Tu es un copywriter professionnel. Tu écris des textes persuasifs, vivants et orientés conversion, avec des accroches fortes. Tu utilises les structures éprouvées (AIDA, PAS, BAB) sans jargon ni clichés IA, et tu proposes plusieurs variantes quand c\'est utile.' },
     { id: 'seo', name: 'Expert SEO', desc: 'Mots-clés, structure & contenu Google', color: '#10b981', icon: 'search', prompt: 'Tu es un expert SEO. Tu trouves des mots-clés pertinents avec intention de recherche, tu structures les pages (titres, balises, maillage) et tu rédiges un contenu lisible qui plaît à Google comme aux IA génératives (EEAT, citabilité).' },
-    { id: 'data', name: 'Analyste Data', desc: 'SQL, Excel & lecture de chiffres', color: '#8b5cf6', icon: 'chart', prompt: 'Tu es un analyste data pointu. Tu interprètes des données, tu écris des requêtes SQL et des formules Excel/Sheets, et tu transformes les chiffres en décisions claires. Tu signales les biais et les limites des données.' },
-    { id: 'strat', name: 'Stratège Business', desc: 'Offres, pricing & go-to-market', color: '#f59e0b', icon: 'target', prompt: 'Tu es un stratège business orienté résultats. Tu construis des offres irrésistibles, un pricing à la valeur, et des plans de lancement actionnables. Tu raisonnes ICP, pain points et canaux, et tu finis toujours par 3 prochaines actions concrètes.' },
-    { id: 'coach', name: 'Coach Perso', desc: 'Organisation, focus & motivation', color: '#eab308', icon: 'brain', prompt: "Tu es un coach personnel bienveillant mais exigeant. Tu reformules l'objectif, tu le découpes en actions réalistes, tu aides à rester concentré et motivé, et tu termines par une prochaine étape précise." }
+    { id: 'data', name: 'Analyste Data', desc: 'SQL, Excel & lecture de chiffres', color: '#C15D3C', icon: 'chart', prompt: 'Tu es un analyste data pointu. Tu interprètes des données, tu écris des requêtes SQL et des formules Excel/Sheets, et tu transformes les chiffres en décisions claires. Tu signales les biais et les limites des données.' },
+    { id: 'strat', name: 'Stratège Business', desc: 'Offres, pricing & go-to-market', color: '#A85E2E', icon: 'target', prompt: 'Tu es un stratège business orienté résultats. Tu construis des offres irrésistibles, un pricing à la valeur, et des plans de lancement actionnables. Tu raisonnes ICP, pain points et canaux, et tu finis toujours par 3 prochaines actions concrètes.' },
+    { id: 'coach', name: 'Coach Perso', desc: 'Organisation, focus & motivation', color: '#8A6D5A', icon: 'brain', prompt: "Tu es un coach personnel bienveillant mais exigeant. Tu reformules l'objectif, tu le découpes en actions réalistes, tu aides à rester concentré et motivé, et tu termines par une prochaine étape précise." }
   ];
   function renderAssistants(){
     $('#assGrid').innerHTML=ASSISTANTS.map(a=>`<div class="pcard" data-ass="${a.id}" style="--ax:${a.color}"><div class="pcard-top"><div class="pic" style="background:${a.color}"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.95)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH[a.icon]||GLYPH.spark}</svg></div></div><div class="pn">${esc(a.name)}</div><div class="pd">${esc(a.desc)}</div></div>`).join('');
@@ -2211,10 +2225,13 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function renderMD(src){
     const blocks=[];
     src=src.replace(/```(\w+)?\n?([\s\S]*?)```/g,(_,l,c)=>{const id=blocks.length;blocks.push({lang:l||'code',code:c.replace(/\n$/,'')});return ' '+id+' '});
-    let x=esc(src).replace(/^#{2,3} (.*)$/gm,'<h3>$1</h3>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+?)\*/g,'$1<em>$2</em>').replace(/`([^`]+?)`/g,'<code class="inl">$1</code>').replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+    let x=esc(src).replace(/^#{1,6} (.*)$/gm,'<h3>$1</h3>').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+?)\*/g,'$1<em>$2</em>').replace(/`([^`]+?)`/g,'<code class="inl">$1</code>').replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
     x=x.replace(/(?:^[^\n]*\|[^\n]*\n?){2,}/gm,block=>{const lines=block.trim().split('\n');if(lines.length<2)return block;const cells=l=>l.replace(/^\s*\|?|\|?\s*$/g,'').split('|').map(c=>c.trim());if(!cells(lines[1]).every(c=>/^:?-{2,}:?$/.test(c)))return block;const head=cells(lines[0]),body=lines.slice(2).map(cells);return '<div class="tablewrap"><table><thead><tr>'+head.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+body.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>'});
+    x=x.replace(/^(?:---|\*\*\*|___)\s*$/gm,'<hr>');
+    x=x.replace(/(?:^&gt; ?.*(?:\n|$))+/gm,m=>'<blockquote>'+m.trim().split('\n').map(l=>l.replace(/^&gt; ?/,'')).join('<br>')+'</blockquote>');
+    x=x.replace(/(?:^\d+\. .*(?:\n|$))+/gm,m=>'<ol>'+m.trim().split('\n').map(l=>'<li>'+l.replace(/^\d+\. /,'')+'</li>').join('')+'</ol>');
     x=x.replace(/(?:^[-•] .*(?:\n|$))+/gm,m=>'<ul>'+m.trim().split('\n').map(l=>'<li>'+l.replace(/^[-•] /,'')+'</li>').join('')+'</ul>');
-    x=x.split(/\n{2,}/).map(p=>{const t=p.trim();if(!t)return'';if(/^<(h3|ul|div class="tablewrap")/.test(t)||/^ \d+ $/.test(t))return t;return '<p>'+t.replace(/\n/g,'<br>')+'</p>'}).join('');
+    x=x.split(/\n{2,}/).map(p=>{const t=p.trim();if(!t)return'';if(/^<(h3|ul|ol|hr|blockquote|div class="tablewrap")/.test(t)||/^ \d+ $/.test(t))return t;return '<p>'+t.replace(/\n/g,'<br>')+'</p>'}).join('');
     x=x.replace(/ (\d+) /g,(_,i)=>{const b=blocks[i];const prev=/^(html|svg|xml|markup)$/i.test(b.lang)||/<(!doctype|html|body|div|section|svg|main|header|button|h1)[\s>]/i.test(b.code);return `<div class="codeblock"><div class="cb-top"><span class="cb-lang">${esc(b.lang)}</span><div class="cb-btns">${prev?`<button class="cb-prev" data-code="${encodeURIComponent(b.code)}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>Aperçu</button>`:''}<button class="cb-copy" data-code="${encodeURIComponent(b.code)}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copier</button></div></div><pre><code>${hl(b.code)}</code></pre></div>`});
     return x;
   }
@@ -2225,7 +2242,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function attHTML(f,removable,idx){
     const name=typeof f==='string'?f:f.name,isImg=typeof f==='object'&&f.isImg,url=typeof f==='object'?(f.b64||f.url):null;
     const rm=removable?`<span class="ax" data-ax="${idx}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></span>`:'';
-    if(isImg&&url)return `<span class="att-chip img" data-tip="${esc(name)}"><img src="${esc(safeMediaUrl(url))}" alt="${esc(name)}">${rm}</span>`;
+    if(isImg&&url)return `<span class="att-chip img" data-tip="${esc(name)}"><img src="${esc(safeMediaUrl(url))}" alt="${esc(name)}" loading="lazy" decoding="async">${rm}</span>`;
     if(isImg&&typeof f==='object'&&f._mid&&!f._ocr)return `<span class="att-chip img" data-tip="${esc(name)}"><img data-mid="${esc(f._mid)}" alt="${esc(name)}">${rm}</span>`;  // lazy : chargé depuis IndexedDB
     return `<span class="att-chip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--c2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${fileIcon(name)}</svg><span class="an">${esc(name)}</span>${rm}</span>`;
   }
@@ -2283,11 +2300,11 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const lbl=live?`<span class="rt-spin"></span>${m.id} réfléchit…`:`${m.id} a réfléchi`;
     return `<div class="reason${live?' live':''}"><div class="rt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.brain}</svg><span class="rt-lbl">${lbl}</span><svg class="cv" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg></div><div class="rc"><div class="rc-in real">${content!=null?esc(content):''}</div></div></div>`;
   }
-  let SESSION_TOKENS=parseInt(localStorage.getItem('mzai:stok')||'0',10);
+  let SESSION_TOKENS=parseInt(localStorage.getItem('mzai:stok')||'0',10)||0;
   let SESSION_COST=parseFloat(localStorage.getItem('mzai:scost')||'0')||0;
   function _renderTok(pulse){const el=$('#tokCount');if(!el)return;el.textContent=SESSION_TOKENS.toLocaleString('fr-FR')+' tokens'+(SESSION_COST>0?' · $'+SESSION_COST.toFixed(SESSION_COST<0.1?4:2):'');el.setAttribute('data-tip','Tokens'+(SESSION_COST>0?' et coût':'')+' cumulés cette session');if(pulse){el.classList.remove('pulse');void el.offsetWidth;el.classList.add('pulse');setTimeout(()=>el.classList.remove('pulse'),600);}}
-  function addSessionTokens(n){if(!n)return;SESSION_TOKENS+=n;localStorage.setItem('mzai:stok',SESSION_TOKENS);_renderTok(true);}
-  function addSessionCost(c){c=+c;if(!c||!isFinite(c)||c<0)return;SESSION_COST+=c;localStorage.setItem('mzai:scost',String(SESSION_COST));_renderTok(true);}
+  function addSessionTokens(n){if(!n)return;SESSION_TOKENS+=n;try{localStorage.setItem('mzai:stok',SESSION_TOKENS)}catch(e){}_renderTok(true);}
+  function addSessionCost(c){c=+c;if(!c||!isFinite(c)||c<0)return;SESSION_COST+=c;try{localStorage.setItem('mzai:scost',String(SESSION_COST))}catch(e){}_renderTok(true);}
   function statsEl(model,ms,usage,live){
     const known=MODELS.find(m=>m.id===model);const label=known?known.id:model;   // accepte un id connu OU un libellé (« MAZ Auto → DeepSeek V4 Pro »)
     const parts=['<b>'+esc(label)+'</b>'];
@@ -2380,7 +2397,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const _scrollSoon=()=>{if(_scrollP)return;_scrollP=true;requestAnimationFrame(()=>{_scrollP=false;scrollDown();});};   // un seul scroll par frame
     const truncNote=()=>finishReason==='length'?'\n\n_✂️ Réponse tronquée (limite de longueur atteinte) — écris « continue » pour la suite._':'';
     const finish=(text,meta)=>{
-      if(fin)return;fin=true;meta=meta||{};clearTimeout(idle);
+      if(fin)return;fin=true;meta=meta||{};clearTimeout(idle);setGenerating(false);curStop=null;   // libère l'UI en premier : un échec de rendu/persistance ne fige plus l'app en « génération »
       if(reasonBox){const ri=reasonBox.querySelector('.rc-in');if(reasonText)ri.textContent=reasonText;reasonBox.classList.remove('open','live');const lbl=reasonBox.querySelector('.rt-lbl');if(lbl)lbl.textContent=modelById(opts.model).id+' a réfléchi'+(meta.ms?' · '+(meta.ms/1000).toFixed(1)+'s':'');}
       let copyText=text,qcDone=false;
       if(currentMode==='translate'&&toolCfg.trCheck){const j=renderTransQC(bubble,text);if(j!=null){copyText=j;qcDone=true;}}  // côte-à-côte + contrôle qualité
@@ -2389,7 +2406,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(injTotal>0){const b=injBadge(injUsed,injTotal);if(b)col.appendChild(b);}                          // transparence : X / Y caractères de document injectés
       if(currentMode==='doc'&&toolCfg.docAction==='Extraction')addJsonDownload(col,text);                  // export .json structuré
       if(meta.usage||meta.ms){const s=statsEl(wasAuto?'MAZ Auto → '+resolvedModel:resolvedModel,meta.ms,meta.usage,true);if(s)col.appendChild(s);}
-      scrollDown();setGenerating(false);curStop=null;
+      scrollDown();
       opts.onDone&&opts.onDone(text,{reasonText,sources:meta.sources,usage:meta.usage,ms:meta.ms,resolved:resolvedModel,auto:wasAuto,error:meta.error});
     };
     curStop=()=>{stopped=true;if(ctrl){try{ctrl.abort()}catch(e){}}};
@@ -2492,11 +2509,12 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
-      let buffer = "", usage=null, sources=[], parseErrors=0;
+      let buffer = "", usage=null, sources=[], parseErrors=0, streamErr="";
       const processLine = (t)=>{
         if(!t.startsWith('data:') || /^data:\s*\[DONE\]\s*$/.test(t)) return;   // absorbe data:[DONE] avec ou sans espace
         try {
           const data = JSON.parse(t.slice(t.indexOf(':')+1).trim());
+          if(data.error){ streamErr=(data.error&&(data.error.message||data.error.code))||'erreur renvoyée par le modèle en cours de génération'; return; }   // erreur émise au milieu du flux (429, modération…) → on la remonte
           if(data.usage) usage = data.usage;
           if(data.choices&&data.choices[0]&&data.choices[0].finish_reason)finishReason=data.choices[0].finish_reason;
           const d = data.choices?.[0]?.delta || {};
@@ -2520,10 +2538,10 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         for(const line of lines) processLine(line.trim());
       }
       if(buffer && buffer.trim()) processLine(buffer.trim());   // flush : dernier event reçu sans \n final (sinon tokens perdus)
-      if(!stopped && !fullText.trim()){  // aucune réponse reçue (serveur muet, tout filtré…)
-        bubble.classList.remove('md'); return finish('_Le modèle n\'a renvoyé aucun texte. Réessaie, ou choisis un autre modèle._',{ms:performance.now()-t0,usage,error:true});
+      if(!stopped && !fullText.trim()){  // aucune réponse reçue (serveur muet, erreur mi-stream, tout filtré…)
+        bubble.classList.remove('md'); return finish(streamErr?('⚠️ '+streamErr):'_Le modèle n\'a renvoyé aucun texte. Réessaie, ou choisis un autre modèle._',{ms:performance.now()-t0,usage,error:true});
       }
-      const _tail = (parseErrors>0 ? '\n\n_⚠️ Réponse peut-être incomplète ('+parseErrors+' fragment(s) illisible(s) côté flux)._' : '')+truncNote();
+      const _tail = (streamErr ? '\n\n_⚠️ '+streamErr+'_' : '')+(parseErrors>0 ? '\n\n_⚠️ Réponse peut-être incomplète ('+parseErrors+' fragment(s) illisible(s) côté flux)._' : '')+truncNote();
       finish(fullText+_tail,{ms:performance.now()-t0,usage,sources});
     } catch(err) {
       if(timedOut) return finish((fullText||'')+(fullText?'\n\n':'')+'_⚠️ Réponse interrompue : le serveur n\'a plus rien envoyé (délai dépassé)._',{ms:performance.now()-t0});
@@ -2560,9 +2578,19 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   async function blobToB64(blobUrl){const r=await fetch(blobUrl),b=await r.blob();return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(b)})}
   let _kJwt=null,_kExp=0,_kKeys='';   // cache du JWT Kling (valide 30min) — évite 40-80 signatures crypto par vidéo
   async function klingJWT(){
-    const ak=KEYS.kling_ak||'',sk=KEYS.kling_sk||'';
-    if(!ak||!sk)throw new Error('Clés Kling manquantes — configure Access Key + Secret Key dans Paramètres › Connexions API (kling.ai)');
+    const proxy=(KEYS.kling_proxy||'').trim();
     const now=Math.floor(Date.now()/1000);
+    if(proxy){   // signature côté serveur (Cloudflare Worker) : la clé secrète ne touche JAMAIS le navigateur
+      if(_kJwt && _kKeys==='px:'+proxy && _kExp-now>120) return _kJwt;
+      const r=await fetch(proxy,{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+      if(!r.ok)throw new Error('Proxy Kling indisponible ('+r.status+')');
+      const d=await r.json();
+      if(!d||!d.token)throw new Error('Proxy Kling : réponse invalide');
+      _kJwt=d.token;_kExp=d.exp||(now+1800);_kKeys='px:'+proxy;
+      return _kJwt;
+    }
+    const ak=KEYS.kling_ak||'',sk=KEYS.kling_sk||'';
+    if(!ak||!sk)throw new Error('Clés Kling manquantes — configure Access Key + Secret Key dans Paramètres › Connexions API (kling.ai), ou renseigne kling_proxy (recommandé).');
     if(_kJwt && _kKeys===ak+'|'+sk && _kExp-now>120) return _kJwt;   // réutilise tant qu'il reste >2min
     const b64u=obj=>btoa(JSON.stringify(obj)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
     const exp=now+1800;
@@ -2599,7 +2627,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     let art;
     const demo=!m.url?'<span class="gm-demo">Démo — ajoute ta clé pour générer</span>':'';
     if(vid&&m.url) art=`<video class="gm-art" src="${esc(safeMediaUrl(m.url))}" controls playsinline style="width:100%;height:100%;object-fit:cover;background:#000"></video>`;
-    else if(m.url) art=`<img src="${esc(safeMediaUrl(m.url))}" class="gm-art" style="width:100%;height:100%;object-fit:cover">`;
+    else if(m.url) art=`<img src="${esc(safeMediaUrl(m.url))}" alt="${esc(m.prompt||'Image générée')}" loading="lazy" decoding="async" class="gm-art" style="width:100%;height:100%;object-fit:cover">`;
     else{const [a,b,d,e]=hashColors(m.prompt+'·'+(m.seed||0)),uid='gm'+(mediaUID++);art=`<svg class="gm-art" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice"><defs><radialGradient id="${uid}" cx="32%" cy="28%" r="90%"><stop offset="0%" stop-color="${a}"/><stop offset="100%" stop-color="${b}"/></radialGradient></defs><rect width="100" height="100" fill="url(#${uid})"/><circle cx="74" cy="66" r="42" fill="${d}" opacity=".5"/><circle cx="22" cy="82" r="30" fill="${e}" opacity=".45"/><circle cx="58" cy="30" r="16" fill="${a}" opacity=".5"/></svg><div class="gm-grain"></div>`}
     return `<div class="gen-media ${vid?'vid':'img'}">${art}${badge}${demo}</div><div class="gm-cap">« ${esc(m.prompt)} »</div>${acts}`;
   }
@@ -2752,7 +2780,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function injBadge(used,total){  // badge de transparence : combien de caractères du document ont réellement été injectés
     if(!total)return null;const trunc=used<total,el=document.createElement('div');
     el.style.cssText='margin-top:6px;font-size:11px;color:var(--ink-soft);display:flex;align-items:center;gap:5px';
-    el.innerHTML=(trunc?'<span style="color:var(--warn,#c98a2b)">⚠️</span> ':'<span style="opacity:.6">📄</span> ')+used.toLocaleString('fr-FR')+' / '+total.toLocaleString('fr-FR')+' caractères injectés'+(trunc?' — document tronqué (choisis un modèle à plus grande fenêtre pour tout couvrir)':'');
+    el.innerHTML=(trunc?'<span style="color:var(--warning-strong)">⚠️</span> ':'<span style="opacity:.6">📄</span> ')+used.toLocaleString('fr-FR')+' / '+total.toLocaleString('fr-FR')+' caractères injectés'+(trunc?' — document tronqué (choisis un modèle à plus grande fenêtre pour tout couvrir)':'');
     return el;
   }
   function addJsonDownload(col,text){  // action Extraction → bouton « Télécharger .json » (parse défensif du JSON renvoyé)
@@ -2819,7 +2847,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   }
   function openTrash(){renderTrash();$('#trashModal').classList.add('show')}
   $('#trClose').addEventListener('click',()=>$('#trashModal').classList.remove('show'));
-  $('#trEmpty').addEventListener('click',emptyTrash);
+  $('#trashEmpty').addEventListener('click',emptyTrash);
   $('#trashModal').addEventListener('click',e=>{if(e.target.id==='trashModal')$('#trashModal').classList.remove('show')});
   let _sending=false;
   async function send(){
@@ -3243,7 +3271,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
             if(!c||typeof c!=='object'||!Array.isArray(c.msgs)){skipped++;return;}
             const msgs=c.msgs.filter(okMsg).map(m=>{const o={role:m.role,text:typeof m.text==='string'?m.text:''};if(typeof m.model==='string')o.model=m.model;if(typeof m.ts==='number')o.ts=m.ts;if(m.auto)o.auto=true;if(m.reason)o.reason=true;if(m.search)o.search=true;if(typeof m.reasonText==='string')o.reasonText=m.reasonText;if(m.usage&&typeof m.usage==='object')o.usage=m.usage;if(typeof m.ms==='number')o.ms=m.ms;if(m.media&&typeof m.media==='object'){const md=Object.assign({},m.media);if(typeof md.url==='string')md.url=safeMediaUrl(md.url);o.media=md;}if(Array.isArray(m.files))o.files=m.files.map(f=>{if(f&&typeof f==='object'){const ff=Object.assign({},f);if(typeof ff.url==='string')ff.url=safeMediaUrl(ff.url);if(typeof ff.b64==='string'&&!/^data:(image|audio|video)\//i.test(ff.b64))ff.b64='';delete ff.file;return ff;}return{name:String(f&&f.name||'fichier')};});if(Array.isArray(m.sources))o.sources=m.sources.filter(s=>s&&typeof s.url==='string').map(s=>({url:safeUrl(s.url),title:typeof s.title==='string'?s.title:''}));return o;});
             if(!msgs.length){skipped++;return;}
-            let id=(typeof c.id==='string'&&c.id)?c.id:newId();
+            let id=(typeof c.id==='string'&&/^[A-Za-z0-9_-]{1,64}$/.test(c.id))?c.id:newId();  // id assaini → pas d'injection via data-id
             if(CONVOS.find(x=>x.id===id)){skipped++;return;}  // doublon
             const conv={id,title:(typeof c.title==='string'&&c.title.trim())?c.title.slice(0,120):'Conversation importée',msgs,ts:typeof c.ts==='number'?c.ts:now(),pinned:!!c.pinned,tags:Array.isArray(c.tags)?c.tags.slice(0,6).map(String):[]};
             if(typeof c.pid==='string'&&projById(c.pid))conv.pid=c.pid;if(typeof c.assistant==='string')conv.assistant=c.assistant;if(typeof c.model==='string')conv.model=c.model;
@@ -3262,7 +3290,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           }
           // round-trip : restaure aussi projets / prompts / mémoire si présents (jamais les clés)
           let extra=0;
-          if(Array.isArray(data.projects))data.projects.forEach(p=>{if(p&&typeof p==='object'&&typeof p.name==='string'&&!PROJECTS.find(x=>x.id===p.id)){const t=ptypeOf(p.type);PROJECTS.push({id:(typeof p.id==='string'&&p.id)||'p'+newId(),name:p.name.slice(0,80),desc:typeof p.desc==='string'?p.desc:'',type:t.k,icon:t.icon,color:t.color,context:typeof p.context==='string'?p.context:'',files:Array.isArray(p.files)?p.files:[],ts:typeof p.ts==='number'?p.ts:now()});extra++;}});
+          if(Array.isArray(data.projects))data.projects.forEach(p=>{if(p&&typeof p==='object'&&typeof p.name==='string'&&!PROJECTS.find(x=>x.id===p.id)){const t=ptypeOf(p.type);PROJECTS.push({id:(typeof p.id==='string'&&/^[A-Za-z0-9_-]{1,64}$/.test(p.id))?p.id:'p'+newId(),name:p.name.slice(0,80),desc:typeof p.desc==='string'?p.desc:'',type:t.k,icon:t.icon,color:t.color,context:typeof p.context==='string'?p.context:'',files:Array.isArray(p.files)?p.files:[],ts:typeof p.ts==='number'?p.ts:now()});extra++;}});
           if(extra){saveProjects();renderProjects&&renderProjects();}
           if(Array.isArray(data.prompts))data.prompts.forEach(p=>{if(p&&typeof p.cmd==='string'&&typeof p.text==='string'&&!PROMPTS.find(x=>x.cmd===p.cmd)){PROMPTS.push({cmd:p.cmd.slice(0,16),title:typeof p.title==='string'?p.title:p.cmd,text:p.text,cat:typeof p.cat==='string'?p.cat:'assistant',icon:typeof p.icon==='string'?p.icon:'spark'});}});
           if(typeof data.prompts!=='undefined')savePrompts();
@@ -3295,7 +3323,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(!apiKey)throw new Error('no key');
       const provider=KEYS['openrouter']?'openrouter':'siliconflow';
       const endpoint=provider==='openrouter'?'https://openrouter.ai/api/v1/chat/completions':SF_HOST+'/v1/chat/completions';
-      const model=provider==='openrouter'?'deepseek/deepseek-v4-flash':'deepseek-ai/DeepSeek-V2.5';
+      const model=provider==='openrouter'?'deepseek/deepseek-v4-flash':'deepseek-ai/DeepSeek-V3';
       const res=await fetch(endpoint,{method:'POST',headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({model,messages:msgs,temperature:0.3,max_tokens:600})});
       if(!res.ok)throw new Error('api');
       const data=await res.json();const txt=(data.choices?.[0]?.message?.content||'').trim();
