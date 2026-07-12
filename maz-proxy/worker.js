@@ -29,12 +29,15 @@ const UPSTREAMS = {
   '/sf/': 'https://api.siliconflow.com',
 };
 
-function corsHeaders(origin, allowed) {
+function corsHeaders(req, allowed) {
+  const origin = req.headers.get('Origin') || '';
   const ok = allowed.length === 0 || (origin && allowed.includes(origin));
+  // reflète les en-têtes demandés au préflight (l'app envoie HTTP-Referer, X-Title, Authorization…)
+  const reqH = req.headers.get('Access-Control-Request-Headers');
   return {
     'Access-Control-Allow-Origin': ok ? origin : (allowed[0] || 'null'),
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Maz-Pass',
+    'Access-Control-Allow-Headers': reqH || 'Content-Type, Authorization, HTTP-Referer, X-Title, X-Maz-Pass',
     'Access-Control-Max-Age': '600',
     'Vary': 'Origin',
   };
@@ -51,7 +54,7 @@ export default {
   async fetch(req, env) {
     const origin = req.headers.get('Origin') || '';
     const allowed = (env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
-    const cors = corsHeaders(origin, allowed);
+    const cors = corsHeaders(req, allowed);
 
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
 
