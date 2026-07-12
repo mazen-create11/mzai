@@ -1235,14 +1235,14 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       <!-- BIBLIOTHÈQUE -->
       <section class="view" id="view-library" aria-label="Discussions">
         <header class="vhead"><div class="min0"><div class="vt">Discussions</div><div class="vs">Toutes tes conversations</div></div></header>
-        <div class="vsearch"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4" stroke-linecap="round"/></svg><input id="libSearch" placeholder="Rechercher une discussion…"></div>
+        <div class="vsearch"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4" stroke-linecap="round"/></svg><input id="libSearch" placeholder="Rechercher une discussion…" aria-label="Rechercher une discussion"></div>
         <div class="vbody"><div id="libList"></div></div>
       </section>
 
       <!-- INTÉGRATIONS -->
       <section class="view" id="view-integrations" aria-label="Intégrations">
         <header class="vhead"><div class="min0"><div class="vt">Intégrations <span class="tr-count" id="intCount"></span></div><div class="vs">Connecte tes outils et services</div></div></header>
-        <div class="vsearch"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4" stroke-linecap="round"/></svg><input id="intSearch" placeholder="Rechercher une intégration…"></div>
+        <div class="vsearch"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4" stroke-linecap="round"/></svg><input id="intSearch" placeholder="Rechercher une intégration…" aria-label="Rechercher une intégration"></div>
         <div class="vbody"><div class="int-preview-note"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01" stroke-linecap="round"/></svg>Préversion — sélectionne les intégrations qui t'intéressent ; la connexion réelle arrive bientôt.</div><div id="intList"></div></div>
       </section>
 
@@ -1265,7 +1265,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           <div class="prj-panel">
             <div class="pp-sec">
               <div class="pp-h"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19V6a2 2 0 0 1 2-2h9l5 5v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/></svg>Contexte<span class="pp-sub">— instructions permanentes</span></div>
-              <textarea class="pp-ctx" id="prjCtx" placeholder="Décris le contexte, le ton, les contraintes de ce projet…"></textarea>
+              <textarea class="pp-ctx" id="prjCtx" placeholder="Décris le contexte, le ton, les contraintes de ce projet…" aria-label="Contexte du projet"></textarea>
               <div class="pp-hint"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01" stroke-linecap="round"/></svg>Injecté dans chaque conversation du projet.</div>
             </div>
             <div class="pp-sec">
@@ -1290,12 +1290,12 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           <button class="vbtn" id="psSave"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Enregistrer</button>
         </header>
         <div class="vbody"><div class="view-form">
-          <div class="field"><label>Nom de l'assistant</label><input class="inp" id="psName" placeholder="MAZ"></div>
+          <div class="field"><label for="psName">Nom de l'assistant</label><input class="inp" id="psName" placeholder="MAZ"></div>
           <div class="field"><label>Personnalités</label><div class="seg" id="psPresets"></div></div>
           <div class="field"><label>Ton</label><div class="seg" id="psTone"></div></div>
           <div class="field"><label>Longueur des réponses</label><div class="seg" id="psLength"></div></div>
           <div class="field"><label>Traits</label><div class="seg" id="psTraits"></div></div>
-          <div class="field"><label>Instructions système</label><textarea class="inp" id="psSys" placeholder="Comment MAZ doit-il répondre ?"></textarea></div>
+          <div class="field"><label for="psSys">Instructions système</label><textarea class="inp" id="psSys" placeholder="Comment MAZ doit-il répondre ?"></textarea></div>
         </div></div>
       </section>
 
@@ -1307,7 +1307,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           <span class="tb-spacer"></span>
           <button class="vbtn" id="promptAdd"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Ajouter</button>
         </header>
-        <div class="vsearch"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4" stroke-linecap="round"/></svg><input id="prSearch" placeholder="Rechercher un prompt…"></div>
+        <div class="vsearch"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4" stroke-linecap="round"/></svg><input id="prSearch" placeholder="Rechercher un prompt…" aria-label="Rechercher un prompt"></div>
         <div class="vbody"><div class="prompt-cats" id="prCats"></div><div id="promptList"></div></div>
       </section>
 
@@ -1337,7 +1337,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 
 <!-- ================= OVERLAYS : frères de #app, hors de la grille ================= -->
 
-<input type="file" id="fileInput" multiple hidden>
+<input type="file" id="fileInput" multiple hidden aria-label="Joindre des fichiers">
 
 <!-- popovers -->
 <div class="pop" id="popModel"></div>
@@ -1397,9 +1397,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   <div class="m-head"><div class="m-ic" id="pfAv">M</div><div class="m-tt"><div class="m-t">Profil</div><div class="m-s">Ton identité dans MAZ</div></div><div class="m-x" id="pfClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
   <div class="m-body">
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:18px;gap:2px"><div class="m-t" id="pfNameP">Mazen</div><div class="m-s" id="pfEmailP"></div></div>
-    <div class="field"><label>Nom</label><input class="inp" id="pfName" placeholder="Ton nom"></div>
-    <div class="field"><label>Rôle</label><input class="inp" id="pfRole" placeholder="Ex : Entrepreneur"></div>
-    <div class="field"><label>Email</label><input class="inp" id="pfEmail" placeholder="toi@exemple.com"></div>
+    <div class="field"><label for="pfName">Nom</label><input class="inp" id="pfName" placeholder="Ton nom"></div>
+    <div class="field"><label for="pfRole">Rôle</label><input class="inp" id="pfRole" placeholder="Ex : Entrepreneur"></div>
+    <div class="field"><label for="pfEmail">Email</label><input class="inp" id="pfEmail" placeholder="toi@exemple.com"></div>
     <div class="field"><label>Couleur d'accent</label><div class="swatches" id="pfColors"></div></div>
   </div>
   <div class="m-foot"><div class="btn" id="pfCancel">Annuler</div><div class="btn primary" id="pfSave">Enregistrer</div></div>
@@ -1409,10 +1409,10 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 <div class="ov" id="projModal"><div class="modal" role="dialog" aria-modal="true" aria-label="Projet">
   <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4.5 16.5 12 21l7.5-4.5M4.5 12 12 16.5 19.5 12M12 3 4.5 7.5 12 12l7.5-4.5L12 3z"/></svg></div><div class="m-tt"><div class="m-t">Nouveau projet</div><div class="m-s">Un espace de travail dédié</div></div><div class="m-x" id="pmClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
   <div class="m-body">
-    <div class="field"><label>Nom du projet</label><input class="inp" id="pmName" placeholder="Ex : Lancement produit"></div>
-    <div class="field"><label>Description</label><input class="inp" id="pmDesc" placeholder="Courte description"></div>
+    <div class="field"><label for="pmName">Nom du projet</label><input class="inp" id="pmName" placeholder="Ex : Lancement produit"></div>
+    <div class="field"><label for="pmDesc">Description</label><input class="inp" id="pmDesc" placeholder="Courte description"></div>
     <div class="field"><label>Type</label><div class="ptype-grid" id="pmTypes"></div></div>
-    <div class="field"><label>Contexte</label><textarea class="inp pm-ta" id="pmCtx" placeholder="Instructions permanentes du projet…"></textarea></div>
+    <div class="field"><label for="pmCtx">Contexte</label><textarea class="inp pm-ta" id="pmCtx" placeholder="Instructions permanentes du projet…"></textarea></div>
   </div>
   <div class="m-foot"><div class="btn" id="pmCancel">Annuler</div><div class="btn primary" id="pmCreate">Créer le projet</div></div>
 </div></div>
@@ -1426,7 +1426,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     <div class="m-x" id="artClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
   <div class="m-body" style="display:flex;flex-direction:column;gap:0">
     <div class="art-stage" id="artStage"><iframe id="artFrame" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe></div>
-    <div class="art-codewrap" id="artCodeWrap" style="display:none"><textarea id="artCode" spellcheck="false"></textarea></div>
+    <div class="art-codewrap" id="artCodeWrap" style="display:none"><textarea id="artCode" spellcheck="false" aria-label="Code de l'artifact"></textarea></div>
   </div>
 </div></div>
 
@@ -1459,7 +1459,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 
 <!-- COMMAND PALETTE -->
 <div class="ov palette" id="palette"><div class="modal" role="dialog" aria-modal="true" aria-label="Palette de commandes">
-  <div class="pal-search"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4" stroke-linecap="round"/></svg><input id="cpInput" placeholder="Tape une commande ou recherche…"></div>
+  <div class="pal-search"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4" stroke-linecap="round"/></svg><input id="cpInput" placeholder="Tape une commande ou recherche…" aria-label="Tape une commande ou recherche"></div>
   <div class="m-body"><div id="cpList"></div></div>
 </div></div>
 
@@ -1476,7 +1476,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     <div class="ob-logo"><span class="mark" style="width:46px;height:46px;border-radius:13px"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="var(--ink-on-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.6 7.6a5 5 0 1 0-2 2L13 13l2 2 2-2 2 2 2-2-2-2 2.6-2.6"/></svg></span></div>
     <div class="ob-t">Connecte ton IA</div>
     <div class="ob-d">MAZ utilise <b>ta</b> clé (gratuite à créer) — c'est ce qui garde tes conversations privées. Colle ta clé <b>OpenRouter</b> pour discuter ; image, voix et vidéo s'ajoutent ensuite dans Réglages.</div>
-    <div class="ob-key"><input id="obKey" class="inp" type="password" placeholder="Colle ta clé OpenRouter…" autocomplete="off" spellcheck="false"><button class="btn primary" id="obTest" type="button">Tester</button></div>
+    <div class="ob-key"><input id="obKey" class="inp" type="password" placeholder="Colle ta clé OpenRouter…" autocomplete="off" spellcheck="false" aria-label="Clé API OpenRouter"><button class="btn primary" id="obTest" type="button">Tester</button></div>
     <div class="ob-keystat" id="obKeyStat" role="status" aria-live="polite"></div>
     <a class="ob-keylink" href="https://openrouter.ai/keys" target="_blank" rel="noopener">Créer une clé gratuite sur OpenRouter →</a>
   </div>
@@ -1812,7 +1812,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const files=p.files||[];
     return `<div class="prj-panel">
       <div class="pp-sec"><div class="pp-h"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.brain}</svg>Contexte<span class="pp-sub">appliqué à toutes les conversations du projet</span></div>
-        <textarea class="pp-ctx" id="prjCtx" maxlength="1200" placeholder="Marque, ton, cible, contraintes, objectifs… L'IA s'en sert dans chaque réponse de ce projet.">${esc(p.context||'')}</textarea>
+        <textarea class="pp-ctx" id="prjCtx" maxlength="1200" aria-label="Contexte du projet" placeholder="Marque, ton, cible, contraintes, objectifs… L'IA s'en sert dans chaque réponse de ce projet.">${esc(p.context||'')}</textarea>
         <div class="pp-hint"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>Enregistré automatiquement</div>
       </div>
       <div class="pp-sec"><div class="pp-h"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.note}</svg>Fichiers<span class="pp-sub">${files.length}</span><span class="pp-add" id="prjAddFile"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Ajouter</span></div>
@@ -2100,9 +2100,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   /* connexions API */
   function renderApiList(){
     const order=['openrouter','siliconflow'];
-    let rows=order.map(pk=>{const pr=PROVIDERS[pk],ok=hasKey(pk);return `<div class="api-row" data-key="${pk}"><span class="api-logo" style="color:${pr.ac}">${pr.logo}</span><div class="api-meta"><div class="api-name">${pr.name}</div><div class="api-sub">${pr.site}</div></div><input class="api-in" name="api-${pk}" type="password" autocomplete="off" spellcheck="false" placeholder="Coller la clé API…" value="${esc(KEYS[pk]||'')}"><span class="api-st${ok?' on':''}" data-tip="${ok?'Connecté':'Non connecté'}"></span></div>`}).join('');
+    let rows=order.map(pk=>{const pr=PROVIDERS[pk],ok=hasKey(pk);return `<div class="api-row" data-key="${pk}"><span class="api-logo" style="color:${pr.ac}">${pr.logo}</span><div class="api-meta"><div class="api-name">${pr.name}</div><div class="api-sub">${pr.site}</div></div><input class="api-in" name="api-${pk}" type="password" autocomplete="off" spellcheck="false" placeholder="Coller la clé API…" aria-label="Clé API ${pr.name}" value="${esc(KEYS[pk]||'')}"><span class="api-st${ok?' on':''}" data-tip="${ok?'Connecté':'Non connecté'}"></span></div>`}).join('');
     const klingOk=hasKey('kling');
-    rows+=`<div class="api-row api-kling" data-key="kling"><span class="api-logo" style="color:#ff5c28">${PROVIDERS.kling.logo}</span><div class="api-meta"><div class="api-name">Kling AI</div><div class="api-sub">kling.ai · vidéo</div></div><div class="kling-fields"><input class="api-in" data-kf="kling_ak" type="password" autocomplete="off" placeholder="Access Key…" value="${esc(KEYS.kling_ak||'')}"><input class="api-in" data-kf="kling_sk" type="password" autocomplete="off" placeholder="Secret Key…" value="${esc(KEYS.kling_sk||'')}"></div><span class="api-st${klingOk?' on':''}" data-tip="${klingOk?'Connecté':'2 clés requises'}"></span></div>`;
+    rows+=`<div class="api-row api-kling" data-key="kling"><span class="api-logo" style="color:#ff5c28">${PROVIDERS.kling.logo}</span><div class="api-meta"><div class="api-name">Kling AI</div><div class="api-sub">kling.ai · vidéo</div></div><div class="kling-fields"><input class="api-in" data-kf="kling_ak" name="kling_ak" type="password" autocomplete="off" placeholder="Access Key…" aria-label="Access Key Kling" value="${esc(KEYS.kling_ak||'')}"><input class="api-in" data-kf="kling_sk" name="kling_sk" type="password" autocomplete="off" placeholder="Secret Key…" aria-label="Secret Key Kling" value="${esc(KEYS.kling_sk||'')}"></div><span class="api-st${klingOk?' on':''}" data-tip="${klingOk?'Connecté':'2 clés requises'}"></span></div>`;
     $('#apiList').innerHTML=rows;
     $$('#apiList .api-row:not(.api-kling)').forEach(row=>{const pk=row.dataset.key,inp=row.querySelector('.api-in'),st=row.querySelector('.api-st');
       inp.addEventListener('input',()=>{KEYS[pk]=inp.value.trim();persistKeys();st.classList.toggle('on',hasKey(pk));st.setAttribute('data-tip',hasKey(pk)?'Connecté':'Non connecté');renderModelPicker();syncModel()});
