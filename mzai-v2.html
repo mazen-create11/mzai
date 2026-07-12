@@ -1779,6 +1779,59 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     toast&&toast('Bienvenue, '+(d.name||'')+' ✦');
     cloudPull();
     const pv=document.getElementById('privacyNote');if(pv)pv.innerHTML='<b>Ton espace privé.</b> Tes conversations sont chiffrées en transit et synchronisées sur l’infrastructure de MAZ (Cloudflare) — elles te suivent sur tous tes appareils. Personne d’autre n’y a accès.';
+    if(d.admin)setupAdmin();
+  }
+  /* ── Vue admin (comptes) — visible uniquement pour un compte admin ; le serveur re-vérifie chaque action ── */
+  function setupAdmin(){
+    if(document.getElementById('set-admin'))return;
+    const anchor=document.getElementById('set-privacy');if(!anchor)return;
+    const sec=document.createElement('div');sec.className='field';sec.id='set-admin';
+    sec.innerHTML='<label>Comptes (admin)</label>'
+      +'<div id="admList" style="border:1px solid var(--line);border-radius:12px;overflow:hidden"></div>'
+      +'<div style="display:flex;gap:8px;margin-top:10px"><input class="inp" id="admName" placeholder="Prénom du nouveau collègue / client" aria-label="Nom du nouvel accès" style="flex:1"><button class="btn primary" id="admCreate" style="white-space:nowrap">Créer un accès</button></div>'
+      +'<div id="admNew" style="display:none;margin-top:10px;padding:14px;border:1.5px dashed var(--accent);border-radius:12px;background:var(--accent-tint)"><div style="font-size:12px;font-weight:700;color:var(--accent-strong);margin-bottom:6px">CODE D’ACCÈS — montré une seule fois, envoie-le maintenant</div><div style="display:flex;gap:8px;align-items:center"><code id="admCode" style="flex:1;font-size:14px;letter-spacing:.05em;user-select:all"></code><button class="btn" id="admCopy">Copier</button></div></div>';
+    anchor.parentNode.insertBefore(sec,anchor);
+    sec.querySelector('#admCreate').addEventListener('click',admCreate);
+    sec.querySelector('#admName').addEventListener('keydown',e=>{if(e.key==='Enter')admCreate()});
+    sec.querySelector('#admCopy').addEventListener('click',()=>{try{navigator.clipboard.writeText(document.getElementById('admCode').textContent);toast('Code copié — envoie-le à la personne')}catch(e){}});
+    admRefresh();
+  }
+  async function admRefresh(){
+    const box=document.getElementById('admList');if(!box)return;
+    box.innerHTML='<div style="padding:12px;font-size:13px;color:var(--ink-soft)">Chargement…</div>';
+    try{
+      const r=await fetch(_PB+'/admin/users');if(!r.ok)throw 0;
+      const us=await r.json();
+      box.innerHTML=us.map(u=>{
+        const seen=u.last_seen?new Date(u.last_seen).toLocaleDateString('fr-FR',{day:'numeric',month:'short'}):'jamais';
+        return '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line);font-size:13px">'
+          +'<span style="flex:1;font-weight:600;'+(u.disabled?'opacity:.45;text-decoration:line-through':'')+'">'+esc(u.name)+(u.is_admin?' <span style="font-size:10px;color:var(--accent-strong);border:1px solid var(--accent-ring);border-radius:5px;padding:1px 5px">ADMIN</span>':'')+'</span>'
+          +'<span style="color:var(--ink-faint);font-size:11.5px">vu : '+seen+'</span>'
+          +'<span style="color:var(--ink-soft);font-size:11.5px" title="requêtes · tokens · coût">'+(u.req||0)+' req · '+Math.round((u.tok||0)/1000)+'k tok · $'+(+u.cost||0).toFixed(2)+'</span>'
+          +(u.is_admin?'':'<button class="mini-btn" data-adm-toggle="'+esc(u.id)+'" data-en="'+(u.disabled?1:0)+'">'+(u.disabled?'Réactiver':'Révoquer')+'</button>')
+          +'</div>';
+      }).join('')||'<div style="padding:12px;font-size:13px;color:var(--ink-soft)">Aucun compte</div>';
+      box.querySelectorAll('[data-adm-toggle]').forEach(b=>b.addEventListener('click',async()=>{
+        const en=b.dataset.en==='1';
+        if(!en&&!window.confirm('Révoquer cet accès ? La personne ne pourra plus utiliser MAZ (son historique est conservé).'))return;
+        await fetch(_PB+'/admin/disable',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.dataset.admToggle,enable:en})}).catch(()=>{});
+        admRefresh();
+      }));
+    }catch(e){box.innerHTML='<div style="padding:12px;font-size:13px;color:#A4472B">Impossible de charger les comptes — réessaie.</div>'}
+  }
+  async function admCreate(){
+    const inp=document.getElementById('admName'),name=(inp.value||'').trim().slice(0,60);
+    if(!name){toast('Donne un nom (prénom du collègue ou du client)');return}
+    try{
+      const r=await fetch(_PB+'/admin/user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})});
+      if(!r.ok)throw 0;
+      const d=await r.json();
+      inp.value='';
+      const nb=document.getElementById('admNew');nb.style.display='block';
+      document.getElementById('admCode').textContent=d.code;
+      toast('Accès créé pour '+name);
+      admRefresh();
+    }catch(e){toast('Création impossible — réessaie')}
   }
   if(VIA_PROXY)(async()=>{
     const saved=_acode();

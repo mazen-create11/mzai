@@ -56,7 +56,7 @@ function genCode() {   // maz-XXXX-XXXX-XXXX-XXXX · base32 Crockford sans ambig
 async function userFromCode(env, code) {
   if (!code || code.length < 10 || code.length > 64) return null;
   const h = await sha256hex(code.trim().toUpperCase().replace(/^MAZ-/, 'maz-'));   // insensible à la casse, préfixe normalisé
-  const u = await env.maz_db.prepare('SELECT id,name,team,disabled FROM users WHERE code_hash=?1').bind(h).first();
+  const u = await env.maz_db.prepare('SELECT id,name,team,disabled,is_admin FROM users WHERE code_hash=?1').bind(h).first();
   return (u && !u.disabled) ? u : null;
 }
 function bumpUsage(env, ctx, uid, field, amt) {   // compteur best-effort, jamais bloquant
@@ -77,9 +77,11 @@ export default {
     const url = new URL(req.url);
     const path = url.pathname;
 
-    /* ══ ADMIN (X-Admin-Key) ══ */
+    /* ══ ADMIN — X-Admin-Key (terminal) OU code d'un compte is_admin (vue admin de l'app) ══ */
     if (path.startsWith('/admin/')) {
-      if (!env.ADMIN_KEY || req.headers.get('X-Admin-Key') !== env.ADMIN_KEY) return J({ error: 'forbidden' }, 403, cors);
+      const byKey = env.ADMIN_KEY && req.headers.get('X-Admin-Key') === env.ADMIN_KEY;
+      const byAdminUser = !byKey && (await userFromCode(env, req.headers.get('X-Maz-Code') || ''))?.is_admin === 1;
+      if (!byKey && !byAdminUser) return J({ error: 'forbidden' }, 403, cors);
       if (path === '/admin/user' && req.method === 'POST') {
         const b = await req.json().catch(() => ({}));
         const name = String(b.name || '').slice(0, 60).trim();
@@ -110,7 +112,7 @@ export default {
       const u = await userFromCode(env, String(b.code || ''));
       if (!u) { await new Promise(r => setTimeout(r, 400)); return J({ ok: false }, 401, cors); }   // délai constant anti-énumération
       ctx.waitUntil(env.maz_db.prepare('UPDATE users SET last_seen=?2 WHERE id=?1').bind(u.id, Date.now()).run().catch(() => {}));
-      return J({ ok: true, uid: u.id, name: u.name, team: u.team }, 200, cors);
+      return J({ ok: true, uid: u.id, name: u.name, team: u.team, admin: u.is_admin === 1 }, 200, cors);
     }
 
     /* ══ routes authentifiées par code ══ */
