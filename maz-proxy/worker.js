@@ -67,8 +67,23 @@ export default {
     // if (env.MAZ_PASS && req.headers.get('X-Maz-Pass') !== env.MAZ_PASS) return json({ error: 'forbidden' }, 403, cors);
 
     const url = new URL(req.url);
+
+    // /fetch?url=… : rapatrie un média généré (URL de livraison signée qui expire) côté serveur
+    // → contourne le CORS des CDN, l'app stocke le blob en IndexedDB pour qu'il survive. Hôtes whitelistés (anti-SSRF).
+    if (url.pathname === '/fetch') {
+      const target = url.searchParams.get('url') || '';
+      let hu; try { hu = new URL(target); } catch { return json({ error: 'bad_url' }, 400, cors); }
+      const OK_HOSTS = /(^|\.)(bfl\.ai|aliyuncs\.com|siliconflow\.com|klingai\.com|kling\.ai)$/i;
+      if (hu.protocol !== 'https:' || !OK_HOSTS.test(hu.hostname)) return json({ error: 'host_not_allowed' }, 403, cors);
+      let up; try { up = await fetch(target); } catch (e) { return json({ error: 'fetch_failed', detail: String(e).slice(0, 120) }, 502, cors); }
+      const rh = new Headers(); for (const [k, v] of Object.entries(cors)) rh.set(k, v);
+      rh.set('Content-Type', up.headers.get('Content-Type') || 'application/octet-stream');
+      rh.set('Cache-Control', 'no-store');
+      return new Response(up.body, { status: up.status, headers: rh });
+    }
+
     const prefix = Object.keys(UPSTREAMS).find(p => url.pathname.startsWith(p));
-    if (!prefix) return json({ error: 'not_found', hint: 'use /or/… or /sf/…' }, 404, cors);
+    if (!prefix) return json({ error: 'not_found', hint: 'use /or/… , /sf/… or /fetch' }, 404, cors);
 
     const key = prefix === '/or/' ? env.OPENROUTER_KEY : env.SILICONFLOW_KEY;
     if (!key) return json({ error: 'proxy_unconfigured', provider: prefix }, 500, cors);
