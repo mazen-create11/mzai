@@ -1683,8 +1683,12 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   // ── Proxy API optionnel : app HÉBERGÉE + aucune clé locale + Worker configuré → les appels passent par lui
   //    (il détient les clés) → clés jamais exposées, marche pour tout le monde. En local (keys.local.js), appels directs. Voir maz-proxy/README.md.
   const PROXY_URL='https://maz-proxy.maz-chaban.workers.dev';   // Worker déployé (clés OpenRouter+SiliconFlow en secrets Cloudflare). En ligne sans clé locale → passe par lui.
-  const VIA_PROXY=!!PROXY_URL && !(KEYS.openrouter&&KEYS.openrouter.trim()) && !(KEYS.siliconflow&&KEYS.siliconflow.trim());
-  if(VIA_PROXY){KEYS.openrouter=KEYS.openrouter||'via-proxy';KEYS.siliconflow=KEYS.siliconflow||'via-proxy';}  // placeholders : le Worker remplace l'Authorization par la vraie clé
+  // sanitize : une clé mal collée (espace, retour à la ligne, caractère non-ASCII) casserait l'en-tête HTTP (« non ISO-8859-1 ») → on ne garde que l'ASCII imprimable
+  ['openrouter','siliconflow','kling_ak','kling_sk'].forEach(k=>{if(typeof KEYS[k]==='string')KEYS[k]=KEYS[k].replace(/[^\x21-\x7E]/g,'');});
+  // Proxy actif dès qu'il n'y a PAS de fichier keys.local.js (= app hébergée), MÊME si l'utilisateur a saisi des clés dans Réglages : le proxy prime, ses clés sont ignorées. Le Worker fournit les vraies. En local (keys.local.js présent) → appels directs.
+  const _keyFile=!!(window.MZAI_KEYS && ((window.MZAI_KEYS.openrouter||'').trim()||(window.MZAI_KEYS.siliconflow||'').trim()));
+  const VIA_PROXY=!!PROXY_URL && !_keyFile;
+  if(VIA_PROXY){KEYS.openrouter='via-proxy';KEYS.siliconflow='via-proxy';}  // placeholders ASCII : le Worker remplace l'Authorization par la vraie clé
   const _PB=(PROXY_URL||'').replace(/\/$/,'');
   const OR_HOST=VIA_PROXY?_PB+'/or':'https://openrouter.ai';
   const SF_HOST=VIA_PROXY?_PB+'/sf':'https://api.siliconflow.com';
