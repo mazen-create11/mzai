@@ -1059,8 +1059,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 /* MZ en blanc pur en mode sombre (le « ai » reste argile) */
 [data-theme="dark"] .wordmark{color:#fff}
 
-/* logo MAZ : Z argile (le « MA » suit la couleur du wordmark) */
-.wordmark .zmark{color:var(--accent-strong);font-weight:inherit}
+/* logo MAZ : Z argile crafté — dégradé terracotta (lumineux → profond), harmonisé avec l'avatar IA. color = repli si background-clip non supporté */
+.wordmark .zmark{font-weight:inherit;color:var(--accent-strong);background:linear-gradient(150deg,#C85E38 0%,#A64B2A 52%,#833A20 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+[data-theme="dark"] .wordmark .zmark{background:linear-gradient(150deg,#F0AD8B 0%,#E0906E 52%,#CE7C5A 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 /* focus des boutons d'en-tête : halo neutre, pas orange (harmonisé avec les voisins) */
 .sb-head .icon-btn:focus-visible,.topbar .icon-btn:focus-visible,.menu-btn:focus-visible{outline:2px solid var(--ink-soft);outline-offset:2px;background:var(--surface-2);box-shadow:none}
 
