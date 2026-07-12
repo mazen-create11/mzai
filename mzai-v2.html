@@ -2845,7 +2845,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     (c.msgs||[]).forEach(m=>(m.files||[]).forEach(f=>{ if(f&&f._mid&&f._txt){ if(!f.textContent) tasks.push(MEDIA.get(f._mid).then(v=>{if(v)f.textContent=v})); } else if(f&&f._mid&&!f.b64&&!f.ocrPages){ tasks.push(MEDIA.get(f._mid).then(v=>{if(!v)return;if(f._ocr){try{f.ocrPages=JSON.parse(v)}catch(e){}}else{f.b64=v}})); } }));
     if(tasks.length)await Promise.all(tasks);
   }
-  async function openConvo(id){const c=convoById(id);if(!c)return;activeId=id;activeProject=c.pid||null;if(c.model&&MODELS.some(m=>m.id===c.model)){currentModel=c.model;syncModel()}chat.innerHTML='';showView('chat');await rehydrateFiles(c);if(activeId!==id)return;c.msgs.forEach(m=>m.role==='user'?addUser(m.text,m.files):renderAIStored(m));refreshCtxBanner();renderChatHead(c);renderRecents();stickBottom=true;scrollDown(true);refreshSendBtn()}
+  async function openConvo(id){const c=convoById(id);if(!c)return;activeId=id;activeProject=c.pid||null;if(c.model&&MODELS.some(m=>m.id===c.model)){const _cm=modelById(c.model);currentModel=/image|video|audio/.test(_cm.kind||'')?'MAZ Auto':c.model;syncModel()}chat.innerHTML='';showView('chat');await rehydrateFiles(c);if(activeId!==id)return;c.msgs.forEach(m=>m.role==='user'?addUser(m.text,m.files):renderAIStored(m));refreshCtxBanner();renderChatHead(c);renderRecents();stickBottom=true;scrollDown(true);refreshSendBtn()}
   function renderChatHead(c){
     let h=chat.querySelector('.conv-head');
     if(!c){if(h)h.remove();return}
