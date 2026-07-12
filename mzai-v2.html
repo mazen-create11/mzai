@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>MAZ — Intelligence</title>
 <!-- theme-color adaptatif (chrome navigateur) aligné sur la DA « Encre & Crème » -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' data: blob: https://openrouter.ai https://api.siliconflow.com https://api.klingai.com https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src 'self' blob: data:; manifest-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' data: blob: https://openrouter.ai https://api.siliconflow.com https://api.klingai.com https://*.workers.dev https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src 'self' blob: data:; manifest-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="theme-color" content="#FAF8F3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1A1916" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1679,7 +1679,14 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   // Les clés fournies par keys.local.js restent EN MÉMOIRE : on ne les recopie pas dans localStorage (un XSS/CDN compromis ne peut pas les exfiltrer). Seules les clés saisies par l'utilisateur sont persistées.
   function persistKeys(){const o={};for(const k in KEYS){if(!(window.MZAI_KEYS&&window.MZAI_KEYS[k]))o[k]=KEYS[k]}DB.set('apikeys',o)}
   persistKeys();
-  const SF_HOST='https://api.siliconflow.com';
+  // ── Proxy API optionnel : app HÉBERGÉE + aucune clé locale + Worker configuré → les appels passent par lui
+  //    (il détient les clés) → clés jamais exposées, marche pour tout le monde. En local (keys.local.js), appels directs. Voir maz-proxy/README.md.
+  const PROXY_URL='';   // ← après `wrangler deploy`, colle ici l'URL du Worker : 'https://maz-proxy.ton-compte.workers.dev'
+  const VIA_PROXY=!!PROXY_URL && !(KEYS.openrouter&&KEYS.openrouter.trim()) && !(KEYS.siliconflow&&KEYS.siliconflow.trim());
+  if(VIA_PROXY){KEYS.openrouter=KEYS.openrouter||'via-proxy';KEYS.siliconflow=KEYS.siliconflow||'via-proxy';}  // placeholders : le Worker remplace l'Authorization par la vraie clé
+  const _PB=(PROXY_URL||'').replace(/\/$/,'');
+  const OR_HOST=VIA_PROXY?_PB+'/or':'https://openrouter.ai';
+  const SF_HOST=VIA_PROXY?_PB+'/sf':'https://api.siliconflow.com';
   const USER=DB.get('user',{name:'Mazen',email:'mazenchaban09@gmail.com',role:'Compte développeur',avColor:ARGILE_AV});
   if(/#7fa9dc|#5e86c9|#6ba3ff|#b6c4d8|#6b7e97|#2c4a8f/i.test(USER.avColor||'')){USER.avColor=ARGILE_AV;DB.set('user',USER)}   /* migration : avatar bleu/ardoise hérité → argile DA */
   const firstName=()=>(USER.name||'Mazen').trim().split(' ')[0];
@@ -2313,7 +2320,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const userMsg=(c.msgs.find(m=>m.role==='user')||{}).text||'';
     const aiMsg=(c.msgs.find(m=>m.role==='ai')||{}).text||'';
     try{
-      const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',
+      const res=await fetch(OR_HOST+'/api/v1/chat/completions',{method:'POST',
         headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MAZ'},
         body:JSON.stringify({model:'deepseek/deepseek-v4-flash',max_tokens:20,temperature:0.3,
           messages:[{role:'system',content:'Génère un titre de 3-5 mots (sans ponctuation ni guillemets) qui résume cette conversation. Réponds UNIQUEMENT avec le titre.'},
@@ -2387,7 +2394,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     if(!KEYS.openrouter||c.msgs.length<4)return;
     const recent=c.msgs.slice(-6).map(m=>(m.role==='user'?'User: ':'IA: ')+(m.text||(m.media?'['+m.media.type+']':'')).slice(0,300)).join('\n');
     try{
-      const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',
+      const res=await fetch(OR_HOST+'/api/v1/chat/completions',{method:'POST',
         headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MAZ'},
         body:JSON.stringify({model:'deepseek/deepseek-v4-flash',max_tokens:120,temperature:0.2,
           messages:[{role:'system',content:"Synthétise en 2-3 phrases les préférences, style et besoins clés de l'utilisateur à retenir pour les prochaines sessions. Concis, factuel, sans intro."},
@@ -2502,7 +2509,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           return{role:m.role==='ai'?'assistant':'user',content:txt};
         })
       );
-      const endpoint = isOR ? "https://openrouter.ai/api/v1/chat/completions" : SF_HOST+"/v1/chat/completions";
+      const endpoint = isOR ? OR_HOST+"/api/v1/chat/completions" : SF_HOST+"/v1/chat/completions";
       const headers={'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'};
       if(isOR){headers['HTTP-Referer']=location.origin||'https://mzai.app';headers['X-Title']='MAZ';}
       bubble.innerHTML=qcMode?'<div class="gen-loading"><div class="gl-ring"></div>Traduction + contrôle qualité…</div>':'<span class="caret"></span>';
@@ -2785,7 +2792,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   async function genSuggestions(col,aiText,userText){
     if(!KEYS.openrouter)return;
     try{
-      const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',
+      const res=await fetch(OR_HOST+'/api/v1/chat/completions',{method:'POST',
         headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MAZ'},
         body:JSON.stringify({model:'deepseek/deepseek-v4-flash',max_tokens:80,temperature:0.7,
           messages:[{role:'system',content:'Génère exactement 3 questions de suivi courtes (max 8 mots chacune) basées sur cette conversation. Retourne UNIQUEMENT les 3 questions séparées par des sauts de ligne, sans numérotation ni ponctuation finale.'},
@@ -3055,7 +3062,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   /* wrapper OpenRouter réutilisable (post-traitement, etc.) */
   async function chatOR(messages,model,opt){
     if(!KEYS.openrouter)throw new Error('Clé OpenRouter manquante — ajoute-la dans Réglages › Clés API');
-    const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',
+    const res=await fetch(OR_HOST+'/api/v1/chat/completions',{method:'POST',
       headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MAZ'},
       body:JSON.stringify(Object.assign({model:model||'deepseek/deepseek-v4-flash',messages},opt||{}))});
     if(!res.ok)throw new Error('HTTP '+res.status+' · '+(await res.text().catch(()=>'')).slice(0,160));
@@ -3359,7 +3366,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const apiKey=KEYS['openrouter']||KEYS['siliconflow'];
       if(!apiKey)throw new Error('no key');
       const provider=KEYS['openrouter']?'openrouter':'siliconflow';
-      const endpoint=provider==='openrouter'?'https://openrouter.ai/api/v1/chat/completions':SF_HOST+'/v1/chat/completions';
+      const endpoint=provider==='openrouter'?OR_HOST+'/api/v1/chat/completions':SF_HOST+'/v1/chat/completions';
       const model=provider==='openrouter'?'deepseek/deepseek-v4-flash':'deepseek-ai/DeepSeek-V3';
       const res=await fetch(endpoint,{method:'POST',headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({model,messages:msgs,temperature:0.3,max_tokens:600})});
       if(!res.ok)throw new Error('api');
