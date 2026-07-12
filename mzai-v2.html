@@ -1548,7 +1548,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     if(_raw){ try{localStorage.setItem('mzai:convos.bak',_raw)}catch(e){} CONVOS=[]; setTimeout(()=>toast('Historique illisible — copie de secours conservée'),1200); }  /* corrompu : on NE réécrit PAS, la valeur brute est sauvegardée pour récupération */
     else { CONVOS=[];DB.set('convos',CONVOS) }   /* app vierge au 1er lancement */
   }
-  let activeId=null,generating=false;
+  let activeId=null,generating=false,genCid=null;  // genCid = conversation où une génération est en cours (le composer ne se verrouille que sur CELLE-CI, pas dans les autres vues)
   let _saveT = null;
   // localStorage ne reçoit JAMAIS les données lourdes (images b64 / pages OCR / texte de doc) : elles vivent en IndexedDB (réf _mid). Évite le dépassement de quota ~5 Mo → perte de session.
   function _stripConvo(c){
@@ -1894,7 +1894,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   $$('.nav-item[data-view]').forEach(n=>n.addEventListener('click',()=>showView(n.dataset.view)));
   $('#brandHome').addEventListener('click',goHome);
   $('#brandHome').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();goHome()}});
-  function goHome(){showView('home');$$('.nav-item').forEach(n=>n.classList.remove('active'))}
+  function goHome(){showView('home');$$('.nav-item').forEach(n=>n.classList.remove('active'));refreshSendBtn()}
 
   /* ===== popovers ===== */
   let openPop=null;
@@ -2376,7 +2376,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 
   /* contrôleur de génération (avec arrêt) */
   let curStop=null;
-  function setGenerating(g){generating=g;const _ch=$('#chat');if(_ch)_ch.setAttribute('aria-busy',g?'true':'false');const b=$('#sendBtn');if(g){b.classList.remove('idle');b.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>';b.setAttribute('title','Arrêter');b.setAttribute('aria-label','Arrêter la génération')}else{b.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>';b.setAttribute('title','Envoyer');b.setAttribute('aria-label','Envoyer');typeof updateCount==='function'&&updateCount()}}
+  function paintSendBtn(g){const b=$('#sendBtn');if(!b)return;if(g){b.classList.remove('idle');b.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>';b.setAttribute('title','Arrêter');b.setAttribute('aria-label','Arrêter la génération')}else{b.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>';b.setAttribute('title','Envoyer');b.setAttribute('aria-label','Envoyer');typeof updateCount==='function'&&updateCount()}}
+  function setGenerating(g){generating=g;genCid=g?activeId:null;refreshSendBtn();}
+  function refreshSendBtn(){const mine=(genCid!==null&&genCid===activeId);paintSendBtn(mine);const _ch=$('#chat');if(_ch)_ch.setAttribute('aria-busy',mine?'true':'false');}  // le bouton reflète la conversation AFFICHÉE : Stop si elle génère, Envoyer sinon (même si une autre convo génère en fond)
   const MEMORY_KEY='mzai:memory';
   function getMemory(){try{return localStorage.getItem(MEMORY_KEY)||''}catch(e){return''}}
   function setMemory(txt){try{localStorage.setItem(MEMORY_KEY,txt)}catch(e){}}
@@ -2843,7 +2845,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     (c.msgs||[]).forEach(m=>(m.files||[]).forEach(f=>{ if(f&&f._mid&&f._txt){ if(!f.textContent) tasks.push(MEDIA.get(f._mid).then(v=>{if(v)f.textContent=v})); } else if(f&&f._mid&&!f.b64&&!f.ocrPages){ tasks.push(MEDIA.get(f._mid).then(v=>{if(!v)return;if(f._ocr){try{f.ocrPages=JSON.parse(v)}catch(e){}}else{f.b64=v}})); } }));
     if(tasks.length)await Promise.all(tasks);
   }
-  async function openConvo(id){const c=convoById(id);if(!c)return;activeId=id;activeProject=c.pid||null;if(c.model&&MODELS.some(m=>m.id===c.model)){currentModel=c.model;syncModel()}chat.innerHTML='';showView('chat');await rehydrateFiles(c);if(activeId!==id)return;c.msgs.forEach(m=>m.role==='user'?addUser(m.text,m.files):renderAIStored(m));refreshCtxBanner();renderChatHead(c);renderRecents();stickBottom=true;scrollDown(true)}
+  async function openConvo(id){const c=convoById(id);if(!c)return;activeId=id;activeProject=c.pid||null;if(c.model&&MODELS.some(m=>m.id===c.model)){currentModel=c.model;syncModel()}chat.innerHTML='';showView('chat');await rehydrateFiles(c);if(activeId!==id)return;c.msgs.forEach(m=>m.role==='user'?addUser(m.text,m.files):renderAIStored(m));refreshCtxBanner();renderChatHead(c);renderRecents();stickBottom=true;scrollDown(true);refreshSendBtn()}
   function renderChatHead(c){
     let h=chat.querySelector('.conv-head');
     if(!c){if(h)h.remove();return}
@@ -2917,7 +2919,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     if(currentMode==='voice')genVoice(c,ut);else if(currentMode==='image'||currentMode==='video')genMedia(c,ut,currentMode);else genReply(c);
     }finally{_sending=false;}
   }
-  $('#sendBtn').addEventListener('click',()=>{if(generating){curStop&&curStop()}else send()});
+  $('#sendBtn').addEventListener('click',()=>{if(genCid!==null){if(genCid===activeId){curStop&&curStop()}else{toast('Une génération est en cours dans une autre conversation — patiente qu\'elle finisse')}}else send()});
   prompt.addEventListener('keydown',e=>{
     if(slashOpen()&&slashItems.length){
       if(e.key==='ArrowDown'){e.preventDefault();slashK=(slashK+1)%slashItems.length;renderSlash();return}
