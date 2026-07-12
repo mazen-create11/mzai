@@ -1683,8 +1683,17 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   // ── Proxy API optionnel : app HÉBERGÉE + aucune clé locale + Worker configuré → les appels passent par lui
   //    (il détient les clés) → clés jamais exposées, marche pour tout le monde. En local (keys.local.js), appels directs. Voir maz-proxy/README.md.
   const PROXY_URL='https://maz-proxy.maz-chaban.workers.dev';   // Worker déployé (clés OpenRouter+SiliconFlow en secrets Cloudflare). En ligne sans clé locale → passe par lui.
-  // sanitize : une clé mal collée (espace, retour à la ligne, caractère non-ASCII) casserait l'en-tête HTTP (« non ISO-8859-1 ») → on ne garde que l'ASCII imprimable
-  ['openrouter','siliconflow','kling_ak','kling_sk'].forEach(k=>{if(typeof KEYS[k]==='string')KEYS[k]=KEYS[k].replace(/[^\x21-\x7E]/g,'');});
+  // une clé mal collée (espace, retour à la ligne, caractère non-ASCII) casserait l'en-tête HTTP (« non ISO-8859-1 ») → on ne garde que l'ASCII imprimable. Appliqué au boot ET à chaque saisie.
+  const cleanKey=v=>(typeof v==='string'?v:'').replace(/[^\x21-\x7E]/g,'');
+  ['openrouter','siliconflow','kling_ak','kling_sk'].forEach(k=>{KEYS[k]=cleanKey(KEYS[k]);});
+  // messages d'erreur propres pour l'utilisateur (le détail technique va en console) — un hoquet réseau ne doit pas ressembler à une app cassée
+  function friendlyErr(e){const m=((e&&e.message)||String(e||'')).trim();try{console.warn('[MAZ]',e);}catch(_){}
+    if(/Failed to fetch|NetworkError|Load failed|ERR_/i.test(m))return 'Connexion au service impossible — vérifie ta connexion et réessaie.';
+    if(/ISO-8859-1|code point/i.test(m))return 'Clé API invalide (caractère non autorisé) — elle a été nettoyée, réessaie.';
+    if(/Abort/i.test(m))return 'Requête annulée.';
+    if(/timeout|délai|timed?.?out/i.test(m))return 'Le service met trop de temps à répondre — réessaie.';
+    if(/quota|exceeded|insufficient|402|balance/i.test(m))return 'Crédit API épuisé côté serveur.';
+    return m.length>160?m.slice(0,160)+'…':(m||'Erreur inconnue');}
   // Proxy actif dès qu'il n'y a PAS de fichier keys.local.js (= app hébergée), MÊME si l'utilisateur a saisi des clés dans Réglages : le proxy prime, ses clés sont ignorées. Le Worker fournit les vraies. En local (keys.local.js présent) → appels directs.
   const _keyFile=!!(window.MZAI_KEYS && ((window.MZAI_KEYS.openrouter||'').trim()||(window.MZAI_KEYS.siliconflow||'').trim()));
   const VIA_PROXY=!!PROXY_URL && !_keyFile;
@@ -2131,9 +2140,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     rows+=`<div class="api-row api-kling" data-key="kling"><span class="api-logo" style="color:#ff5c28">${PROVIDERS.kling.logo}</span><div class="api-meta"><div class="api-name">Kling AI</div><div class="api-sub">kling.ai · vidéo</div></div><div class="kling-fields"><input class="api-in" data-kf="kling_ak" name="kling_ak" type="password" autocomplete="off" placeholder="Access Key…" aria-label="Access Key Kling" value="${esc(KEYS.kling_ak||'')}"><input class="api-in" data-kf="kling_sk" name="kling_sk" type="password" autocomplete="off" placeholder="Secret Key…" aria-label="Secret Key Kling" value="${esc(KEYS.kling_sk||'')}"></div><span class="api-st${klingOk?' on':''}" data-tip="${klingOk?'Connecté':'2 clés requises'}"></span></div>`;
     $('#apiList').innerHTML=rows;
     $$('#apiList .api-row:not(.api-kling)').forEach(row=>{const pk=row.dataset.key,inp=row.querySelector('.api-in'),st=row.querySelector('.api-st');
-      inp.addEventListener('input',()=>{KEYS[pk]=inp.value.trim();persistKeys();st.classList.toggle('on',hasKey(pk));st.setAttribute('data-tip',hasKey(pk)?'Connecté':'Non connecté');renderModelPicker();syncModel()});
+      inp.addEventListener('input',()=>{KEYS[pk]=cleanKey(inp.value);persistKeys();st.classList.toggle('on',hasKey(pk));st.setAttribute('data-tip',hasKey(pk)?'Connecté':'Non connecté');renderModelPicker();syncModel()});
     });
-    $$('#apiList [data-kf]').forEach(inp=>{inp.addEventListener('input',()=>{KEYS[inp.dataset.kf]=inp.value.trim();persistKeys();const st=$('#apiList .api-kling .api-st'),ok=hasKey('kling');if(st){st.classList.toggle('on',ok);st.setAttribute('data-tip',ok?'Connecté':'2 clés requises')}renderModelPicker();syncModel()})});
+    $$('#apiList [data-kf]').forEach(inp=>{inp.addEventListener('input',()=>{KEYS[inp.dataset.kf]=cleanKey(inp.value);persistKeys();const st=$('#apiList .api-kling .api-st'),ok=hasKey('kling');if(st){st.classList.toggle('on',ok);st.setAttribute('data-tip',ok?'Connecté':'2 clés requises')}renderModelPicker();syncModel()})});
   }
   renderApiList();
   $('#setExport').addEventListener('click',()=>{buildExport().then(data=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='mzai-export.json';a.click();URL.revokeObjectURL(u);toast('Données exportées')})});
@@ -2595,7 +2604,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     } catch(err) {
       if(timedOut) return finish((fullText||'')+(fullText?'\n\n':'')+'_⚠️ Réponse interrompue : le serveur n\'a plus rien envoyé (délai dépassé)._',{ms:performance.now()-t0});
       if(err.name==='AbortError') return finish(fullText||'_Génération arrêtée._',{ms:performance.now()-t0});
-      finish((fullText?fullText+'\n\n':'')+'_⚠️ Connexion interrompue : '+err.message+'_',{ms:performance.now()-t0,usage:null});
+      finish((fullText?fullText+'\n\n':'')+'_⚠️ '+friendlyErr(err)+'_',{ms:performance.now()-t0,usage:null});
     }
   }
   /* Traduction — rendu côte-à-côte + contrôle qualité (parse défensif, repli markdown si JSON cassé) */
@@ -2759,7 +2768,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(done)return;
       place({type,prompt:promptText,seed:seed(),model});
     } catch(e) {
-      if(!done){bubble.classList.remove('media-b');bubble.innerHTML="<div class='api-err'><b>Erreur génération</b><br>"+esc(e.message)+"</div>";setGenerating(false);curStop=null;scrollDown();}
+      if(!done){bubble.classList.remove('media-b');bubble.innerHTML="<div class='api-err'><b>Erreur génération</b><br>"+esc(friendlyErr(e))+"</div>";setGenerating(false);curStop=null;scrollDown();}
     }
   }
   async function genVoice(c,text){
@@ -2778,7 +2787,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const media=okIdb?{type:'audio',prompt:text,model,mid}:{type:'audio',prompt:text,model,url};  // repli inline si IDB indisponible (jamais de mid sans blob)
       bubble.classList.add('media-b');bubble.innerHTML=mediaBubbleHTML(media);wireMedia(bubble,media,node);hydrateMedia(bubble);
       c.msgs.push({role:'ai',media,model});c.ts=now();saveConvos();renderRecents();setGenerating(false);curStop=null;scrollDown();
-    }catch(e){if(!done){bubble.innerHTML="<div class='api-err'><b>Erreur voix</b><br>"+esc(e.message)+"</div>";setGenerating(false);curStop=null}}
+    }catch(e){if(!done){bubble.innerHTML="<div class='api-err'><b>Erreur voix</b><br>"+esc(friendlyErr(e))+"</div>";setGenerating(false);curStop=null}}
   }
   let currentUtterance=null;
   function playTTS(text, btn) {
@@ -3088,7 +3097,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const data=await res.json();const text=((data.text||'')+'').trim()||'(aucune parole détectée dans l\'audio)';
       if(done)return;
       finishTranscript(c,node,bubble,file,text,'SenseVoice (zh/en)');
-    }catch(e){if(!done){bubble.classList.remove('md');bubble.innerHTML="<div class='api-err'><b>Erreur transcription</b><br>"+esc(e.message)+"</div>";setGenerating(false);curStop=null;scrollDown();}}
+    }catch(e){if(!done){bubble.classList.remove('md');bubble.innerHTML="<div class='api-err'><b>Erreur transcription</b><br>"+esc(friendlyErr(e))+"</div>";setGenerating(false);curStop=null;scrollDown();}}
   }
   /* Qwen3-Omni — chat/completions multimodal (débloque le FR + 18 langues), streaming, 2 formes d'audio testées en repli */
   async function genTranscribeOmni(c,file){
@@ -3122,7 +3131,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(!ok)throw new Error('Transcription refusée par l\'API. '+lastErr);
       text=(text||'').trim()||'(aucune parole détectée dans l\'audio)';
       finishTranscript(c,node,bubble,file,text,'Qwen3-Omni');
-    }catch(e){if(stopped)return;if(e.name==='AbortError')return;bubble.classList.remove('md');bubble.innerHTML="<div class='api-err'><b>Erreur transcription</b><br>"+esc(e.message)+"</div>";setGenerating(false);curStop=null;scrollDown();}
+    }catch(e){if(stopped)return;if(e.name==='AbortError')return;bubble.classList.remove('md');bubble.innerHTML="<div class='api-err'><b>Erreur transcription</b><br>"+esc(friendlyErr(e))+"</div>";setGenerating(false);curStop=null;scrollDown();}
   }
   /* rendu commun : transcript + post-traitement (Ponctuer/Résumer/Notes/Chapitres) + téléchargements (.txt / .srt estimé) */
   function finishTranscript(c,node,bubble,file,text,engine){
@@ -3155,7 +3164,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(stop)return;
       bubble.classList.add('md');bubble.innerHTML=renderMD(out||'(vide)');wireBubble(bubble);addActions(col0(node),out,node);
       cc.msgs.push({role:'ai',text:out,model:'Transcription · '+lbl});cc.ts=now();saveConvos();renderRecents();setGenerating(false);curStop=null;scrollDown();
-    }catch(e){if(!stop){bubble.classList.remove('md');bubble.innerHTML="<div class='api-err'><b>Erreur</b><br>"+esc(e.message)+"</div>";setGenerating(false);curStop=null;scrollDown();}}
+    }catch(e){if(!stop){bubble.classList.remove('md');bubble.innerHTML="<div class='api-err'><b>Erreur</b><br>"+esc(friendlyErr(e))+"</div>";setGenerating(false);curStop=null;scrollDown();}}
   }
   /* SRT à horodatage ESTIMÉ : segments répartis proportionnellement à la durée réelle de l'audio */
   function srtTime(sec){sec=Math.max(0,sec);const h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=Math.floor(sec%60),ms=Math.round((sec-Math.floor(sec))*1000);const p=(n,l)=>String(n).padStart(l,'0');return p(h,2)+':'+p(m,2)+':'+p(s,2)+','+p(ms,3);}
@@ -3457,7 +3466,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     if(obStep===1)setTimeout(()=>{const k=$('#obKey');k&&k.focus()},80);
   }
   async function obTest(){
-    const k=$('#obKey').value.trim(),st=$('#obKeyStat');
+    const k=cleanKey($('#obKey').value),st=$('#obKeyStat');
     if(!k){st.className='ob-keystat warn';st.textContent='Colle d\'abord ta clé OpenRouter.';return;}
     st.className='ob-keystat';st.textContent='Vérification…';
     try{
