@@ -1681,7 +1681,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   persistKeys();
   // ── Proxy API optionnel : app HÉBERGÉE + aucune clé locale + Worker configuré → les appels passent par lui
   //    (il détient les clés) → clés jamais exposées, marche pour tout le monde. En local (keys.local.js), appels directs. Voir maz-proxy/README.md.
-  const PROXY_URL='';   // ← après `wrangler deploy`, colle ici l'URL du Worker : 'https://maz-proxy.ton-compte.workers.dev'
+  const PROXY_URL='https://maz-proxy.maz-chaban.workers.dev';   // Worker déployé (clés OpenRouter+SiliconFlow en secrets Cloudflare). En ligne sans clé locale → passe par lui.
   const VIA_PROXY=!!PROXY_URL && !(KEYS.openrouter&&KEYS.openrouter.trim()) && !(KEYS.siliconflow&&KEYS.siliconflow.trim());
   if(VIA_PROXY){KEYS.openrouter=KEYS.openrouter||'via-proxy';KEYS.siliconflow=KEYS.siliconflow||'via-proxy';}  // placeholders : le Worker remplace l'Authorization par la vraie clé
   const _PB=(PROXY_URL||'').replace(/\/$/,'');
