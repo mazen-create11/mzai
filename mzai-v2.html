@@ -1764,6 +1764,17 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     setTimeout(()=>{try{g.querySelector('#gateIn').focus()}catch(e){}},60);
     return g;}
   function onAuthed(d){
+    // changement de compte sur le même navigateur → purge locale AVANT tout (sinon les données de l'utilisateur précédent fuiteraient vers — et chez — le nouveau)
+    try{const prev=localStorage.getItem('mzai:cloud_uid');
+      if(prev&&d.uid&&prev!==d.uid){
+        CONVOS.length=0;TRASH.length=0;activeId=null;
+        try{saveTrash()}catch(e){}try{saveConvosSync()}catch(e){}try{setMemory('')}catch(e){}
+        try{PROJECTS.length=0;saveProjects()}catch(e){}
+        try{chat.innerHTML='';goHome();renderRecents()}catch(e){}
+        try{USER.name=d.name||'Invité';USER.role='Espace privé';USER.email='';DB.set('user',USER);applyUser()}catch(e){}
+      }
+      if(d.uid)localStorage.setItem('mzai:cloud_uid',d.uid);
+    }catch(e){}
     try{if(localStorage.getItem('mzai:user')===null&&d.name){USER.name=d.name;USER.role='Espace privé';USER.email='';DB.set('user',USER);applyUser&&applyUser()}}catch(e){}
     toast&&toast('Bienvenue, '+(d.name||'')+' ✦');
     cloudPull();
