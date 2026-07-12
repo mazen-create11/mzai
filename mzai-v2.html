@@ -1712,6 +1712,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   const provOf=m=>PROVIDERS[(typeof m==='string'?modelById(m):m||{}).provider||'mz'];
   const acOf=m=>provOf(m).ac;
   const hasKey=p=>p==='mz'||(p==='kling'?(!!(KEYS.kling_ak&&KEYS.kling_ak.trim())&&!!(KEYS.kling_sk&&KEYS.kling_sk.trim())):!!(KEYS[p]&&KEYS[p].trim()));
+  const klingUsable=()=>hasKey('kling')||!!(KEYS.kling_proxy&&KEYS.kling_proxy.trim());   // Kling ne marche qu'avec ses 2 clés OU son proxy → sinon on masque ses modèles (pas de menu mort)
 
   const LIC={chat:'<path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/>',code:'<path d="m8 6-6 6 6 6M16 6l6 6-6 6"/>',doc:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>',img:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>'};
   /* jeu d'icônes vectorielles (remplace les emojis) */
@@ -1937,7 +1938,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   const spdDots=n=>`<span class="spd" data-tip="Vitesse">${[1,2,3,4].map(i=>`<i class="${i<=n?'on':''}"></i>`).join('')}</span>`;
   const CHK='<span class="pi-check"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg></span>';
   function renderModelPicker(){
-    const cats=[['auto',null,m=>m.provider==='mz'],['text','Texte',m=>m.provider!=='mz'&&!m.kind],['image','Image',m=>m.kind==='image'],['video','Vidéo',m=>m.kind==='video'],['voice','Voix',m=>m.kind==='audio']];
+    const cats=[['auto',null,m=>m.provider==='mz'],['text','Texte',m=>m.provider!=='mz'&&!m.kind],['image','Image',m=>m.kind==='image'],['video','Vidéo',m=>m.kind==='video'&&(m.provider!=='kling'||klingUsable())],['voice','Voix',m=>m.kind==='audio']];
     let html='<div class="ph">Choisir un modèle</div>';
     cats.forEach(([key,label,test])=>{const ms=MODELS.filter(test);if(!ms.length)return;
       if(label)html+=`<div class="prov-h">${label}</div>`;
@@ -3003,7 +3004,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function renderToolOpts(){
     const host=$('#toolOpts');let h='';
     if(currentMode==='image'||currentMode==='video'){
-      const kind=currentMode==='image'?'image':'video',ms=MODELS.filter(m=>m.kind===kind);
+      const kind=currentMode==='image'?'image':'video',ms=MODELS.filter(m=>m.kind===kind&&(m.provider!=='kling'||klingUsable()));
       h='<span class="opt"><label>Modèle</label><select data-opt="mediaModel">'+ms.map(m=>'<option value="'+esc(m.id)+'"'+(m.id===currentModel?' selected':'')+'>'+esc(m.id)+'</option>').join('')+'</select></span><span class="opt">Image source = via le trombone 📎</span>';
     }else if(currentMode==='voice'){
       h='<span class="opt"><label>Voix</label> CosyVoice 2 · FR</span><span class="opt">Texte → audio mp3</span>';
