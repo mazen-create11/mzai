@@ -2261,7 +2261,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     if(col.querySelector('.edit-box'))return;
     bubble.style.display='none';if(acts)acts.style.display='none';
     const box=document.createElement('div');box.className='edit-box';
-    box.innerHTML='<textarea class="edit-ta"></textarea><div class="edit-acts"><span class="ghost-b ebc">Annuler</span><button class="save-b eb-save"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>Renvoyer</button></div>';
+    box.innerHTML='<textarea class="edit-ta" aria-label="Modifier le message"></textarea><div class="edit-acts"><span class="ghost-b ebc">Annuler</span><button class="save-b eb-save"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>Renvoyer</button></div>';
     col.insertBefore(box,col.firstChild);
     const ta=box.querySelector('.edit-ta');ta.value=c.msgs[idx].text;ta.focus();ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,200)+'px';
     ta.addEventListener('input',()=>{ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,200)+'px'});
@@ -3358,7 +3358,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function autoLabelAll(){
     $$('input,textarea,select').forEach(el=>{
       if(el.getAttribute('aria-label')||el.getAttribute('aria-labelledby')||el.closest('label')||(el.id&&document.querySelector('label[for="'+el.id+'"]')))return;
-      const ph=el.getAttribute('placeholder');const fl=el.closest('.field')?(el.closest('.field').querySelector('label')||{}).textContent:'';
+      const ph=el.getAttribute('placeholder');const fl=el.closest('.field,.opt')?(el.closest('.field,.opt').querySelector('label')||{}).textContent:'';
       const lab=(fl||ph||el.dataset.opt||'Champ').toString().trim();if(lab)el.setAttribute('aria-label',lab);   // le label visible prime sur le placeholder (WCAG 2.5.3 « Label in Name »)
     });
   }
