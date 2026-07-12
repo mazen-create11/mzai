@@ -1392,7 +1392,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     <div class="field" id="set-api"><label>Clés API</label><div id="apiList"></div></div>
     <div class="field" id="set-privacy"><label>Confidentialité</label>
       <div class="privacy-card">
-        <p><b>100% sur ton appareil.</b> Conversations, projets, persona et clés sont stockés en local (localStorage de ce navigateur). MAZ n'a aucun serveur : rien n'est envoyé à MAZ.</p>
+        <p id="privacyNote"><b>100% sur ton appareil.</b> Conversations, projets, persona et clés sont stockés en local (localStorage de ce navigateur). MAZ n'a aucun serveur : rien n'est envoyé à MAZ.</p>
         <p>Quand tu envoies un message, l'appel part <b>directement</b> de ton navigateur vers le fournisseur du modèle choisi : <b>OpenRouter</b> (texte), <b>SiliconFlow</b> (image · voix · transcription), <b>Kling</b> (vidéo). Leurs serveurs traitent ta requête selon leurs propres conditions.</p>
         <p>Tes clés restent locales et ne quittent ton appareil que vers ces fournisseurs. Tu peux tout exporter (JSON) ou tout effacer ci-dessous.</p>
       </div>
@@ -1565,7 +1565,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     return cc;
   }
   function _convosForStorage(){return CONVOS.map(_stripConvo);}
-  const saveConvos=()=>{clearTimeout(_saveT);_saveT=setTimeout(()=>DB.set('convos',_convosForStorage()),800)};
+  const saveConvos=()=>{clearTimeout(_saveT);_saveT=setTimeout(()=>{DB.set('convos',_convosForStorage());try{cloudPushSoon()}catch(e){}},800)};
   const saveConvosSync=()=>{clearTimeout(_saveT);DB.set('convos',_convosForStorage())};
   // flush du dernier message si l'onglet se ferme dans la fenêtre de débounce (800 ms)
   addEventListener('pagehide',saveConvosSync);
@@ -1701,6 +1701,83 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   const _PB=(PROXY_URL||'').replace(/\/$/,'');
   const OR_HOST=VIA_PROXY?_PB+'/or':'https://openrouter.ai';
   const SF_HOST=VIA_PROXY?_PB+'/sf':'https://api.siliconflow.com';
+
+  /* ══ CLOUD (mode hébergé uniquement) : compte par code d'accès + historique synchronisé + médias permanents ══
+     Sécurité : le code n'est jamais loggé ; injecté en en-tête UNIQUEMENT vers notre Worker (interceptor ciblé) ;
+     le serveur re-vérifie tout (defense-in-depth : contourner l'écran ne donne accès à rien). */
+  const _acode=()=>{try{return localStorage.getItem('mzai:acode')||''}catch(e){return''}};
+  if(VIA_PROXY){
+    const _f=window.fetch.bind(window);
+    window.fetch=function(u,init){try{const s=typeof u==='string'?u:(u&&u.url)||'';if(s.indexOf(_PB)===0){init=init||{};const h=new Headers(init.headers||{});const c=_acode();if(c)h.set('X-Maz-Code',c);init.headers=h;}}catch(e){}return _f(u,init)};
+  }
+  let CLOUD_ON=false,_lastPush=0,_cpT=null;
+  async function cloudPushSoon(){if(!CLOUD_ON)return;clearTimeout(_cpT);_cpT=setTimeout(async()=>{
+    const dirty=CONVOS.filter(c=>(c.ts||0)>_lastPush);if(!dirty.length)return;
+    const mark=Date.now();
+    for(const c of dirty.slice(0,12)){try{
+      const r=await fetch(_PB+'/sync/convo',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:c.id,data:_stripConvo(c),updated_at:c.ts||mark})});
+      if(!r.ok)return;   // panne réseau → on ne marque pas, re-tentera au prochain save
+    }catch(e){return}}
+    _lastPush=mark;
+  },1200)}
+  function cloudDelete(id){if(!CLOUD_ON)return;fetch(_PB+'/sync/convo?id='+encodeURIComponent(id),{method:'DELETE'}).catch(()=>{})}
+  async function cloudPull(){
+    try{
+      const r=await fetch(_PB+'/sync/convos');if(!r.ok)return;
+      const rows=await r.json();let changed=false;
+      rows.forEach(row=>{
+        const li=CONVOS.findIndex(c=>c.id===row.id);
+        if(row.deleted){if(li>=0&&(CONVOS[li].ts||0)<=row.updated_at){CONVOS.splice(li,1);changed=true}return}
+        let remote=null;try{remote=JSON.parse(row.data)}catch(e){}
+        if(!remote||!remote.id)return;
+        if(li<0){CONVOS.push(remote);changed=true}
+        else if((CONVOS[li].ts||0)<row.updated_at){if(activeId!==row.id){CONVOS[li]=remote;changed=true}}   // on n'écrase jamais la convo ouverte sous les doigts de l'utilisateur
+      });
+      if(changed){CONVOS.sort((a,b)=>(b.ts||0)-(a.ts||0));saveConvos();renderRecents()}
+      // push de ce que le cloud n'a pas (ou a en plus vieux)
+      const seen=new Map(rows.map(r2=>[r2.id,r2.updated_at]));
+      for(const c of CONVOS){const rts=seen.get(c.id);if(rts===undefined||(c.ts||0)>rts){try{await fetch(_PB+'/sync/convo',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:c.id,data:_stripConvo(c),updated_at:c.ts||Date.now()})})}catch(e){break}}}
+      _lastPush=Date.now();CLOUD_ON=true;
+    }catch(e){try{console.warn('[MAZ] sync',e)}catch(_){}}
+  }
+  function _gateEl(){let g=document.getElementById('mazGate');if(g)return g;
+    g=document.createElement('div');g.id='mazGate';
+    g.style.cssText='position:fixed;inset:0;z-index:99999;display:grid;place-items:center;background:var(--bg,#FAF8F3)';
+    g.innerHTML='<div style="width:min(400px,90vw);text-align:center;padding:36px 30px;border:1px solid var(--line,#E7E2D6);border-radius:18px;background:var(--panel-solid,#fff);box-shadow:0 18px 60px rgba(43,36,24,.10)">'
+      +'<div style="font-weight:800;font-size:34px;letter-spacing:-1px;margin-bottom:6px">MA<span style="color:#B85335">Z</span></div>'
+      +'<div style="color:var(--ink-soft,#56524A);font-size:14px;margin-bottom:22px">Espace privé — entre ton code d’accès</div>'
+      +'<input id="gateIn" autocomplete="off" spellcheck="false" placeholder="maz-XXXX-XXXX-XXXX-XXXX" aria-label="Code d’accès" style="width:100%;box-sizing:border-box;font-family:ui-monospace,monospace;font-size:15px;text-align:center;letter-spacing:.06em;padding:12px 14px;border:1px solid var(--line-strong,#D9D2C2);border-radius:10px;background:var(--surface,#F4F1E9);color:var(--ink,#21201B);outline:none">'
+      +'<div id="gateErr" role="alert" style="min-height:20px;font-size:12.5px;color:#A4472B;margin:10px 0 4px"></div>'
+      +'<button id="gateGo" style="width:100%;padding:12px;border:0;border-radius:10px;background:#B85335;color:#fff;font-weight:700;font-size:14.5px;cursor:pointer">Entrer</button>'
+      +'<div style="margin-top:16px;font-size:11.5px;color:var(--ink-faint,#6E695D)">Pas de code ? Demande à Mazen.</div></div>';
+    document.body.appendChild(g);
+    const go=async()=>{const inp=g.querySelector('#gateIn'),err=g.querySelector('#gateErr'),btn=g.querySelector('#gateGo');
+      const code=(inp.value||'').replace(/[^\x21-\x7E]/g,'').trim();if(!code){err.textContent='Colle ton code d’accès.';return}
+      btn.disabled=true;btn.textContent='Vérification…';err.textContent='';
+      try{const r=await fetch(_PB+'/auth/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
+        if(r.ok){const d=await r.json();try{localStorage.setItem('mzai:acode',code)}catch(e){}g.remove();onAuthed(d);return}
+        err.textContent=r.status===401?'Code non reconnu — vérifie-le auprès de Mazen.':'Service indisponible — réessaie dans un instant.';
+      }catch(e){err.textContent='Connexion impossible — vérifie ton réseau.'}
+      btn.disabled=false;btn.textContent='Entrer';};
+    g.querySelector('#gateGo').addEventListener('click',go);
+    g.querySelector('#gateIn').addEventListener('keydown',e=>{if(e.key==='Enter')go()});
+    setTimeout(()=>{try{g.querySelector('#gateIn').focus()}catch(e){}},60);
+    return g;}
+  function onAuthed(d){
+    try{if(localStorage.getItem('mzai:user')===null&&d.name){USER.name=d.name;USER.role='Espace privé';USER.email='';DB.set('user',USER);applyUser&&applyUser()}}catch(e){}
+    toast&&toast('Bienvenue, '+(d.name||'')+' ✦');
+    cloudPull();
+    const pv=document.getElementById('privacyNote');if(pv)pv.innerHTML='<b>Ton espace privé.</b> Tes conversations sont chiffrées en transit et synchronisées sur l’infrastructure de MAZ (Cloudflare) — elles te suivent sur tous tes appareils. Personne d’autre n’y a accès.';
+  }
+  if(VIA_PROXY)(async()=>{
+    const saved=_acode();
+    if(saved){try{const r=await fetch(_PB+'/auth/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:saved})});
+      if(r.ok){onAuthed(await r.json());return}
+      if(r.status===401){try{localStorage.removeItem('mzai:acode')}catch(e){}}
+      else{CLOUD_ON=false;return _gateEl()&&undefined}   // 5xx : on montre le gate quand même, l'utilisateur réessaiera
+    }catch(e){/* offline : gate */}}
+    _gateEl();
+  })();
   const USER=DB.get('user',{name:'Mazen',email:'mazenchaban09@gmail.com',role:'Compte développeur',avColor:ARGILE_AV});
   if(/#7fa9dc|#5e86c9|#6ba3ff|#b6c4d8|#6b7e97|#2c4a8f/i.test(USER.avColor||'')){USER.avColor=ARGILE_AV;DB.set('user',USER)}   /* migration : avatar bleu/ardoise hérité → argile DA */
   const firstName=()=>(USER.name||'Mazen').trim().split(' ')[0];
@@ -2461,6 +2538,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(injTotal>0){const b=injBadge(injUsed,injTotal);if(b)col.appendChild(b);}                          // transparence : X / Y caractères de document injectés
       if(currentMode==='doc'&&toolCfg.docAction==='Extraction')addJsonDownload(col,text);                  // export .json structuré
       if(meta.usage||meta.ms){const s=statsEl(wasAuto?'MAZ Auto → '+resolvedModel:resolvedModel,meta.ms,meta.usage,true);if(s)col.appendChild(s);}
+      if(VIA_PROXY&&meta.usage){try{fetch(_PB+'/usage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tokens:+meta.usage.total_tokens||0,cost:+meta.usage.cost||0})}).catch(()=>{})}catch(e){}}   // consommation par compte (préparé facturation)
       scrollDown();
       opts.onDone&&opts.onDone(text,{reasonText,sources:meta.sources,usage:meta.usage,ms:meta.ms,resolved:resolvedModel,auto:wasAuto,error:meta.error});
     };
@@ -2676,27 +2754,25 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       async clear(){cache.clear();try{const s=await st('readwrite');s.clear()}catch(e){}}};
   })();
   function hydrateMedia(scope){(scope||document).querySelectorAll('[data-mid]').forEach(el=>{if(el.dataset._hy)return;el.dataset._hy='1';MEDIA.get(el.dataset.mid).then(u=>{if(u)el.src=u})});}
-  async function stashRemoteMedia(media){   // API-02 : rapatrie le média généré (URL de livraison qui expire ~1h) en IndexedDB via le proxy /fetch → survit au reload. Uniquement en ligne (le proxy contourne le CORS des CDN).
-    if(!media||!media.url||media.mid||/^data:/.test(media.url)||!VIA_PROXY)return;
+  async function stashRemoteMedia(media){   // le média généré (URL de livraison qui expire en ~2 min) est rapatrié PAR LE SERVEUR dans le stockage permanent → suit l'utilisateur sur tous ses appareils, pour toujours
+    if(!media||!media.url||media.r2||/^data:/.test(media.url)||!VIA_PROXY)return;
     try{
-      const r=await fetch(_PB+'/fetch?url='+encodeURIComponent(media.url));
+      const r=await fetch(_PB+'/media/stash',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:media.url})});
       if(!r.ok)return;
-      const b=await r.blob();if(!b.size||b.size>22*1024*1024)return;   // borne 22 Mo (vidéos courtes OK)
-      const durl=await new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(b)});
-      const mid='gm'+newId();
-      if(await MEDIA.put(mid,durl)){media.mid=mid;saveConvos();}   // au reload, mediaBubbleHTML émet data-mid → hydrateMedia sert le blob local
+      const d=await r.json();
+      if(d.mid){media.r2=d.mid;saveConvos();}   // mediaBubbleHTML sert /media/<r2> (permanent) en priorité sur l'URL expirante
     }catch(e){/* best-effort : on garde l'URL distante */}
   }
   function mediaBubbleHTML(m){
     const badge=`<span class="gm-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">${GLYPH.spark}</svg>${esc(m.model||currentModel)}</span>`;
     const acts=`<div class="gm-acts"><span class="gm-b" data-gm="dl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.import}</svg>Télécharger</span><span class="gm-b" data-gm="regen"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v4h-4"/></svg>Régénérer</span></div>`;
     if(m.type==='audio'){
-      return `<div class="gen-audio"><span class="ga-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/></svg></span><audio controls ${m.mid?`data-mid="${esc(m.mid)}"`:''} src="${esc(safeMediaUrl(m.url))}"></audio></div><div class="gm-cap">« ${esc(m.prompt)} »</div>${acts}`;
+      return `<div class="gen-audio"><span class="ga-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/></svg></span><audio controls ${m.mid?`data-mid="${esc(m.mid)}"`:''} src="${esc(m.r2?_PB+'/media/'+encodeURIComponent(m.r2):safeMediaUrl(m.url))}"></audio></div><div class="gm-cap">« ${esc(m.prompt)} »</div>${acts}`;
     }
     const vid=m.type==='video';
     let art;
-    const demo=(!m.url&&!m.mid)?'<span class="gm-demo">Démo — ajoute ta clé pour générer</span>':'';
-    const _md=m.mid?`data-mid="${esc(m.mid)}"`:'';const _src=safeMediaUrl(m.url);   // data-mid → hydrateMedia recharge le blob local même si l'URL distante a expiré
+    const demo=(!m.url&&!m.mid&&!m.r2)?'<span class="gm-demo">Démo — ajoute ta clé pour générer</span>':'';
+    const _md=m.mid?`data-mid="${esc(m.mid)}"`:'';const _src=m.r2?_PB+'/media/'+encodeURIComponent(m.r2):safeMediaUrl(m.url);   // r2 = stockage permanent (prioritaire) ; sinon URL fournisseur ; data-mid = repli IndexedDB local
     if(vid&&(_src||m.mid)) art=`<video class="gm-art" ${_md} ${_src?`src="${_src}"`:''} controls playsinline style="width:100%;height:100%;object-fit:cover;background:#000"></video>`;
     else if(_src||m.mid) art=`<img ${_md} ${_src?`src="${_src}"`:''} alt="${esc(m.prompt||'Image générée')}" loading="lazy" decoding="async" class="gm-art" style="width:100%;height:100%;object-fit:cover">`;
     else{const [a,b,d,e]=hashColors(m.prompt+'·'+(m.seed||0)),uid='gm'+(mediaUID++);art=`<svg class="gm-art" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice"><defs><radialGradient id="${uid}" cx="32%" cy="28%" r="90%"><stop offset="0%" stop-color="${a}"/><stop offset="100%" stop-color="${b}"/></radialGradient></defs><rect width="100" height="100" fill="url(#${uid})"/><circle cx="74" cy="66" r="42" fill="${d}" opacity=".5"/><circle cx="22" cy="82" r="30" fill="${e}" opacity=".45"/><circle cx="58" cy="30" r="16" fill="${a}" opacity=".5"/></svg><div class="gm-grain"></div>`}
@@ -2704,7 +2780,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   }
   function wireMedia(bubble,m,node){
     bubble.querySelector('.gm-play')&&bubble.querySelector('.gm-play').addEventListener('click',()=>toast('Lecture de la vidéo (aperçu)'));
-    bubble.querySelector('[data-gm=dl]').addEventListener('click',()=>{const dl=(href)=>{const ext=m.type==='video'?'mp4':m.type==='audio'?'mp3':'png';const a=document.createElement('a');a.href=href;a.download='maz-'+m.type+'-'+(m.seed||'')+'.'+ext;a.target='_blank';a.click();toast('Téléchargement')};if(m.url){dl(m.url);return;}if(m.mid){MEDIA.get(m.mid).then(u=>u?dl(u):toast('Audio indisponible'));return;}const svg=bubble.querySelector('.gm-art');if(!svg)return;const s=new XMLSerializer().serializeToString(svg),blob=new Blob([s],{type:'image/svg+xml'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='mzai-'+m.type+'-'+m.seed+'.svg';a.click();URL.revokeObjectURL(u);toast('Visuel téléchargé')});
+    bubble.querySelector('[data-gm=dl]').addEventListener('click',()=>{const dl=(href)=>{const ext=m.type==='video'?'mp4':m.type==='audio'?'mp3':'png';const a=document.createElement('a');a.href=href;a.download='maz-'+m.type+'-'+(m.seed||'')+'.'+ext;a.target='_blank';a.click();toast('Téléchargement')};if(m.r2){dl(_PB+'/media/'+encodeURIComponent(m.r2));return;}if(m.url){dl(m.url);return;}if(m.mid){MEDIA.get(m.mid).then(u=>u?dl(u):toast('Audio indisponible'));return;}const svg=bubble.querySelector('.gm-art');if(!svg)return;const s=new XMLSerializer().serializeToString(svg),blob=new Blob([s],{type:'image/svg+xml'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='mzai-'+m.type+'-'+m.seed+'.svg';a.click();URL.revokeObjectURL(u);toast('Visuel téléchargé')});
     bubble.querySelector('[data-gm=regen]').addEventListener('click',()=>{if(generating)return;const c=convoById(activeId);if(!c)return;for(let k=c.msgs.length-1;k>=0;k--){if(c.msgs[k].role==='ai'){c.msgs.splice(k,1);break}}node&&node.remove();if(m.type==='audio')genVoice(c,m.prompt);else genMedia(c,m.prompt,m.type)});
   }
   async function genMedia(c,promptText,type){
@@ -2795,9 +2871,13 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const res=await fetch(SF_HOST+'/v1/audio/speech',{method:'POST',headers:{'Authorization':'Bearer '+KEYS.siliconflow,'Content-Type':'application/json'},body:JSON.stringify({model:'FunAudioLLM/CosyVoice2-0.5B',input:text,voice:'FunAudioLLM/CosyVoice2-0.5B:alex',response_format:'mp3'})});
       if(!res.ok)throw new Error('HTTP '+res.status+' · '+(await res.text().catch(()=>'')).slice(0,200));
       const _blob=await res.blob();if(done)return;
-      const url=await new Promise((rs,rj)=>{const fr=new FileReader();fr.onload=()=>rs(fr.result);fr.onerror=()=>rj(new Error('lecture audio'));fr.readAsDataURL(_blob)});
-      const mid='m'+newId();const okIdb=await MEDIA.put(mid,url);   // audio en IndexedDB (hors localStorage), persiste au reload
-      const media=okIdb?{type:'audio',prompt:text,model,mid}:{type:'audio',prompt:text,model,url};  // repli inline si IDB indisponible (jamais de mid sans blob)
+      let media=null;
+      if(VIA_PROXY){try{const up=await fetch(_PB+'/media/upload',{method:'PUT',headers:{'Content-Type':'audio/mpeg'},body:_blob});if(up.ok){const d=await up.json();if(d.mid)media={type:'audio',prompt:text,model,r2:d.mid};}}catch(e){}}   // hébergé : audio dans le stockage permanent → suit l'utilisateur partout
+      if(!media){
+        const url=await new Promise((rs,rj)=>{const fr=new FileReader();fr.onload=()=>rs(fr.result);fr.onerror=()=>rj(new Error('lecture audio'));fr.readAsDataURL(_blob)});
+        const mid='m'+newId();const okIdb=await MEDIA.put(mid,url);   // local : audio en IndexedDB (hors localStorage), persiste au reload
+        media=okIdb?{type:'audio',prompt:text,model,mid}:{type:'audio',prompt:text,model,url};  // repli inline si IDB indisponible
+      }
       bubble.classList.add('media-b');bubble.innerHTML=mediaBubbleHTML(media);wireMedia(bubble,media,node);hydrateMedia(bubble);
       c.msgs.push({role:'ai',media,model});c.ts=now();saveConvos();renderRecents();setGenerating(false);curStop=null;scrollDown();
     }catch(e){if(!done){bubble.innerHTML="<div class='api-err'><b>Erreur voix</b><br>"+esc(friendlyErr(e))+"</div>";setGenerating(false);curStop=null}}
@@ -2906,8 +2986,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   // libère les blobs IndexedDB des convos supprimées, s'ils ne sont plus référencés ailleurs
   function _collectMids(c){const ids=[];(c.msgs||[]).forEach(m=>{if(m.media&&m.media.mid)ids.push(m.media.mid);(m.files||[]).forEach(f=>{if(f&&f._mid)ids.push(f._mid)})});return ids;}
   function _mediaPurge(gone){const dead=new Set();(gone||[]).forEach(c=>_collectMids(c).forEach(id=>dead.add(id)));if(!dead.size)return;const alive=new Set();[...CONVOS,...TRASH].forEach(c=>_collectMids(c).forEach(id=>alive.add(id)));dead.forEach(id=>{if(!alive.has(id))MEDIA.del(id)});}
-  function deleteConvo(id){const c=convoById(id);if(!c)return;CONVOS=CONVOS.filter(x=>x.id!==id);c._del=now();TRASH.unshift(c);let _drop=[];if(TRASH.length>50){_drop=TRASH.slice(50);TRASH=TRASH.slice(0,50);}saveTrash();if(activeId===id){activeId=null;chat.innerHTML='';goHome()}saveConvos();renderRecents();renderLibrary($('#libSearch')?.value||'');if(_drop.length)_mediaPurge(_drop);toastUndo('Déplacée vers la corbeille',()=>restoreConvo(id))}
-  function restoreConvo(id){const i=TRASH.findIndex(c=>c.id===id);if(i<0)return;const c=TRASH.splice(i,1)[0];delete c._del;CONVOS.push(c);saveTrash();saveConvos();renderRecents();renderLibrary($('#libSearch')?.value||'');renderTrash();toast('Conversation restaurée')}
+  function deleteConvo(id){const c=convoById(id);if(!c)return;CONVOS=CONVOS.filter(x=>x.id!==id);c._del=now();TRASH.unshift(c);let _drop=[];if(TRASH.length>50){_drop=TRASH.slice(50);TRASH=TRASH.slice(0,50);}saveTrash();if(activeId===id){activeId=null;chat.innerHTML='';goHome()}saveConvos();try{cloudDelete(id)}catch(e){}renderRecents();renderLibrary($('#libSearch')?.value||'');if(_drop.length)_mediaPurge(_drop);toastUndo('Déplacée vers la corbeille',()=>restoreConvo(id))}
+  function restoreConvo(id){const i=TRASH.findIndex(c=>c.id===id);if(i<0)return;const c=TRASH.splice(i,1)[0];delete c._del;c.ts=now();CONVOS.push(c);saveTrash();saveConvos();renderRecents();renderLibrary($('#libSearch')?.value||'');renderTrash();toast('Conversation restaurée')}
   function purgeConvo(id){if(!window.confirm('Supprimer définitivement cette conversation ?'))return;const _gone=TRASH.find(c=>c.id===id);TRASH=TRASH.filter(c=>c.id!==id);saveTrash();if(_gone)_mediaPurge([_gone]);renderTrash();toast('Supprimée définitivement')}
   function emptyTrash(){if(!TRASH.length)return;if(!window.confirm('Vider la corbeille ? '+TRASH.length+' conversation(s) seront supprimées définitivement.'))return;const _gone=TRASH;TRASH=[];saveTrash();_mediaPurge(_gone);renderTrash();toast('Corbeille vidée')}
   function renderTrash(){

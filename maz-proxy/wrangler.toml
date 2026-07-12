@@ -2,13 +2,22 @@ name = "maz-proxy"
 main = "worker.js"
 compatibility_date = "2026-07-01"
 
-# Origine(s) autorisée(s) à appeler le proxy (séparées par des virgules).
-# = les URL depuis lesquelles l'app MAZ tourne. Ajoute un domaine perso ici si besoin.
 [vars]
+# Origines autorisées à appeler le backend (séparées par des virgules).
 ALLOWED_ORIGINS = "https://mazen-create11.github.io"
+# true = les appels API (/or, /sf) exigent un code d'accès valide (X-Maz-Code).
+REQUIRE_CODE = "true"
 
-# ⛔ Les clés API ne se mettent PAS ici. Pose-les en secrets chiffrés :
-#   npx wrangler secret put OPENROUTER_KEY     (sk-or-v1-…)
-#   npx wrangler secret put SILICONFLOW_KEY    (sk-…)
-# Optionnel (code d'accès partagé, voir worker.js) :
-#   npx wrangler secret put MAZ_PASS
+[[d1_databases]]
+binding = "maz_db"
+database_name = "maz-db"
+database_id = "3ecab59d-d1bf-4d6f-b5f7-bf3549140924"
+
+[[kv_namespaces]]
+binding = "MEDIA"
+id = "5d1078414c004a9ba15001490871e6a6"
+
+# ⛔ Secrets (jamais ici) :
+#   npx wrangler secret put OPENROUTER_KEY
+#   npx wrangler secret put SILICONFLOW_KEY
+#   npx wrangler secret put ADMIN_KEY
