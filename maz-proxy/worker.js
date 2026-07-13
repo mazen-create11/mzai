@@ -98,6 +98,19 @@ export default {
            FROM users u LEFT JOIN usage g ON g.user_id=u.id GROUP BY u.id ORDER BY u.created_at`).all();
         return J(rows.results, 200, cors);
       }
+      if (path === '/admin/setcode' && req.method === 'POST') {   // code personnalisé choisi par l'admin — exigences minimales anti-devinette
+        const b = await req.json().catch(() => ({}));
+        const id = String(b.id || ''), code = String(b.code || '').trim();
+        if (!id) return J({ error: 'id_required' }, 400, cors);
+        if (code.length < 12 || code.length > 64) return J({ error: 'code_length', hint: '12 à 64 caractères' }, 400, cors);
+        if (!/[a-zA-Z]/.test(code) || !/[0-9]/.test(code)) return J({ error: 'code_weak', hint: 'lettres ET chiffres requis' }, 400, cors);
+        if (/^(maz-?)?(1234|azerty|password|motdepasse|admin|test)/i.test(code)) return J({ error: 'code_weak', hint: 'trop courant' }, 400, cors);
+        const h = await sha256hex(code.toUpperCase().replace(/^MAZ-/, 'maz-'));   // même normalisation que la vérification
+        const dup = await env.maz_db.prepare('SELECT id FROM users WHERE code_hash=?1 AND id!=?2').bind(h, id).first();
+        if (dup) return J({ error: 'code_taken' }, 409, cors);
+        await env.maz_db.prepare('UPDATE users SET code_hash=?2 WHERE id=?1').bind(id, h).run();
+        return J({ ok: true }, 200, cors);
+      }
       if (path === '/admin/disable' && req.method === 'POST') {
         const b = await req.json().catch(() => ({}));
         await env.maz_db.prepare('UPDATE users SET disabled=?2 WHERE id=?1').bind(String(b.id || ''), b.enable ? 0 : 1).run();

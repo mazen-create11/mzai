@@ -1808,9 +1808,19 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           +'<span style="flex:1;font-weight:600;'+(u.disabled?'opacity:.45;text-decoration:line-through':'')+'">'+esc(u.name)+(u.is_admin?' <span style="font-size:10px;color:var(--accent-strong);border:1px solid var(--accent-ring);border-radius:5px;padding:1px 5px">ADMIN</span>':'')+'</span>'
           +'<span style="color:var(--ink-faint);font-size:11.5px">vu : '+seen+'</span>'
           +'<span style="color:var(--ink-soft);font-size:11.5px" title="requêtes · tokens · coût">'+(u.req||0)+' req · '+Math.round((u.tok||0)/1000)+'k tok · $'+(+u.cost||0).toFixed(2)+'</span>'
+          +'<button class="mini-btn" data-adm-code="'+esc(u.id)+'" data-nm="'+esc(u.name)+'">Code perso</button>'
           +(u.is_admin?'':'<button class="mini-btn" data-adm-toggle="'+esc(u.id)+'" data-en="'+(u.disabled?1:0)+'">'+(u.disabled?'Réactiver':'Révoquer')+'</button>')
           +'</div>';
       }).join('')||'<div style="padding:12px;font-size:13px;color:var(--ink-soft)">Aucun compte</div>';
+      box.querySelectorAll('[data-adm-code]').forEach(b=>b.addEventListener('click',async()=>{
+        const code=window.prompt('Nouveau code pour « '+b.dataset.nm+' » — 12 caractères minimum, lettres ET chiffres (insensible aux majuscules).\n\n⚠️ Il remplace l\'ancien immédiatement.');
+        if(code===null)return;
+        try{
+          const r=await fetch(_PB+'/admin/setcode',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.dataset.admCode,code:code.trim()})});
+          if(r.ok){toast('Code de '+b.dataset.nm+' remplacé');if(b.dataset.admCode===localStorage.getItem('mzai:cloud_uid')){localStorage.setItem('mzai:acode',code.trim())}}   // si on change SON propre code, la session suit
+          else{const d=await r.json().catch(()=>({}));toast(d.error==='code_taken'?'Ce code est déjà pris — choisis-en un autre':'Code refusé : '+(d.hint||'12+ caractères, lettres et chiffres'))}
+        }catch(e){toast('Impossible pour l\'instant — réessaie')}
+      }));
       box.querySelectorAll('[data-adm-toggle]').forEach(b=>b.addEventListener('click',async()=>{
         const en=b.dataset.en==='1';
         if(!en&&!window.confirm('Révoquer cet accès ? La personne ne pourra plus utiliser MAZ (son historique est conservé).'))return;
