@@ -93,7 +93,7 @@ export default {
       }
       if (path === '/admin/users' && req.method === 'GET') {
         const rows = await env.maz_db.prepare(
-          `SELECT u.id,u.name,u.team,u.disabled,u.created_at,u.last_seen,
+          `SELECT u.id,u.name,u.team,u.disabled,u.is_admin,u.created_at,u.last_seen,
                   COALESCE(SUM(g.requests),0) req, COALESCE(SUM(g.tokens),0) tok, COALESCE(SUM(g.cost),0) cost
            FROM users u LEFT JOIN usage g ON g.user_id=u.id GROUP BY u.id ORDER BY u.created_at`).all();
         return J(rows.results, 200, cors);
