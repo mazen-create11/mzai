@@ -47,6 +47,13 @@ async function sha256hex(s) {
   return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, '0')).join('');
 }
 const today = () => new Date().toISOString().slice(0, 10);
+// comparaison à temps constant (via hash de même longueur) : pas de fuite temporelle sur la clé admin
+async function safeEq(a, b) {
+  if (!a || !b) return false;
+  const [ha, hb] = await Promise.all([sha256hex(a), sha256hex(b)]);
+  let diff = 0; for (let i = 0; i < ha.length; i++) diff |= ha.charCodeAt(i) ^ hb.charCodeAt(i);
+  return diff === 0;
+}
 function genCode() {   // maz-XXXX-XXXX-XXXX-XXXX · base32 Crockford sans ambigus · ~80 bits
   const AB = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
   const b = crypto.getRandomValues(new Uint8Array(16));
@@ -79,7 +86,7 @@ export default {
 
     /* ══ ADMIN — X-Admin-Key (terminal) OU code d'un compte is_admin (vue admin de l'app) ══ */
     if (path.startsWith('/admin/')) {
-      const byKey = env.ADMIN_KEY && req.headers.get('X-Admin-Key') === env.ADMIN_KEY;
+      const byKey = env.ADMIN_KEY && await safeEq(req.headers.get('X-Admin-Key') || '', env.ADMIN_KEY);
       const byAdminUser = !byKey && (await userFromCode(env, req.headers.get('X-Maz-Code') || ''))?.is_admin === 1;
       if (!byKey && !byAdminUser) return J({ error: 'forbidden' }, 403, cors);
       if (path === '/admin/user' && req.method === 'POST') {
@@ -137,14 +144,19 @@ export default {
       if (!/^[a-f0-9-]{36}$/.test(id)) return J({ error: 'bad_id' }, 400, cors);
       const { value, metadata } = await env.MEDIA.getWithMetadata(id, { type: 'stream' });
       if (!value) return J({ error: 'not_found' }, 404, cors);
-      return new Response(value, { status: 200, headers: { ...cors, 'Content-Type': (metadata && metadata.ct) || 'application/octet-stream', 'Cache-Control': 'public, max-age=31536000, immutable' } });
+      const ct = (metadata && metadata.ct) || 'application/octet-stream';
+      // allowlist stricte : raster/audio/vidéo uniquement — SVG et tout type actif exclus (rendus en téléchargement, jamais inline)
+      const safe = /^(image\/(png|jpe?g|webp|gif|avif|bmp)|audio\/[\w.+-]+|video\/[\w.+-]+)$/i.test(ct);
+      const headers = { ...cors, 'Content-Type': safe ? ct : 'application/octet-stream', 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'public, max-age=31536000, immutable' };
+      if (!safe) headers['Content-Disposition'] = 'attachment';
+      return new Response(value, { status: 200, headers });
     }
     if (path === '/media/stash' && req.method === 'POST') {
       if (!user) return J({ error: 'code_required' }, 401, cors);
       const b = await req.json().catch(() => ({}));
       let hu; try { hu = new URL(String(b.url || '')); } catch { return J({ error: 'bad_url' }, 400, cors); }
       if (hu.protocol !== 'https:' || !MEDIA_HOSTS.test(hu.hostname)) return J({ error: 'host_not_allowed' }, 403, cors);
-      let up; try { up = await fetch(hu.href); } catch { return J({ error: 'fetch_failed' }, 502, cors); }
+      let up; try { up = await fetch(hu.href, { redirect: 'error' }); } catch { return J({ error: 'fetch_failed' }, 502, cors); }   // pas de suivi de redirection → l'hôte final reste dans la whitelist (anti-SSRF)
       if (!up.ok) return J({ error: 'upstream_' + up.status }, 502, cors);
       const buf = await up.arrayBuffer();
       if (!buf.byteLength || buf.byteLength > MAX_MEDIA) return J({ error: 'size' }, 413, cors);
@@ -208,7 +220,20 @@ export default {
     if (String(env.REQUIRE_CODE) === 'true' && !user) return J({ error: 'code_required' }, 401, cors);
     const key = prefix === '/or/' ? env.OPENROUTER_KEY : env.SILICONFLOW_KEY;
     if (!key) return J({ error: 'proxy_unconfigured' }, 500, cors);
-    if (user) bumpUsage(env, ctx, user.id, 'requests', 1);
+    if (user) {
+      // plafond quotidien par compte (garde-fou anti-drain si un code fuite) — désactivable via DAILY_REQ_CAP=0
+      const cap = parseInt(env.DAILY_REQ_CAP || '5000', 10);
+      if (Number.isFinite(cap) && cap > 0) {
+        // incrément ATOMIQUE + lecture de la nouvelle valeur (pas de course : une rafale concurrente ne peut plus franchir le cap)
+        const row = await env.maz_db.prepare(
+          `INSERT INTO usage (user_id,day,requests) VALUES (?1,?2,1)
+           ON CONFLICT(user_id,day) DO UPDATE SET requests=requests+1 RETURNING requests`
+        ).bind(user.id, today()).first();
+        if (row && (row.requests || 0) > cap) return J({ error: 'daily_limit', hint: 'Plafond quotidien atteint — réessaie demain.' }, 429, cors);
+      } else {
+        bumpUsage(env, ctx, user.id, 'requests', 1);
+      }
+    }
 
     const target = UPSTREAMS[prefix] + path.slice(prefix.length - 1) + url.search;
     const h = new Headers(req.headers);
@@ -219,7 +244,7 @@ export default {
     if (req.method !== 'GET' && req.method !== 'HEAD') { init.body = req.body; init.duplex = 'half'; }
     let upstream;
     try { upstream = await fetch(target, init); }
-    catch (e) { return J({ error: 'upstream_fetch_failed', detail: String(e).slice(0, 160) }, 502, cors); }
+    catch (e) { try { console.warn('[MAZ] upstream fail', String(e).slice(0, 200)); } catch (_) {} return J({ error: 'upstream_fetch_failed' }, 502, cors); }   // détail loggé côté serveur, pas renvoyé au client
     const rh = new Headers(upstream.headers);
     for (const [k, v] of Object.entries(cors)) rh.set(k, v);
     rh.delete('Content-Encoding');
