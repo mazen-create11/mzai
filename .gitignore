@@ -10,3 +10,10 @@ test*.js
 .DS_Store
 node_modules/
 maz-proxy/CODES.local.md
+
+# Fichiers de travail refonte DA « Damas » (aperçus, explorations logo)
+_apercu-damas.html
+_da-*.html
+_da-*.png
+_canva-render.png
+logo-explorations/
