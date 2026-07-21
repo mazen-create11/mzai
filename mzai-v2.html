@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
 <title>MAZ — Intelligence</title>
-<!-- theme-color adaptatif (chrome navigateur) aligné sur la DA « Encre & Crème » -->
+<!-- theme-color adaptatif aligné sur la DA Damas -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' data: blob: https://openrouter.ai https://api.siliconflow.com https://api.klingai.com https://*.workers.dev https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src 'self' blob: data:; manifest-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
 <meta name="theme-color" content="#FAF8F3" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#08080A" media="(prefers-color-scheme: dark)">
@@ -1164,6 +1164,115 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   .opt,.opt-select{min-height:44px}
   .pop.optmenu .opt-item{min-height:44px}
 }
+
+.shell{background:var(--bg)}
+.shell::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(700px 420px at 58% 36%,rgba(22,184,122,.075),transparent 64%),radial-gradient(520px 360px at 96% 100%,rgba(22,184,122,.035),transparent 68%);opacity:.9}
+.shell>*{position:relative;z-index:1}
+.topbar{background:color-mix(in srgb,var(--bg) 92%,transparent);border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent);backdrop-filter:blur(18px)}
+.sidebar{background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface) 88%,var(--bg)));box-shadow:12px 0 42px rgba(0,0,0,.12)}
+.sb-head{padding-top:max(18px,env(safe-area-inset-top));padding-bottom:16px}
+.sb-head .brand-logo{box-shadow:0 0 0 1px rgba(255,255,255,.12),0 8px 18px rgba(0,0,0,.32)}
+.new-chat{min-height:46px;box-shadow:0 10px 24px rgba(22,184,122,.12),inset 0 1px rgba(255,255,255,.16)}
+.new-chat kbd{margin-left:auto;font-family:var(--font-mono);font-size:10px;font-weight:500;letter-spacing:0;color:currentColor;opacity:.62;border:1px solid currentColor;border-radius:5px;padding:3px 5px}
+.nav{margin-top:12px}
+.nav-item{min-height:42px}
+.nav-item.active,.nav-item.is-active{box-shadow:none}
+.home-wrap{position:relative;align-items:center;padding:clamp(28px,7vh,76px) 24px 34px;background:radial-gradient(620px 330px at 50% 40%,rgba(22,184,122,.075),transparent 68%)}
+.home-center{gap:11px;max-width:800px}
+.home-kicker{display:flex;align-items:center;gap:9px;margin-bottom:2px;font-size:10.5px;letter-spacing:.14em;font-weight:var(--fw-semi);color:var(--ink-soft)}
+.home-kicker-mark{width:8px;height:8px;border-radius:3px;display:grid;place-items:center;transform:rotate(45deg);background:var(--accent);box-shadow:0 0 0 4px var(--accent-tint)}
+.home-kicker-mark span{width:3px;height:3px;border-radius:50%;background:var(--ink-on-accent)}
+.home-kicker i{width:22px;height:1px;background:var(--line-strong);margin:0 2px;font-style:normal}
+.home-kicker-status{display:inline-flex;align-items:center;gap:5px;letter-spacing:.02em;text-transform:none;font-weight:var(--fw-med);color:var(--accent-strong)}
+.home-status-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-tint)}
+.home-greet{font-size:clamp(30px,4.4vw,3.25rem);text-wrap:balance}
+.home-sub{max-width:420px;margin-bottom:3px;font-size:var(--fs-md);color:var(--ink-soft)}
+.home-meta{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 0 7px;color:var(--ink-faint);font-size:11.5px}
+.home-meta span{display:inline-flex;align-items:center;gap:5px}
+.home-meta svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;color:var(--accent-strong)}
+.home-meta-sep{width:3px;height:3px;border-radius:50%;background:var(--line-strong)}
+.home-dock{width:min(100%,800px)}
+.input-shell{border-color:color-mix(in srgb,var(--line-strong) 90%,var(--accent));background:linear-gradient(145deg,var(--surface),color-mix(in srgb,var(--surface) 86%,var(--surface-2)));box-shadow:0 22px 52px rgba(0,0,0,.23),inset 0 1px rgba(255,255,255,.08)}
+.input-shell:focus-within{box-shadow:0 0 0 4px var(--accent-ring),0 22px 52px rgba(0,0,0,.30),inset 0 1px rgba(255,255,255,.1)}
+.input-row{min-height:64px}
+.send{box-shadow:0 8px 18px rgba(22,184,122,.2),inset 0 1px rgba(255,255,255,.16)}
+.hint{align-items:center}
+.hint-shortcut{font-size:11px;color:var(--ink-faint);white-space:nowrap}
+.hint-shortcut kbd{font-size:10px;color:var(--ink-soft);border:1px solid var(--line-strong);border-radius:4px;padding:2px 4px;background:var(--surface-2)}
+.home-suggest{gap:9px;margin-top:10px}
+.home-suggest .sug{padding:9px 14px;background:color-mix(in srgb,var(--surface) 78%,transparent);box-shadow:0 5px 14px rgba(0,0,0,.08)}
+.home-quick{width:min(100%,800px);margin-top:19px;text-align:left}
+.home-quick-head{display:flex;align-items:center;gap:10px;padding:0 2px 9px;color:var(--ink-soft);font-size:10px;letter-spacing:.12em;font-weight:var(--fw-semi)}
+.home-quick-head span:last-child{font-size:11px;letter-spacing:0;text-transform:none;font-weight:400;color:var(--ink-faint)}
+.home-quick-head span:last-child::before{content:"·";margin-right:10px;color:var(--line-strong)}
+.home-quick-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.quick-card{min-width:0;min-height:76px;display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:var(--r-md);background:color-mix(in srgb,var(--surface) 76%,transparent);color:var(--ink);font:inherit;text-align:left;cursor:pointer;transition:transform var(--dur-2) var(--ease-out),border-color var(--dur-2) var(--ease),background var(--dur-2) var(--ease),box-shadow var(--dur-2) var(--ease)}
+.quick-card:hover{transform:translateY(-2px);border-color:var(--accent);background:var(--surface);box-shadow:0 12px 26px rgba(0,0,0,.18)}
+.quick-card:active{transform:translateY(0)}
+.quick-card-ic{width:34px;height:34px;display:grid;place-items:center;flex-shrink:0;border-radius:10px;color:var(--accent-strong);background:var(--accent-tint);border:1px solid var(--accent-tint-2)}
+.quick-card-ic svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.quick-card>span:nth-child(2){display:flex;flex-direction:column;gap:2px;min-width:0}
+.quick-card b{font-size:12.5px;font-weight:var(--fw-semi);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.quick-card small{font-size:10.5px;line-height:1.35;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.quick-card-go{width:15px;height:15px;flex-shrink:0;margin-left:auto;fill:none;stroke:var(--ink-faint);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform var(--dur-2) var(--ease),color var(--dur-2) var(--ease)}
+.quick-card:hover .quick-card-go{transform:translateX(2px);stroke:var(--accent-strong)}
+@media(max-width:760px){
+  .home-wrap{padding:24px 14px max(28px,env(safe-area-inset-bottom));align-items:start}
+  .home-center{padding-top:clamp(34px,9vh,74px)}
+  .home-meta{font-size:11px;gap:7px}
+  .home-meta span:last-child{display:none}
+  .home-meta-sep{display:none!important}
+  .home-quick{margin-top:17px}
+  .home-quick-grid{grid-template-columns:1fr;gap:8px}
+  .quick-card{min-height:64px;padding:10px 12px}
+  .quick-card small{font-size:11px}
+}
+@media(max-width:560px){
+  .home-center{padding-top:clamp(24px,5vh,48px)}
+  .composer{padding-left:0;padding-right:0}
+  .input-row{gap:4px;padding-left:6px;padding-right:6px}
+  .input-shell{border-radius:22px}
+  .hint-shortcut{display:none}
+  .home-kicker{font-size:9.5px}
+  .home-greet{font-size:clamp(28px,9vw,34px)}
+  .home-sub{font-size:15px}
+  .home-suggest{margin-top:8px}
+  .home-quick-head{font-size:9px}
+}
+
+.shell::before{background:radial-gradient(700px 420px at 58% 36%,color-mix(in srgb,var(--accent) 5%,transparent),transparent 64%),radial-gradient(520px 360px at 96% 100%,color-mix(in srgb,var(--accent) 2.5%,transparent),transparent 68%)}
+.home-wrap{background:radial-gradient(620px 330px at 50% 40%,color-mix(in srgb,var(--accent) 4%,transparent),transparent 68%)}
+.input-shell{border-color:var(--line-strong);box-shadow:0 20px 48px rgba(0,0,0,.16),inset 0 1px rgba(255,255,255,.07)}
+.input-shell:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-ring),0 20px 48px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.09)}
+.home-dock .composer{padding-inline:0;background:transparent}
+.home-dock .composer .hint{padding-inline:0}
+.tools-btn,.la,.pcard-acts .pa{border-radius:50%}
+.library-empty{min-height:360px;padding:40px 20px}
+.library-empty .es-ic{background:var(--accent-tint);border-color:var(--accent-tint-2);box-shadow:0 12px 28px color-mix(in srgb,var(--accent) 10%,transparent)}
+.library-empty .es-d{margin-bottom:17px}
+.library-empty-cta{padding:9px 14px}
+.modal{border-color:color-mix(in srgb,var(--line) 72%,transparent);box-shadow:0 26px 80px rgba(0,0,0,.16)}
+.m-head,.m-foot{border-color:color-mix(in srgb,var(--line) 78%,transparent)}
+.m-ic.maz-mark{background-color:var(--surface-2);background-image:var(--logo-mark);background-position:center;background-repeat:no-repeat;background-size:25px 25px;border-color:var(--line-strong);border-radius:50%;box-shadow:inset 0 1px rgba(255,255,255,.12),0 5px 14px rgba(0,0,0,.08)}
+.m-ic.maz-mark svg{display:none}
+.m-x{width:40px;height:40px;border-radius:50%;background:transparent}
+.topbar .icon-btn,.topbar .menu-btn{border-radius:50%}
+.topbar .icon-btn:focus-visible,.topbar .menu-btn:focus-visible{outline:1px solid var(--line-strong);outline-offset:2px;background:var(--surface-2)}
+.model-field{border-radius:var(--r-pill)}
+.privacy-card{border-color:var(--line);background:color-mix(in srgb,var(--surface-2) 72%,var(--surface));box-shadow:inset 0 1px rgba(255,255,255,.1)}
+#segTheme,#segDensity{display:inline-flex;flex-wrap:nowrap;gap:2px;padding:3px;border:1px solid var(--line);border-radius:var(--r-pill);background:var(--surface-2)}
+#segTheme .sg,#segDensity .sg{min-height:0;padding:8px 12px;border:0;border-radius:var(--r-pill);background:transparent}
+#segTheme .sg.on,#segDensity .sg.on{color:var(--accent-strong);background:var(--surface);box-shadow:var(--shadow-xs)}
+#setUpgrade{border-radius:var(--r-pill)}
+@media(max-width:640px){
+  .m-x{width:44px;height:44px;min-width:44px;min-height:44px}
+  .toggle{width:54px;height:44px;min-height:44px;background:transparent;border:0}
+  .toggle::before{content:"";position:absolute;inset:9px 0;border-radius:14px;background:var(--surface-3);border:1px solid var(--line-strong);transition:.22s var(--ease)}
+  .toggle::after{top:11px;left:2px}
+  .toggle.on{background:transparent;border:0}
+  .toggle.on::before{background:var(--accent);border-color:transparent}
+  .toggle.on::after{left:32px}
+}
 </style>
 </head>
 <body>
@@ -1193,6 +1302,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       <button class="new-chat" id="newChat">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
         <span class="lbl">Nouvelle conversation</span>
+        <kbd>⌘N</kbd>
       </button>
 
       <nav class="nav" aria-label="Espaces">
@@ -1249,8 +1359,10 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       <section class="view active" id="view-home" aria-label="Accueil">
         <div class="home-wrap">
           <div class="home-center">
+            <div class="home-kicker" aria-label="Statut de MAZ"><span class="home-kicker-mark" aria-hidden="true"><span></span></span><span>ATELIER PRIVÉ</span><i></i><span class="home-kicker-status"><span class="home-status-dot"></span> <span id="homeStatus">MAZ Auto prêt</span></span></div>
             <h2 class="home-greet" id="greet">Bonjour, <b>Mazen</b></h2>
-            <p class="home-sub">Que veux-tu faire&nbsp;?</p>
+            <p class="home-sub">Une idée nette commence par une bonne question.</p>
+            <div class="home-meta" aria-label="Capacités de MAZ"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"/></svg>Routage intelligent</span><span class="home-meta-sep" aria-hidden="true"></span><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h11M4 19h7"/></svg>Réponses ajustées à ton intention</span></div>
             <!-- #dockHome reçoit le composer unique à l'accueil -->
             <div class="home-dock" id="dockHome">
 
@@ -1263,7 +1375,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
                   <div class="opt-row" id="modeChip"></div>
                   <div class="input-row">
                     <button class="clip" id="attachBtn" aria-label="Joindre un fichier" title="Joindre un fichier"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 11.5 12.5 20a5 5 0 0 1-7-7l8.5-8.5a3.5 3.5 0 0 1 5 5L10.5 18a2 2 0 0 1-3-3l7.5-7.5"/></svg></button>
-                    <textarea id="prompt" rows="1" placeholder="Pose ta question à MAZ…" aria-label="Message à MAZ"></textarea>
+                    <textarea id="prompt" rows="1" placeholder="Écris à MAZ…" aria-label="Message à MAZ"></textarea>
                     <button class="clip" id="dictateBtn" aria-label="Dicter" title="Dicter (tape pour parler, retape pour arrêter)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
                     <button class="send rip" id="sendBtn" aria-label="Envoyer" title="Envoyer"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
                   </div>
@@ -1277,7 +1389,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
                     <button class="tool ghost" id="magicWand" aria-label="Améliorer le prompt" title="Améliorer mon prompt (le reformule en mieux)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5 14 10"/><path d="M16 3.2l1 2.6 2.6 1-2.6 1-1 2.6-1-2.6-2.6-1 2.6-1z"/><path d="M6 6.5l.5 1.3 1.3.5-1.3.5L6 10.6l-.5-1.3L4.2 8.8l1.3-.5z"/></svg></button>
                   </div>
                 </div>
-                <div class="hint"><span>MAZ peut se tromper. <b>Vérifie les informations importantes.</b></span><span class="tok-count" id="tokCount" data-tip="Tokens utilisés cette session">0 tokens</span></div>
+                <div class="hint"><span>MAZ peut se tromper. <b>Vérifie les informations importantes.</b></span><span class="hint-shortcut"><kbd>↵</kbd> envoyer&nbsp; · &nbsp;<kbd>⇧↵</kbd> nouvelle ligne</span><span class="tok-count" id="tokCount" data-tip="Tokens utilisés cette session">0 tokens</span></div>
               </div><!-- /#composer -->
 
             </div><!-- /#dockHome -->
@@ -1290,6 +1402,14 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
               <button class="sug" data-mode="voice"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/></svg>Voix</button>
               <button class="sug" data-toggle="search"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>Recherche web</button>
               <button class="sug" data-toggle="reason"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>Réflexion</button>
+            </div>
+            <div class="home-quick" aria-label="Démarrages rapides">
+              <div class="home-quick-head"><span>DÉMARRAGES RAPIDES</span><span>des canevas prêts à lancer</span></div>
+              <div class="home-quick-grid">
+                <button class="quick-card" data-prompt="Aide-moi à clarifier cette idée : [décris ton idée]. Donne-moi l'objectif, la cible et les 3 prochaines actions."><span class="quick-card-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15Z"/><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H20M8 7h8M8 11h6"/></svg></span><span><b>Clarifier une idée</b><small>Objectif, cible, prochaines actions</small></span><svg class="quick-card-go" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+                <button class="quick-card" data-prompt="Analyse ce brief avec un regard critique : [colle le brief]. Relève les risques, les angles morts et propose une recommandation priorisée."><span class="quick-card-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5M8.5 11h5M11 8.5v5"/></svg></span><span><b>Auditer un brief</b><small>Risques, angles morts, recommandation</small></span><svg class="quick-card-go" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+                <button class="quick-card" data-prompt="Transforme ce brouillon en plan d'exécution : [colle ton brouillon]. Découpe en étapes, livrables et critères de réussite."><span class="quick-card-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v16H6z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span><span><b>Passer à l'exécution</b><small>Étapes, livrables, critères de réussite</small></span><svg class="quick-card-go" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+              </div>
             </div>
           </div>
         </div>
@@ -1400,7 +1520,6 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 <div class="pop" id="popMore">
   <div class="pop-h">Plus</div>
   <div class="pi" id="popPersona"><span class="pic2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a5 5 0 0 1 5 5c0 1.6-.7 2.6-1.5 3.5C16.3 11.4 18 12.5 18 15a6 6 0 0 1-12 0c0-2.5 1.7-3.6 2.5-4.5C7.7 9.6 7 8.6 7 7a5 5 0 0 1 5-5z"/></svg></span><div class="pt"><div class="pn">Mon IA</div><div class="pd">Personnalité &amp; instructions</div></div></div>
-  <div class="pi" id="popKeys"><span class="pic2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 2l-2 2m-7.5 7.5a4.5 4.5 0 1 1-6.36 6.36 4.5 4.5 0 0 1 6.36-6.36zm0 0L16 7l3 3"/></svg></span><div class="pt"><div class="pn">Clés API</div><div class="pd">Connecter les modèles</div></div></div>
 </div>
 <div class="pop" id="popProfile"></div>
 
@@ -1428,13 +1547,13 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 
 <!-- SETTINGS -->
 <div class="ov" id="settings"><div class="modal" role="dialog" aria-modal="true" aria-label="Réglages">
-  <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82M4.6 9a1.65 1.65 0 0 0-.33-1.82"/></svg></div><div class="m-tt"><div class="m-t">Réglages</div><div class="m-s" id="setSubtitle">Modèle, clés API et préférences</div></div><div class="m-x" id="setClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
+  <div class="m-head"><div class="m-ic maz-mark" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><rect x="5" y="5" width="14" height="14" rx="2" transform="rotate(45 12 12)"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/></svg></div><div class="m-tt"><div class="m-t">Réglages</div><div class="m-s" id="setSubtitle">Modèle et préférences</div></div><div class="m-x" id="setClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
   <div class="m-body set-body">
     <div class="field"><label>Modèle par défaut</label><button type="button" class="inp model-field" id="setModelBtn" data-popanchor><span class="mf-dot" id="setModelDot"></span><span id="setModelLbl">MAZ Auto</span><svg class="mf-chev" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button></div>
     <div class="field" id="set-api"><label>Clés API</label><div id="apiList"></div></div>
     <div class="field" id="set-privacy"><label>Confidentialité</label>
       <div class="privacy-card">
-        <p id="privacyNote"><b>100% sur ton appareil.</b> Conversations, projets, persona et clés sont stockés en local (localStorage de ce navigateur). MAZ n'a aucun serveur : rien n'est envoyé à MAZ.</p>
+        <p id="privacyNote"><b>Ton espace privé.</b> MAZ gère les connexions aux modèles pour toi. Tu n’as rien à configurer.</p>
         <div id="privacyProviders">
           <p>Quand tu envoies un message, l'appel part <b>directement</b> de ton navigateur vers le fournisseur du modèle choisi : <b>OpenRouter</b> (texte), <b>SiliconFlow</b> (image · voix · transcription), <b>Kling</b> (vidéo). Leurs serveurs traitent ta requête selon leurs propres conditions.</p>
           <p>Tes clés restent locales et ne quittent ton appareil que vers ces fournisseurs. Tu peux tout exporter (JSON) ou tout effacer ci-dessous.</p>
@@ -1741,6 +1860,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   // Proxy actif dès qu'il n'y a PAS de fichier keys.local.js (= app hébergée), MÊME si l'utilisateur a saisi des clés dans Réglages : le proxy prime, ses clés sont ignorées. Le Worker fournit les vraies. En local (keys.local.js présent) → appels directs.
   const _keyFile=!!(window.MZAI_KEYS && ((window.MZAI_KEYS.openrouter||'').trim()||(window.MZAI_KEYS.siliconflow||'').trim()));
   const VIA_PROXY=!!PROXY_URL && !_keyFile;
+  const SHOW_API_SETTINGS=!!window.MZAI_DEV_SETTINGS;
   if(VIA_PROXY){KEYS.openrouter='via-proxy';KEYS.siliconflow='via-proxy';}  // placeholders ASCII : le Worker remplace l'Authorization par la vraie clé
   const _PB=(PROXY_URL||'').replace(/\/$/,'');
   const OR_HOST=VIA_PROXY?_PB+'/or':'https://openrouter.ai';
@@ -1973,6 +2093,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const raw=filter.trim(),tagF=raw.startsWith('#')?raw.slice(1).toLowerCase():null,q=raw.toLowerCase();
     const f=sortedConvos().filter(c=>tagF?(c.tags||[]).some(t=>t.toLowerCase()===tagF):((c.title||'').toLowerCase().includes(q)||c.msgs.some(m=>(m.text||'').toLowerCase().includes(q))||(c.tags||[]).some(t=>t.toLowerCase().includes(q))));
     $('#libList').innerHTML=f.length?f.map(c=>{const tags=(c.tags||[]).map(t=>`<span class="ltag" data-tag="${esc(t)}">${esc(t)}</span>`).join('');return `<div class="lrow" data-id="${c.id}"><div class="lic">${c.pinned?'<span class="lic-pin"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">'+GLYPH.pin+'</svg></span>':''}<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${LIC.chat}</svg></div><div style="min-width:0;flex:1"><div class="ln">${esc(c.title)}</div>${tags?`<div class="ltags">${tags}</div>`:''}</div><div class="lacts"><span class="la" data-la="pin" data-tip="${c.pinned?'Désépingler':'Épingler'}"><svg width="14" height="14" viewBox="0 0 24 24" fill="${c.pinned?'currentColor':'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.pin}</svg></span><span class="la" data-la="tag" data-tip="Tags"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.tag}</svg></span><span class="la" data-la="export" data-tip="Exporter"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.export}</svg></span><span class="la" data-la="del" data-tip="Corbeille"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.trash}</svg></span></div><div class="lright">${ago(c.ts)}</div></div>`}).join(''):`<div class="cp-empty">${raw?'Aucun résultat pour « '+esc(raw)+' »':'Aucune conversation pour le moment.'}</div>`;
+    if(!f.length&&!raw){const empty=$('#libList .cp-empty');if(empty){empty.className='empty-state library-empty';empty.innerHTML='<div class="es-ic"><svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 1 1-4.4-7.5"/><path d="M21 4v5h-5"/><path d="M7.5 11.5h.01M12 11.5h.01M16.5 11.5h.01"/></svg></div><div class="es-t">Ta prochaine bonne idée est ici.</div><div class="es-d">Lance une conversation et garde chaque échange important à portée de main.</div><button type="button" class="vbtn library-empty-cta">Nouvelle conversation</button>';empty.querySelector('.library-empty-cta').addEventListener('click',newChat)}}
     $$('#libList .lrow').forEach(r=>{const id=r.dataset.id;
       r.addEventListener('click',e=>{if(e.target.closest('.la')||e.target.closest('.ltag'))return;openConvo(id)});
       r.querySelector('[data-la=pin]').addEventListener('click',e=>{e.stopPropagation();togglePin(id)});
@@ -2152,14 +2273,14 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     cats.forEach(([key,label,test])=>{const ms=MODELS.filter(test);if(!ms.length)return;
       if(label)html+=`<div class="prov-h">${label}</div>`;
       ms.forEach(m=>{const pr=PROVIDERS[m.provider];const ok=hasKey(m.provider);html+=`<div class="pi${ok?'':' nokey'}" data-model="${m.id}" style="--ac:${pr.ac}"><div class="pi-i acc">${brandLogo(m)}</div><div class="pi-main"><div class="pi-t">${m.id}${m.tag?` <span class="tagm" style="background:var(--surface-2);color:var(--ink-soft);border:1px solid var(--line)">${m.tag}</span>`:''}${ok?'':'<span class="keyhint">clé requise</span>'}</div><div class="pi-d">${m.d}</div><div class="pi-cap">${spdDots(m.spd)}${m.ctx&&m.ctx!=='-'?`<span class="ctxchip">${m.ctx} ctx</span>`:''}</div></div>${CHK}</div>`})});
-    html+=`<div class="pfoot">${VIA_PROXY?'':`<button class="pf-btn" id="popKeys"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.6 7.6a5 5 0 1 0-2 2L13 13l2 2 2-2 2 2 2-2-2-2 2.6-2.6"/></svg>Connexions API</button>`}<button class="pf-btn" id="popPersona"${VIA_PROXY?'':' style="margin-top:6px"'}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.sliders}</svg>Personnaliser mon IA</button></div>`;
+    html+=`<div class="pfoot"><button class="pf-btn" id="popPersona"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.sliders}</svg>Personnaliser mon IA</button></div>`;
     $('#popModel').innerHTML=html;
     $$('#popModel .pi').forEach(p=>p.addEventListener('click',()=>{const id=p.dataset.model,m=modelById(id);const _cat=m&&m.kind?(m.kind==='audio'?'voice':m.kind):'text';if(typeof setMode==='function'&&_cat!==MODE_CAT[currentMode])setMode(_cat);currentModel=id;syncModel();closePop();if(!hasKey(m.provider)){if(VIA_PROXY){toast('Modèle indisponible pour l\'instant')}else{toast('Ajoute ta clé '+PROVIDERS[m.provider].name);openSettingsAt('api')}}else toast('Modèle : '+id)}));
     const _pk=$('#popKeys');if(_pk)_pk.addEventListener('click',()=>{closePop();openSettingsAt('api')});
     $('#popPersona').addEventListener('click',()=>{closePop();openPersona()});
   }
   renderModelPicker();
-  function syncModel(){const m=modelById(currentModel);$$('#popModel .pi').forEach(p=>p.classList.toggle('sel',p.dataset.model===currentModel));$('.model-pill .lbl').textContent=currentModel;$('#toolModelLbl').textContent=currentModel;const live=$('.model-pill .live');if(live){live.style.background='var(--accent)';live.style.boxShadow=''}const sm=$('#setModelLbl');if(sm)sm.textContent=currentModel;const sd=$('#setModelDot');if(sd){sd.style.background='var(--accent)';sd.style.boxShadow=''}DB.set('model',currentModel)}
+  function syncModel(){const m=modelById(currentModel);$$('#popModel .pi').forEach(p=>p.classList.toggle('sel',p.dataset.model===currentModel));$('.model-pill .lbl').textContent=currentModel;$('#toolModelLbl').textContent=currentModel;const hs=$('#homeStatus');if(hs)hs.textContent=currentModel==='MAZ Auto'?'MAZ Auto prêt':currentModel+' prêt';const live=$('.model-pill .live');if(live){live.style.background='var(--accent)';live.style.boxShadow=''}const sm=$('#setModelLbl');if(sm)sm.textContent=currentModel;const sd=$('#setModelDot');if(sd){sd.style.background='var(--accent)';sd.style.boxShadow=''}DB.set('model',currentModel)}
   syncModel();
   const openModel=a=>showPop($('#popModel'),a,'right',$('#modelPill'));
   $('#modelPill').setAttribute('data-popanchor','');$('#modelPill').addEventListener('click',()=>openPop===$('#popModel')?closePop():openModel($('#modelPill')));
@@ -2252,7 +2373,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const hl=HELP_LINKS.filter(l=>!(VIA_PROXY&&l[0]==='Statut des services')).map(l=>{
       if(VIA_PROXY&&l[0]==='Confidentialité')return[l[0],'Tes conversations te suivent sur tous tes appareils, chiffrées en transit. Personne d’autre n’y a accès.',l[2]];
       return l;});
-    const faq=FAQ.filter(([q,a])=>!/cl[ée]s?\s*api/i.test(q)&&!(VIA_PROXY&&(/cl[ée]|openrouter|siliconflow|kling/i.test(q)||/openrouter|siliconflow|kling|ta propre clé/i.test(a)))).map(([q,a])=>{
+    const faq=FAQ.filter(([q,a])=>!/cl[ée]s?\s*api/i.test(q)&&!((VIA_PROXY||!SHOW_API_SETTINGS)&&(/cl[ée]|openrouter|siliconflow|kling/i.test(q)||/openrouter|siliconflow|kling|ta propre clé/i.test(a)))).map(([q,a])=>{
       if(VIA_PROXY&&/priv[ée]e?s?\b/i.test(q))return[q,'Oui. Tes conversations, projets et persona sont synchronisés de façon chiffrée sur ton espace privé et te suivent sur tous tes appareils. Personne d’autre n’y a accès.'];
       return[q,a];});
     $('#helpLinks').innerHTML=hl.map((l,i)=>`<div class="help-link" data-h="${i}"><div class="hl-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH[l[2]]||GLYPH.spark}</svg></div><div style="min-width:0"><div class="hl-t">${l[0]}</div><div class="hl-d">${l[1]}</div></div></div>`).join('');
@@ -2275,8 +2396,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   }
   /* Aide : lance l'assistant « Aide MAZ » dans une nouvelle conversation */
   function launchAide(){const a=ASSISTANTS.find(x=>x.id==='aide');if(!a){openHelp();return}const c=createConvo();c.title=a.name;c.assistant=a.id;saveConvos();openConvo(c.id);if(window.innerWidth<=1024){$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show')}}
-  /* Efface toutes les données locales (conversations, réglages, clés API) puis recharge */
-  function clearLocalData(){if(!window.confirm('Effacer toutes les données locales (conversations, réglages, clés API) ? Cette action est irréversible.'))return;try{Object.keys(localStorage).filter(k=>k.indexOf('mzai:')===0).forEach(k=>localStorage.removeItem(k))}catch(e){}try{MEDIA.clear&&MEDIA.clear()}catch(e){}try{indexedDB.deleteDatabase('maz-media')}catch(e){}setTimeout(()=>location.reload(),60)}
+  /* Efface toutes les données locales puis recharge */
+  function clearLocalData(){const scope=SHOW_API_SETTINGS?'conversations, réglages, mémoire et clés API':'conversations, réglages et mémoire';if(!window.confirm('Effacer toutes les données locales ('+scope+') ? Cette action est irréversible.'))return;try{Object.keys(localStorage).filter(k=>k.indexOf('mzai:')===0).forEach(k=>localStorage.removeItem(k))}catch(e){}try{MEDIA.clear&&MEDIA.clear()}catch(e){}try{indexedDB.deleteDatabase('maz-media')}catch(e){}setTimeout(()=>location.reload(),60)}
 
   /* comparateur de modèles retiré (V2) — voir renderModelPicker pour le choix du modèle */
 
@@ -2304,10 +2425,10 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 
   /* more popover */
   $('#popMore').innerHTML='<div class="ph">Plus</div>'+
-    [['Modèles & API','chip'],['Bibliothèque de prompts','wand'],['Raccourcis clavier','keyboard'],['Importer une conversation','import'],['Exporter mes données','export'],['Corbeille','trash'],['Nouveautés','spark'],['Conditions & confidentialité','shield']]
+    [['Modèles','chip'],['Bibliothèque de prompts','wand'],['Raccourcis clavier','keyboard'],['Importer une conversation','import'],['Exporter mes données','export'],['Corbeille','trash'],['Nouveautés','spark'],['Conditions & confidentialité','shield']]
     .map(([t,g])=>`<div class="pi" data-more="${t}"><div class="pi-i"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH[g]}</svg></div><div class="pi-main"><div class="pi-t">${t}</div></div></div>`).join('');
   $$('#popMore .pi').forEach(p=>p.addEventListener('click',e=>{e.stopPropagation();closePop();if(window.innerWidth<=1024){$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show')}const a=p.dataset.more;
-    if(a==='Modèles & API')setTimeout(()=>openModel($('#modelPill')),0);
+    if(a==='Modèles')setTimeout(()=>openModel($('#modelPill')),0);
     else if(a==='Bibliothèque de prompts')openPrompts();
     else if(a==='Raccourcis clavier')$('#shortcuts').classList.add('show');
     else if(a==='Importer une conversation'){importMode=true;$('#fileInput').multiple=false;$('#fileInput').click()}
@@ -2364,7 +2485,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function renderApiList(){
     // Mode hébergé (accès par code) : les clés vivent côté serveur (Worker). Un collègue/client
     // n'a rien à configurer ni à connaître des fournisseurs → on masque toute la section.
-    if(VIA_PROXY){const sa=$('#set-api');if(sa)sa.style.display='none';const pp=$('#privacyProviders');if(pp)pp.style.display='none';const st=$('#setSubtitle');if(st)st.textContent='Modèle et préférences';return;}
+    if(!SHOW_API_SETTINGS){const sa=$('#set-api');if(sa)sa.style.display='none';const pp=$('#privacyProviders');if(pp)pp.style.display='none';const st=$('#setSubtitle');if(st)st.textContent='Modèle et préférences';return;}
     const order=['openrouter','siliconflow'];
     let rows=order.map(pk=>{const pr=PROVIDERS[pk],ok=hasKey(pk);return `<div class="api-row" data-key="${pk}"><span class="api-logo" style="color:${pr.ac}">${pr.logo}</span><div class="api-meta"><div class="api-name">${pr.name}</div><div class="api-sub">${pr.site}</div></div><input class="api-in" name="api-${pk}" type="password" autocomplete="off" spellcheck="false" placeholder="Coller la clé API…" aria-label="Clé API ${pr.name}" value="${esc(KEYS[pk]||'')}"><span class="api-st${ok?' on':''}" data-tip="${ok?'Connecté':'Non connecté'}"></span></div>`}).join('');
     const klingOk=hasKey('kling');
@@ -2377,7 +2498,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   }
   renderApiList();
   $('#setExport').addEventListener('click',()=>{buildExport().then(data=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='mzai-export.json';a.click();URL.revokeObjectURL(u);toast('Données exportées')}).catch(()=>toast('Export impossible — réessaie'))});
-  $('#setClear').addEventListener('click',()=>{if(!window.confirm('Effacer TOUTES les conversations, la corbeille et la mémoire de l\'IA ? (Tes clés API et réglages sont conservés.) Action irréversible.'))return;CONVOS=[];activeId=null;TRASH=[];saveTrash();setMemory('');MEDIA.clear&&MEDIA.clear();SESSION_TOKENS=0;SESSION_COST=0;try{localStorage.removeItem('mzai:stok');localStorage.removeItem('mzai:scost')}catch(e){}_renderTok(false);saveConvos();renderRecents();renderLibrary('');typeof renderTrash==='function'&&renderTrash();chat.innerHTML='';goHome();toast('Conversations, corbeille et mémoire effacées')});
+  $('#setClear').addEventListener('click',()=>{const keep=SHOW_API_SETTINGS?'Tes clés API et réglages sont conservés.':'Tes préférences d’affichage sont conservées.';if(!window.confirm('Effacer TOUTES les conversations, la corbeille et la mémoire de l\'IA ? ('+keep+') Action irréversible.'))return;CONVOS=[];activeId=null;TRASH=[];saveTrash();setMemory('');MEDIA.clear&&MEDIA.clear();SESSION_TOKENS=0;SESSION_COST=0;try{localStorage.removeItem('mzai:stok');localStorage.removeItem('mzai:scost')}catch(e){}_renderTok(false);saveConvos();renderRecents();renderLibrary('');typeof renderTrash==='function'&&renderTrash();chat.innerHTML='';goHome();toast('Conversations, corbeille et mémoire effacées')});
 
   /* ===== persona studio ("Mon IA") ===== */
   const PRESETS=[
@@ -3236,6 +3357,11 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     if(s.dataset.toggle){const k=s.dataset.toggle;if(MODE_CAT[currentMode]!=='text'){toast('Disponible avec l\'Assistant');return}opts[k]=!opts[k];renderModeChip();syncToolUI();toast((k==='search'?'Recherche web':'Réflexion')+(opts[k]?' activée':' désactivée'));prompt.focus();return}
     prompt.value=s.dataset.prompt||s.textContent;autoGrow();updateCount();prompt.focus();prompt.setSelectionRange(prompt.value.length,prompt.value.length);
   }));
+  $$('.quick-card[data-prompt]').forEach(card=>card.addEventListener('click',()=>{
+    if(currentMode!=='text')setMode('text');
+    prompt.value=card.dataset.prompt||'';autoGrow();updateCount();prompt.focus();prompt.setSelectionRange(prompt.value.length,prompt.value.length);
+    toast('Canevas prêt — complète les éléments entre crochets');
+  }));
 
   /* ===== SÉLECTEUR D'OUTILS (10 outils) — pilote currentMode + opts + model-pill ===== */
   let currentMode='text';
@@ -3608,6 +3734,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     if(!PROMPTS){PROMPTS=SEED;DB.set('prompts',PROMPTS);DB.set('promptsSeedV',2);}
     else if(v<2){const customs=PROMPTS.filter(p=>!OLD.includes(p.cmd)&&!SEED.some(d=>d.cmd===p.cmd));PROMPTS=SEED.concat(customs);DB.set('prompts',PROMPTS);DB.set('promptsSeedV',2);}
   })();
+  if(!SHOW_API_SETTINGS){const aide=PROMPTS.find(p=>p.cmd==='aide');if(aide&&/cl[ée]e?\s*api|openrouter|siliconflow|kling/i.test(aide.text)){aide.text='Tu es l’assistant d’aide intégré de MAZ. Guide l’utilisateur pas à pas dans l’interface : modèle, modes Image, Vidéo et Voix, Projets, Discussions, Mon IA et réglages. Réponds de façon claire, concrète et bienveillante, en indiquant toujours où cliquer. Si une fonction n’est pas disponible, explique-le simplement et propose une alternative.';DB.set('prompts',PROMPTS)}}
   const savePrompts=()=>DB.set('prompts',PROMPTS);
   let slashItems=[],slashK=0;
   function updateSlash(){const m=/^\/(\S*)$/.exec(prompt.value);if(!m){closeSlash();return}const q=m[1].toLowerCase();slashItems=PROMPTS.filter(p=>p.cmd.toLowerCase().includes(q)||p.title.toLowerCase().includes(q));slashK=0;renderSlash()}
@@ -3781,7 +3908,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   /* ===== onboarding première visite ===== */
   // En mode hébergé (accès par code) les clés vivent côté serveur → on saute l'étape « connecte ta clé ».
   let obSteps=[0,1,2],obIdx=0,obTheme=normTheme(DB.get('theme','dark'));
-  const obStepList=()=>VIA_PROXY?[0,2]:[0,1,2];
+  const obStepList=()=>SHOW_API_SETTINGS&&!VIA_PROXY?[0,1,2]:[0,2];
   const curStep=()=>obSteps[obIdx];
   function startOnboarding(){obSteps=obStepList();obIdx=0;obTheme=normTheme(DB.get('theme','dark'));
     $('#obDots').innerHTML=obSteps.map((s,i)=>`<span class="ob-dot${i===0?' on':''}"></span>`).join('');
