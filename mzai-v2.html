@@ -395,7 +395,8 @@
 .at-bn{font-family:var(--font-mono);font-size:10px;letter-spacing:var(--tr-wide);text-transform:uppercase;color:var(--accent)}
 .at-bc{margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--ink-faint);font-variant-numeric:tabular-nums}
 .at-bt{width:100%;border:0;background:transparent;color:var(--ink);font-family:var(--font-sans);
-  font-size:var(--fs-sm);line-height:var(--lh-normal);resize:vertical;min-height:3.4em;padding:var(--s-2) var(--s-4) var(--s-3)}
+  font-size:var(--fs-sm);line-height:var(--lh-normal);resize:none;overflow:hidden;
+  min-height:3.4em;padding:var(--s-2) var(--s-4) var(--s-3)}
 .at-bt:focus{outline:0;background:var(--surface-2)}
 .at-bt::placeholder{color:var(--ink-faint)}
 
@@ -1573,7 +1574,11 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 .shell{background:var(--bg)}
 .shell::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(700px 420px at 58% 36%,rgba(22,184,122,.075),transparent 64%),radial-gradient(520px 360px at 96% 100%,rgba(22,184,122,.035),transparent 68%);opacity:.9}
 .shell>*{position:relative;z-index:1}
-.topbar{background:color-mix(in srgb,var(--bg) 92%,transparent);border-bottom:1px solid color-mix(in srgb,var(--line) 70%,transparent);backdrop-filter:blur(18px)}
+/* Une seule page : la barre du haut ne pose plus ni fond, ni flou, ni filet.
+   Son fond semi-opaque coupait la lumière net à sa base — c'était ça, la
+   « coupure ». Il ne protégeait rien : .shell est une grille (barre / contenu
+   / composer), donc rien ne défile jamais sous la barre. */
+.topbar{background:transparent;border-bottom:0;backdrop-filter:none}
 .sidebar{background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface) 88%,var(--bg)));box-shadow:12px 0 42px rgba(0,0,0,.12)}
 .sb-head{padding-top:max(18px,env(safe-area-inset-top));padding-bottom:16px}
 .sb-head .brand-logo{box-shadow:0 0 0 1px rgba(255,255,255,.12),0 8px 18px rgba(0,0,0,.32)}
@@ -1645,7 +1650,39 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   .home-quick-head{font-size:9px}
 }
 
-.shell::before{background:radial-gradient(700px 420px at 58% 36%,color-mix(in srgb,var(--accent) 5%,transparent),transparent 64%),radial-gradient(520px 360px at 96% 100%,color-mix(in srgb,var(--accent) 2.5%,transparent),transparent 68%)}
+/* ── La lumière ───────────────────────────────────────────────────────────
+   Une gemme éclaire par diffusion, pas par une tache posée sur un fond.
+   Trois nappes donc : une lueur haute très large qui descend derrière le
+   contenu, une reprise chaude à droite qui décale le centre optique, et une
+   assise basse à gauche qui creuse la profondeur. Rayons volontairement plus
+   grands que le viewport — c'est ce qui évite le « blob » de dégradé
+   générique : on ne doit jamais voir où la lumière s'arrête. */
+.shell::before{background:
+  /* le halo : centré sur le contenu, pas sur le cadre — c'est lui qui donne
+     le relief. Rayon très supérieur au viewport : on ne voit jamais son bord. */
+  radial-gradient(1150px 640px at 52% 30%, color-mix(in srgb,var(--accent) 36%,transparent), transparent 58%),
+  /* la reprise haute : la source déborde par le dessus, la page n'a pas de plafond */
+  radial-gradient(1400px 520px at 46% -18%, color-mix(in srgb,var(--accent) 18%,transparent), transparent 62%),
+  /* l'assise : creuse le bas-gauche pour que le halo ne flotte pas dans le noir */
+  radial-gradient(1000px 780px at 2% 108%, color-mix(in srgb,var(--accent) 10%,transparent), transparent 64%);
+  opacity:1}
+/* Pas de fil sur l'arête haute : quelle que soit sa finesse, une ligne en
+   travers de l'écran redevient la séparation qu'on vient d'enlever. La
+   lumière suffit, et elle n'a pas de bord. */
+/* En clair, la même lumière écraserait le texte : on la divise par trois. */
+:root:not([data-theme="dark"]) .shell::before{background:
+  radial-gradient(1150px 640px at 52% 30%, color-mix(in srgb,var(--accent) 9%,transparent), transparent 58%),
+  radial-gradient(1400px 520px at 46% -18%, color-mix(in srgb,var(--accent) 5%,transparent), transparent 62%),
+  radial-gradient(1000px 780px at 2% 108%, color-mix(in srgb,var(--accent) 4%,transparent), transparent 64%)}
+
+/* ── Le trait vert sous la barre du haut n'était pas une séparation ───────
+   C'était l'anneau de focus de #main — focusable uniquement pour que le
+   clavier puisse le faire défiler, jamais parce qu'on l'actionne. L'anneau,
+   rogné par `overflow:hidden` de .shell, ne laissait voir que son arête
+   haute : une barre émeraude en travers de l'écran. On garde une marque
+   pour le clavier, mais neutre et à l'intérieur, donc jamais coupée. */
+.main:focus-visible,.thread:focus-visible,.home-wrap:focus-visible,.vbody:focus-visible{
+  outline:none;box-shadow:inset 0 0 0 1px var(--line-strong)}
 .home-wrap{background:radial-gradient(620px 330px at 50% 40%,color-mix(in srgb,var(--accent) 4%,transparent),transparent 68%)}
 .input-shell{border-color:var(--line-strong);box-shadow:0 20px 48px rgba(0,0,0,.16),inset 0 1px rgba(255,255,255,.07)}
 .input-shell:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-ring),0 20px 48px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.09)}
@@ -4905,10 +4942,19 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 
       /* Une consigne ne se lit pas à travers une meurtrière : chaque bloc prend
          la hauteur de son contenu, et la garde à la frappe. */
-      const pousser=t=>{t.style.height='auto';t.style.height=Math.min(t.scrollHeight,420)+'px'};
+      /* Aucun plafond : un bloc de consigne se lit d'un trait. Le plafonner à
+         420 px créait une barre de défilement DANS le bloc, et deux niveaux de
+         scroll imbriqués — on ne savait plus lequel on faisait bouger. */
+      const pousser=t=>{t.style.height='auto';t.style.height=t.scrollHeight+'px'};
       $$('#atPosteBody .at-bt').forEach(t=>{pousser(t);t.addEventListener('input',()=>{
         pousser(t);
         const c=t.dataset.bloc&&$(`#atPosteBody .at-bc[data-cnt="${t.dataset.bloc}"]`);if(c)c.textContent=t.value.length})});
+      /* Les polices arrivent après le premier calcul : la hauteur serait mesurée
+         avec la police de repli, puis Hanken la dépasserait — et comme le champ
+         est en overflow:hidden, la fin de la consigne disparaîtrait SANS barre
+         de défilement pour le dire. On remesure quand les polices sont prêtes. */
+      if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{
+        $$('#atPosteBody .at-bt').forEach(pousser)}).catch(()=>{});
       $$('#atPosteBody .at-tool').forEach(l=>l.addEventListener('change',()=>l.classList.toggle('on',l.querySelector('input').checked)));
 
       /* Comparer : les quatre éditeurs basculent en lecture, seuls les mots
