@@ -142,7 +142,10 @@
    Tout chiffre est en chasse fixe alignée : c'est ce qui sépare un
    instrument d'une page web.
    ============================================================ */
-.at-wrap{display:flex;flex-direction:column;gap:var(--s-7);padding:var(--s-6) var(--s-6) var(--s-10);max-width:1080px;width:100%;margin:0 auto}
+/* 1240 et pas 1080 : en dessous de 1179 le registre replie ses colonnes et
+   n'atteint jamais sa disposition pleine. La prose, elle, reste bornée par
+   ses propres max-width en ch. */
+.at-wrap{display:flex;flex-direction:column;gap:var(--s-7);padding:var(--s-6) var(--s-6) var(--s-10);max-width:1240px;width:100%;margin:0 auto}
 @media (max-width:760px){.at-wrap{padding:var(--s-4) var(--s-4) var(--s-9);gap:var(--s-6)}}
 
 /* ── le bandeau narratif : le SEUL moment éditorial de l'atelier ── */
@@ -202,33 +205,150 @@
 .at-now{position:absolute;top:0;bottom:0;width:1px;background:var(--accent);opacity:.5}
 @keyframes at-pulse{0%,100%{opacity:1;transform:translateX(-50%) scale(1)}50%{opacity:.45;transform:translateX(-50%) scale(.8)}}
 
-/* ── la liste des postes ── */
-.at-list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r-md);
-  background:var(--surface);overflow:hidden;box-shadow:var(--shadow-xs)}
-.at-row{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:var(--s-2) var(--s-4);
-  align-items:center;padding:var(--s-4) var(--s-5);background:transparent;border:0;border-top:1px solid var(--line-faint);
-  text-align:left;color:inherit;font:inherit;cursor:pointer;width:100%;transition:background var(--dur-1) var(--ease)}
-.at-row:first-child{border-top:0}
-.at-row:hover,.at-row:focus-visible{background:var(--surface-2)}
-.at-row:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
-.at-gauge{grid-row:span 2;width:30px;height:30px;display:block}
-.at-nm{font-size:var(--fs-base);font-weight:var(--fw-semi);letter-spacing:var(--tr-snug);
-  color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.at-sub{grid-column:2;font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--ink-faint);
+/* ── LE REGISTRE ──────────────────────────────────────────────────────────
+   Trois directions ont été mises en concurrence et jugées ; celle-ci l'a
+   emporté sur ce motif : « la seule qui ressemble à du logiciel et pas à une
+   page web ». Donc zéro carte, zéro ombre, zéro pastille. La hiérarchie
+   s'obtient PAR RETRAIT D'ENCRE : on éteint ce qui dort, et ce qui réclame
+   un geste reste seul à pleine encre.
+   Le khatam quitte le rôle de jauge — illisible à 30 px — pour celui de
+   SCEAU DE SIGNATURE : un sceau, c'est ce qu'on appose quand on valide. */
+/* Colonnes calées sur la vraie place disponible : 1440 px d'écran moins la
+   sidebar (284) moins les marges ≈ 1060 px pour le registre. Un seuil à
+   1179 px comme proposé n'aurait jamais laissé la disposition pleine
+   apparaître sur l'écran de Mazen. */
+.at-reg{--at-c1:20px;--at-c3:132px;--at-c4:80px;--at-c5:176px;--at-c6:64px;--at-c7:112px;--at-c8:40px;
+  container-type:inline-size;width:100%}
+.at-strate{display:flex;align-items:center;gap:var(--s-3);padding:var(--s-5) var(--s-3) var(--s-2)}
+.at-strate:first-child{padding-top:0}
+.at-strate-t{font-family:var(--font-sans);font-size:var(--fs-xs);font-weight:var(--fw-med);
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);white-space:nowrap}
+.at-strate-n{font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--ink-faint);
+  font-variant-numeric:tabular-nums}
+.at-strate-f{flex:1;height:1px;background:var(--line-faint)}
+.at-strate.urgent .at-strate-t,.at-strate.urgent .at-strate-n{color:var(--warning-strong)}
+.at-strate.casse .at-strate-t,.at-strate.casse .at-strate-n{color:var(--danger-strong)}
+
+.at-lignes{list-style:none;margin:0;padding:0}
+.at-ligne{--at-encre:var(--ink);--at-encre-2:var(--ink-soft);--at-encre-3:var(--ink-faint);
+  position:relative;display:grid;align-items:center;column-gap:var(--s-4);
+  grid-template-columns:var(--at-c1) minmax(0,1fr) var(--at-c3) var(--at-c4) var(--at-c5) var(--at-c6) var(--at-c7) var(--at-c8);
+  padding:var(--s-3);border-bottom:1px solid var(--line-faint);
+  transition:background var(--dur-1) var(--ease)}
+.at-ligne:last-child{border-bottom:0}
+@media (hover:hover){.at-ligne:hover{background:var(--surface)}}
+/* toute la ligne est activable : le lien s'étire, l'action rapide passe au-dessus */
+.at-lien{position:absolute;inset:0;z-index:1;border-radius:var(--r-xs)}
+.at-lien:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+.at-c{min-width:0}
+.at-poincon{display:flex;color:var(--at-encre-3)}
+.at-ident{display:grid;row-gap:2px;min-width:0}
+.at-nm{margin:0;font-family:var(--font-serif);font-size:var(--fs-base);font-weight:var(--fw-med);
+  line-height:1.25;color:var(--at-encre);display:flex;align-items:baseline;gap:var(--s-2);min-width:0}
+.at-nm>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.at-obj{margin:0;font-size:var(--fs-sm);line-height:1.35;color:var(--at-encre-2);
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--at-lignes-obj,1);overflow:hidden}
+/* le sceau : la seule tache de couleur du registre */
+.at-sceau{flex:none;display:inline-flex;align-items:center;gap:4px;font-family:var(--font-sans);
+  font-size:var(--fs-xs);font-weight:var(--fw-med);color:var(--warning-strong);white-space:nowrap}
+.at-attrib{display:contents}
+.at-c-ouv{display:grid;row-gap:1px;min-width:0}
+.at-ouv,.at-chant,.at-proch{font-size:var(--fs-sm);color:var(--at-encre-2);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.at-rt{grid-row:span 2;grid-column:3;text-align:right;display:flex;flex-direction:column;gap:2px}
-.at-rt .at-v{font-family:var(--font-mono);font-size:var(--fs-sm);font-variant-numeric:tabular-nums;color:var(--ink-soft)}
-.at-rt .at-k{font-family:var(--font-mono);font-size:10px;color:var(--ink-faint);letter-spacing:.02em}
-.at-rt.att .at-v{color:var(--ink)}
-.at-rt.ko .at-v{color:var(--danger-strong)}
-/* Au pouce, la colonne de droite serrait le sous-titre : elle passe dessous,
-   alignée à gauche, et la jauge tient la colonne de tête. */
-@media (max-width:600px){
-  .at-row{grid-template-columns:30px minmax(0,1fr);gap:2px var(--s-3);padding:var(--s-4)}
-  .at-gauge{grid-row:span 3}
-  .at-rt{grid-row:auto;grid-column:2;text-align:left;flex-direction:row;align-items:baseline;gap:var(--s-2);margin-top:var(--s-1)}
-  .at-rt .at-k::before{content:'· '}
+.at-mod,.at-cad{font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--at-encre-3);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.at-c-cad{display:grid;row-gap:1px;min-width:0}
+.at-proch{color:var(--at-encre);font-variant-numeric:tabular-nums}
+
+/* ── le peigne : 8 passages autour d'une ligne de base.
+      Réussi monte, échec descend et s'épaissit — l'information passe par la
+      POSITION, pas seulement par la couleur. ── */
+/* inline-flex : la ligne de base ne doit courir que sous les huit barres,
+   sinon au pouce elle traverse toute la ligne comme un filet parasite. */
+.at-peigne{position:relative;display:inline-flex;align-items:center;gap:3px;height:18px}
+.at-peigne::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line)}
+.at-pas{position:relative;width:5px;height:18px;flex:none}
+.at-pas::after{content:"";position:absolute;left:0;right:0;border-radius:1px}
+.at-pas.o::after{bottom:calc(50% + 1px);height:7px;background:var(--ink-soft)}
+.at-pas.x::after{top:calc(50% + 1px);height:8px;left:-1px;right:-1px;background:var(--danger)}
+.at-pas.q::after{top:calc(50% - 3px);height:7px;box-shadow:inset 0 0 0 1.5px var(--warning)}
+.at-pas.v::after{top:calc(50% - 1px);height:2px;background:var(--line-strong)}
+.at-pas.der.o::after{background:var(--accent);height:9px}
+.at-pas.der.x::after{height:10px}
+
+/* ── enveloppe du mois ── */
+.at-c-env{display:grid;row-gap:5px;justify-items:end;min-width:0}
+.at-mnt{font-family:var(--font-mono);font-size:var(--fs-sm);font-variant-numeric:tabular-nums;
+  color:var(--at-encre);white-space:nowrap}
+.at-mnt em{font-style:normal;color:var(--at-encre-3)}
+.at-env{width:100%;height:2px;background:var(--line);border-radius:var(--r-pill);overflow:hidden}
+.at-env::after{content:"";display:block;height:100%;width:clamp(0%,var(--at-part,0%),100%);
+  background:var(--ink-faint);transition:width var(--dur-3) var(--ease)}
+.at-c-env[data-seuil="proche"] .at-env::after{background:var(--warning)}
+.at-c-env[data-seuil="depasse"] .at-env::after{background:var(--danger)}
+
+/* ── action rapide : elle se révèle au survol, elle ne décore pas ── */
+.at-c-act{display:flex;justify-content:flex-end}
+.at-go{position:relative;z-index:2;width:40px;height:40px;margin:-6px 0;display:grid;place-items:center;
+  background:transparent;border:1px solid transparent;border-radius:var(--r-xs);color:var(--ink-soft);
+  cursor:pointer;transition:opacity var(--dur-1) var(--ease),color var(--dur-1) var(--ease),
+  border-color var(--dur-1) var(--ease),background var(--dur-1) var(--ease)}
+.at-go:hover{color:var(--accent);border-color:var(--line-strong);background:var(--surface-2)}
+.at-go:focus-visible{outline:2px solid var(--accent);outline-offset:1px;color:var(--accent)}
+@media (hover:hover) and (pointer:fine){
+  .at-go{opacity:0}
+  .at-ligne:hover .at-go,.at-ligne:focus-within .at-go,.at-go:focus-visible{opacity:1}
 }
+
+/* ── états : on éteint, on n'allume pas ── */
+.at-ligne[data-etat="actif"] .at-poincon{color:var(--accent)}
+.at-ligne[data-etat="pause"] .at-poincon{color:var(--ink-soft)}
+.at-ligne[data-etat="disjoncte"] .at-poincon,
+.at-ligne[data-etat="disjoncte"] .at-cad{color:var(--danger-strong)}
+.at-ligne[data-etat="brouillon"],.at-ligne[data-etat="sommeil"]{
+  --at-encre:var(--ink-soft);--at-encre-2:var(--ink-faint);--at-encre-3:var(--ink-faint)}
+.at-ligne[data-etat="brouillon"] .at-nm{font-style:italic}
+.at-ligne[data-etat="brouillon"] .at-mnt,.at-ligne[data-etat="brouillon"] .at-env{opacity:.45}
+
+/* ── les brouillons se replient : ils ne méritent pas le haut de l'écran ── */
+.at-repli{border-top:1px solid var(--line-faint);margin-top:var(--s-4)}
+.at-repli>summary{cursor:pointer;list-style:none;padding:var(--s-3);display:flex;align-items:center;
+  gap:var(--s-3);font-family:var(--font-sans);font-size:var(--fs-xs);font-weight:var(--fw-med);
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint)}
+.at-repli>summary::-webkit-details-marker{display:none}
+.at-repli>summary::after{content:"";flex:1;height:1px;background:var(--line-faint)}
+.at-repli>summary:hover{color:var(--ink-soft)}
+.at-repli>summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:var(--r-xs)}
+
+/* ── replis de gabarit : sur la largeur du REGISTRE, pas de la fenêtre ── */
+@container (max-width:1023px){
+  .at-ligne{grid-template-columns:var(--at-c1) minmax(0,1fr) var(--at-c5) var(--at-c6) var(--at-c7) var(--at-c8);
+    row-gap:5px}
+  .at-attrib{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:var(--s-2);row-gap:2px;
+    grid-column:2;grid-row:2}
+  .at-c-ouv{grid-auto-flow:column;column-gap:var(--s-2);align-items:baseline}
+  .at-poincon{grid-column:1;grid-row:1/span 2;align-self:start;margin-top:3px}
+  .at-ident{grid-column:2;grid-row:1}
+  .at-c-cad{grid-column:3;grid-row:1/span 2}
+  .at-c-sante{grid-column:4;grid-row:1/span 2}
+  .at-c-env{grid-column:5;grid-row:1/span 2}
+  .at-c-act{grid-column:6;grid-row:1/span 2}
+}
+@container (max-width:719px){
+  .at-ligne{grid-template-columns:var(--at-c1) minmax(0,1fr) auto;row-gap:6px;
+    padding:var(--s-4) var(--s-3);--at-lignes-obj:2}
+  .at-poincon{grid-column:1;grid-row:1;margin-top:4px}
+  .at-ident{grid-column:2;grid-row:1}
+  .at-c-act{grid-column:3;grid-row:1;align-self:start}
+  .at-attrib{grid-column:2/-1;grid-row:2}
+  .at-c-cad{grid-column:2/-1;grid-row:3;grid-auto-flow:column;justify-content:start;column-gap:var(--s-2)}
+  .at-c-sante{grid-column:2;grid-row:4}
+  .at-c-env{grid-column:3;grid-row:4;align-self:end}
+  .at-nm{flex-wrap:wrap}
+  .at-go{opacity:1;border-color:var(--line);width:44px;height:44px}
+}
+.at-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip-path:inset(50%);white-space:nowrap;border:0}
 
 /* ── l'état vide : il ne s'excuse pas, il propose ── */
 .at-empty{border:1px dashed var(--line-strong);border-radius:var(--r-md);padding:var(--s-8) var(--s-6);
@@ -278,6 +398,46 @@
   font-size:var(--fs-sm);line-height:var(--lh-normal);resize:vertical;min-height:3.4em;padding:var(--s-2) var(--s-4) var(--s-3)}
 .at-bt:focus{outline:0;background:var(--surface-2)}
 .at-bt::placeholder{color:var(--ink-faint)}
+
+/* ── le diff : seuls les mots qui ont bougé sont marqués ── */
+.at-ct-row{display:flex;align-items:center;gap:var(--s-3);flex-wrap:wrap}
+.at-cmp{display:flex;align-items:center;gap:var(--s-2);margin-left:auto;
+  font-family:var(--font-mono);font-size:10px;letter-spacing:var(--tr-wide);
+  text-transform:uppercase;color:var(--ink-faint)}
+.at-sel-mini{min-height:28px;width:auto;padding:0 var(--s-6) 0 var(--s-3);font-size:var(--fs-xs);
+  background-position:calc(100% - 13px) 12px,calc(100% - 9px) 12px}
+.at-diff{padding:var(--s-2) var(--s-4) var(--s-3);font-size:var(--fs-sm);line-height:var(--lh-normal);
+  color:var(--ink);white-space:pre-wrap;word-break:break-word}
+.at-diff-off{color:var(--ink-faint)}
+.at-del{background:var(--danger-tint);color:var(--danger-strong);text-decoration-thickness:1px;
+  border-radius:2px;padding:0 2px}
+.at-ins{background:var(--accent-tint);color:var(--accent-strong);text-decoration:none;
+  border-radius:2px;padding:0 2px}
+
+/* ── le correctif proposé : une écriture sur la consigne, donc une signature ── */
+.at-corr{border:1px solid var(--accent);background:var(--accent-tint);border-radius:var(--r-sm);
+  padding:var(--s-4) var(--s-5);display:flex;flex-direction:column;gap:var(--s-3)}
+.at-corr-h{display:flex;align-items:baseline;gap:var(--s-2);flex-wrap:wrap}
+.at-corr-b{font-family:var(--font-mono);font-size:10px;letter-spacing:var(--tr-wide);
+  text-transform:uppercase;color:var(--accent-strong)}
+.at-corr-t{width:100%;border:1px solid var(--line);border-radius:var(--r-xs);background:var(--surface);
+  color:var(--ink);font-family:var(--font-sans);font-size:var(--fs-sm);line-height:var(--lh-normal);
+  padding:var(--s-3);resize:vertical;min-height:3.6em}
+.at-corr-t:focus{outline:0;border-color:var(--accent)}
+
+/* ── le pouce : deux boutons, jamais deux couleurs criardes ── */
+.at-pouce{display:flex;align-items:center;gap:var(--s-2)}
+.at-pb{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid var(--line);border-radius:var(--r-xs);background:transparent;color:var(--ink-faint);
+  cursor:pointer;transition:color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease)}
+.at-pb:hover{color:var(--ink);border-color:var(--line-strong)}
+.at-pb:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.at-pb.on{color:var(--accent);border-color:var(--accent);background:var(--accent-tint)}
+.at-pb.on.bas{color:var(--danger-strong);border-color:var(--danger);background:var(--danger-tint)}
+.at-motif{flex:1 1 160px;min-width:0;min-height:32px;border:1px solid var(--line);border-radius:var(--r-xs);
+  background:var(--surface);color:var(--ink);font-size:var(--fs-xs);padding:0 var(--s-3)}
+.at-motif:focus{outline:0;border-color:var(--danger)}
+@media (max-width:760px){.at-pb{width:44px;height:44px}.at-motif{min-height:44px}}
 
 /* champs */
 .at-f{display:flex;flex-direction:column;gap:var(--s-2)}
@@ -4378,7 +4538,10 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     function ligneJour(){
       const d=new Date(),d0=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime();
       const pc=ms=>Math.max(0,Math.min(100,((ms-d0)/86400000)*100));
-      let g='';for(let h=0;h<=24;h+=4)g+=`<span class="at-tick" style="left:${(h/24*100).toFixed(2)}%"></span><span class="at-th" style="left:${(h/24*100).toFixed(2)}%">${String(h%24).padStart(2,'0')}</span>`;
+      // Les repères extrêmes se recadrent : centré, « 00 » et « 24 » sortiraient du tracé.
+      let g='';for(let h=0;h<=24;h+=4){const x=(h/24*100).toFixed(2);
+        const tr=h===0?'translateX(0)':h===24?'translateX(-100%)':'translateX(-50%)';
+        g+=`<span class="at-tick" style="left:${x}%"></span><span class="at-th" style="left:${x}%;transform:${tr}">${String(h).padStart(2,'0')}</span>`}
       const pts=etat.journee.filter(p=>p.debut_at>=d0).map(p=>{
         const k=p.statut==='fini'?'ok':(p.statut==='attente'?'att':(p.statut==='encours'?'run':'ko'));
         const t=`${hhmm(p.debut_at)} · ${p.statut}${p.cout_cents?' · '+eur(p.cout_cents):''}`;
@@ -4404,26 +4567,104 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       return j<=0?h:j===1?'demain '+h:d.toLocaleDateString('fr-FR',{weekday:'short'})+' '+h;
     }
 
+    /* « 0 8 * * 1 » n'est pas une cadence, c'est une expression cron. Ce qui se
+       lit, c'est « chaque lundi à 8h ». Les cinq formes que la fiche propose
+       sont traduites en toutes lettres ; toute autre expression est rendue
+       telle quelle plutôt que devinée de travers. */
+    const JOURS=['dimanche','lundi','mardi','mercredi','jeudi','vendredi','samedi'];
+    function cronFr(c){
+      const p=String(c||'').trim().split(/\s+/);
+      if(p.length!==5)return 'planifié';
+      const[mi,h,jm,mo,js]=p;
+      const heure=n=>Number(n)+'h'+(mi==='0'?'':String(mi).padStart(2,'0'));
+      if(/^\*\/(\d+)$/.test(mi)&&h==='*')return 'toutes les '+mi.slice(2)+' min';
+      if(mi==='0'&&h==='*')return 'toutes les heures';
+      if(jm==='*'&&mo==='*'&&js==='*'&&/^\d+$/.test(h))return 'chaque jour à '+heure(h);
+      if(js==='1-5'&&/^\d+$/.test(h))return 'du lundi au vendredi à '+heure(h);
+      if(/^\d$/.test(js)&&/^\d+$/.test(h))return 'chaque '+JOURS[+js]+' à '+heure(h);
+      if(/^\d+$/.test(jm)&&/^\d+$/.test(h))return 'le '+(jm==='1'?'1er':jm)+' du mois à '+heure(h);
+      return c;
+    }
+
+    /* Le poinçon d'état : un cercle plus ou moins rempli. L'état est TOUJOURS
+       écrit en toutes lettres à côté — jamais porté par la seule couleur. */
+    const POINCON={
+      actif:'<circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.25"/><circle cx="8" cy="8" r="2.2" fill="currentColor"/>',
+      pause:'<circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.25"/><path d="M6.4 5.6v4.8M9.6 5.6v4.8" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/>',
+      disjoncte:'<circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.25"/><path d="M8.6 4.6 6.4 8.3h3.2L7.4 11.4" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>',
+      sommeil:'<circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.25" stroke-dasharray="2 2.4"/>',
+      brouillon:'<rect x="2.6" y="2.6" width="10.8" height="10.8" rx="1" fill="none" stroke="currentColor" stroke-width="1.1" stroke-dasharray="2 2"/>',
+    };
+    /* Le khatam en petit : il ne compte plus les passages, il scelle une
+       signature en attente. C'est son sens d'origine. */
+    const SCEAU='<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><rect x="3.4" y="3.4" width="9.2" height="9.2" fill="none" stroke="currentColor" stroke-width="1"/><rect x="3.4" y="3.4" width="9.2" height="9.2" fill="none" stroke="currentColor" stroke-width="1" transform="rotate(45 8 8)"/><circle cx="8" cy="8" r="1.4" fill="currentColor"/></svg>';
+    const FLECHE='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" aria-hidden="true"><path d="M8 5.5 18 12 8 18.5z"/></svg>';
+
+    function peigne(sante){
+      const S=(sante||'').padStart(8,'.').slice(-8);
+      const cl={O:'o',X:'x','?':'q','.':'v'};
+      const n={O:0,X:0,'?':0};for(const c of S)if(n[c]!==undefined)n[c]++;
+      const dit=`Huit derniers passages : ${n.O} réussi${n.O>1?'s':''}, ${n.X} échec${n.X>1?'s':''}, ${n['?']} en attente de signature.`;
+      return `<span class="at-sr">${dit}</span><span class="at-peigne" aria-hidden="true">`
+        + [...S].map((c,i)=>`<i class="at-pas ${cl[c]||'v'}${i===7?' der':''}"></i>`).join('')+'</span>';
+    }
+
     function lignePoste(p){
       const att=etat.controles.filter(c=>c.poste_id===p.id).length;
       const der=etat.journee.filter(x=>x.poste_id===p.id)[0];
-      const cad=p.cadence==='cron'?(p.cron?'cadence '+esc2(p.cron):'planifié')
-               :p.cadence==='demande'?'à la demande':esc2(p.cadence);
-      const sousTitre=[esc2(p.ouvrier_nom||''),esc2(p.chantier_nom||''),cad].filter(Boolean).join(' · ');
-      let k='',v='',cls='';
-      if(att){cls='att';v=att+' à signer';k='en attente'}
-      else if(p.etat==='disjoncte'){cls='ko';v='enveloppe atteinte';k=eur(p.depense_cents||0)+' ce mois'}
-      else if(der&&(der.statut==='echec'||der.statut==='coupe')){cls='ko';v='échec';k=depuis(der.debut_at)}
-      else if(p.etat==='actif'&&p.prochain_at){v=bientot(p.prochain_at);k='prochain passage'}
-      else if(der){v=depuis(der.debut_at);k=eur(p.depense_cents||0)+' ce mois'}
-      else if(p.etat==='brouillon'){v='brouillon';k='jamais tourné'}
-      else{v='jamais lancé';k=''}
-      return `<button class="at-row" data-poste="${esc2(p.id)}">
-        ${jauge(p.sante)}
-        <span class="at-nm">${esc2(p.nom)}</span>
-        <span class="at-sub">${sousTitre}</span>
-        <span class="at-rt ${cls}"><span class="at-v">${esc2(v)}</span><span class="at-k">${esc2(k)}</span></span>
-      </button>`;
+      const et=p.etat||'brouillon';
+      const cad=p.cadence==='cron'?cronFr(p.cron):'à la demande';
+      const ETATS={actif:'actif',pause:'en pause',disjoncte:'enveloppe atteinte',sommeil:'en sommeil',brouillon:'brouillon'};
+      const proch=et==='disjoncte'?'coupé ce mois'
+        :(der&&(der.statut==='echec'||der.statut==='coupe'))?'échec '+depuis(der.debut_at)
+        :(et==='actif'&&p.prochain_at)?bientot(p.prochain_at)
+        :der?depuis(der.debut_at):'jamais lancé';
+      const part=p.budget_cents?Math.min(100,(p.depense_cents/p.budget_cents)*100):0;
+      const seuil=part>=100?'depasse':part>=70?'proche':'';
+      return `<li class="at-ligne" data-etat="${esc2(et)}"${att?' data-signature="1"':''}>
+        <a class="at-lien" href="#" data-poste="${esc2(p.id)}" aria-label="Ouvrir le poste ${esc2(p.nom)}"></a>
+        <span class="at-c at-poincon"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">${POINCON[et]||POINCON.brouillon}</svg></span>
+        <div class="at-c at-ident">
+          <h3 class="at-nm"><span>${esc2(p.nom)}</span>${att?`<span class="at-sceau">${SCEAU}${att} à signer</span>`:''}</h3>
+          <p class="at-obj">${esc2(p.objectif||'—')}</p>
+        </div>
+        <div class="at-attrib">
+          <div class="at-c at-c-ouv"><span class="at-ouv">${esc2(p.ouvrier_nom||'—')}</span><span class="at-mod">${esc2((p.modele||'').replace('-latest',''))}</span></div>
+          <div class="at-c"><span class="at-chant">${esc2(p.chantier_nom||'—')}</span></div>
+        </div>
+        <div class="at-c at-c-cad"><span class="at-proch">${esc2(proch)}</span><span class="at-cad">${ETATS[et]||et} · ${cad}</span></div>
+        <div class="at-c at-c-sante">${peigne(p.sante)}</div>
+        <div class="at-c at-c-env"${seuil?` data-seuil="${seuil}"`:''}>
+          <span class="at-mnt">${((p.depense_cents||0)/100).toFixed(2).replace('.',',')}<em> / ${((p.budget_cents||0)/100).toFixed(2).replace('.',',')} €</em></span>
+          <span class="at-env" style="--at-part:${part.toFixed(1)}%"></span>
+        </div>
+        <div class="at-c at-c-act"><button class="at-go" data-lancer="${esc2(p.id)}" aria-label="Lancer ${esc2(p.nom)} maintenant" title="Lancer maintenant">${FLECHE}</button></div>
+      </li>`;
+    }
+
+    /* Le tri est structurel, pas décoratif : ce qui réclame un geste est en
+       haut, ce qui tourne bien s'efface, les brouillons se replient. */
+    function strates(){
+      const att=id=>etat.controles.some(c=>c.poste_id===id);
+      const casse=p=>p.etat==='disjoncte'||etat.journee.some(x=>x.poste_id===p.id&&(x.statut==='echec'||x.statut==='coupe'));
+      const g={signer:[],casse:[],service:[],brouillon:[]};
+      etat.postes.forEach(p=>{
+        if(att(p.id))g.signer.push(p);
+        else if(casse(p))g.casse.push(p);
+        else if(p.etat==='brouillon')g.brouillon.push(p);
+        else g.service.push(p);
+      });
+      const bloc=(cls,titre,l)=>l.length?`<div class="at-strate ${cls}"><span class="at-strate-t">${titre}</span>
+        <span class="at-strate-n">${l.length}</span><span class="at-strate-f"></span></div>
+        <ul class="at-lignes">${l.map(lignePoste).join('')}</ul>`:'';
+      let h='';
+      h+=bloc('urgent','À signer',g.signer);
+      h+=bloc('casse','À reprendre',g.casse);
+      h+=bloc('','En service',g.service);
+      if(g.brouillon.length)h+=`<details class="at-repli"${g.signer.length+g.casse.length+g.service.length?'':' open'}>
+        <summary>Brouillons · ${g.brouillon.length}</summary>
+        <ul class="at-lignes">${g.brouillon.map(lignePoste).join('')}</ul></details>`;
+      return `<div class="at-reg">${h}</div>`;
     }
 
     /* ── La forge : une phrase suffit, le reste est déduit puis relu ── */
@@ -4444,11 +4685,23 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(!charge){b.innerHTML=`<div class="at-list">${'<div class="at-sk"></div>'.repeat(3)}</div>`;return}
       const hors=perime?`<div class="at-off"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6M12 16v6" stroke-linecap="round"/><circle cx="12" cy="12" r="2"/></svg>Connexion perdue — voici le dernier état connu.</div>`:'';
       const liste=etat.postes.length
-        ? `<div class="at-list${perime?' at-stale':''}">${etat.postes.map(lignePoste).join('')}</div>`
+        ? `<div${perime?' class="at-stale"':''}>${strates()}</div>`
         : `<div class="at-empty"><p class="at-et">Un poste, c'est un travail qui revient.</p>
              <p class="at-es">Ou qui part sur commande. Décris-le en une phrase : le modèle, l'outillage et la consigne en découlent — tu relis avant de valider.</p></div>`;
       b.innerHTML=hors+recit()+ligneJour()+liste+forge();
-      $$('#atBody .at-row').forEach(r=>r.addEventListener('click',()=>ouvrirPoste(r.dataset.poste)));
+      $$('#atBody .at-lien').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();ouvrirPoste(a.dataset.poste)}));
+      $$('#atBody .at-go').forEach(g=>g.addEventListener('click',async e=>{
+        e.preventDefault();e.stopPropagation();
+        const p=etat.postes.find(x=>x.id===g.dataset.lancer);if(!p)return;
+        g.disabled=true;toast('Passage lancé — '+p.nom);
+        try{
+          const r=await api('/postes/'+p.id+'/lancer',{method:'POST',body:JSON.stringify({mode:'reel'})});
+          await rafraichir();
+          if(r.statut==='attente'){showView('controle');peindreControle()}
+          else toast(r.statut==='fini'?'Passage terminé':'Passage '+r.statut);
+        }catch(err){toast(friendlyErr(err))}
+        finally{g.disabled=false}
+      }));
       const f=$('#atForger');f&&f.addEventListener('click',forger);
       const ta=$('#atForge');ta&&ta.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();forger()}});
       const n=$('#atNavN');if(n){n.textContent=etat.controles.length||'';n.hidden=!etat.controles.length}
@@ -4500,6 +4753,36 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       ouvriers.push(o);return o;
     }
 
+    /* ═══ Le diff de consigne ═══════════════════════════════════════════════
+       Une consigne fait 500 à 2 000 caractères ; tu en changes trois mots.
+       Relire deux pavés côte à côte pour les retrouver, personne ne le fait.
+       Plus grande sous-séquence commune sur les MOTS, calculée en local :
+       zéro appel, zéro jeton, instantané. */
+    function motsDiff(av,ap){
+      const A=String(av||'').split(/(\s+)/).filter(s=>s!==''),
+            B=String(ap||'').split(/(\s+)/).filter(s=>s!=='');
+      const n=A.length,m=B.length;
+      // Garde-fou : au-delà, on compare bloc entier plutôt que d'allouer 4 M de cellules.
+      if(n*m>400000)return av===ap?[['=',ap]]:[['-',av],['+',ap]];
+      const L=Array.from({length:n+1},()=>new Uint32Array(m+1));
+      for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)
+        L[i][j]=A[i]===B[j]?L[i+1][j+1]+1:Math.max(L[i+1][j],L[i][j+1]);
+      const ops=[];let i=0,j=0;
+      const pousse=(t,s)=>{const d=ops[ops.length-1];if(d&&d[0]===t)d[1]+=s;else ops.push([t,s])};
+      while(i<n&&j<m){
+        if(A[i]===B[j]){pousse('=',A[i]);i++;j++}
+        else if(L[i+1][j]>=L[i][j+1]){pousse('-',A[i]);i++}
+        else{pousse('+',B[j]);j++}
+      }
+      while(i<n)pousse('-',A[i++]);
+      while(j<m)pousse('+',B[j++]);
+      return ops;
+    }
+    const rendDiff=ops=>ops.map(([t,s])=>{
+      const e=esc2(s);
+      return t==='='?e:t==='-'?`<del class="at-del">${e}</del>`:`<ins class="at-ins">${e}</ins>`;
+    }).join('');
+
     /* ═══ La fiche de poste ═══ */
     const OUTILLAGE=[
       {cle:'web_search',nom:'Recherche web',note:'≈ 0,03 € par appel — 180× une requête simple',cher:true},
@@ -4513,10 +4796,15 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       showView('poste');
       const b=$('#atPosteBody');b.innerHTML=`<div class="at-list">${'<div class="at-sk"></div>'.repeat(2)}</div>`;
       try{
-        const[p,cons,passages]=await Promise.all([
+        const[p,cons,passages,corrs]=await Promise.all([
           api('/postes').then(l=>l.find(x=>x.id===id)),
-          api('/postes/'+id+'/consignes'),api('/postes/'+id+'/passages')]);
+          api('/postes/'+id+'/consignes'),api('/postes/'+id+'/passages'),
+          api('/correctifs').catch(()=>[])]);
         posteOuvert=p;peindrePoste(p,cons,passages);
+        // Une proposition en attente ne doit pas se perdre parce qu'on a quitté l'écran.
+        const c=(corrs||[]).find(x=>x.poste_id===id);
+        if(c){const z=$('#atCorrEnAttente');if(z)montrerCorrectif(
+          {...c,n:(()=>{try{return JSON.parse(c.preuves||'[]').length}catch(e){return 0}})()},z)}
       }catch(e){b.innerHTML=`<div class="at-empty"><p class="at-et">Poste illisible</p><p class="at-es">${esc2(friendlyErr(e))}</p></div>`}
     }
 
@@ -4533,7 +4821,14 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       $('#atPosteBody').innerHTML=`
         <div class="at-fiche">
           <div class="at-card">
-            <p class="at-ct">Consigne <span class="at-bc" style="margin-left:6px">v${p.consigne_ver}</span></p>
+            <div class="at-ct-row">
+              <p class="at-ct">Consigne <span class="at-bc" style="margin-left:6px">v${p.consigne_ver}</span></p>
+              ${(cons||[]).length>1?`<label class="at-cmp"><span>comparer à</span>
+                <select class="at-sel at-sel-mini" id="atCmp" aria-label="Comparer à une version précédente">
+                  <option value="">—</option>
+                  ${cons.filter(c=>c.version<p.consigne_ver).map(c=>`<option value="${c.version}">v${c.version}</option>`).join('')}
+                </select></label>`:''}
+            </div>
             <div class="at-blocs">${['role','methode','interdits','format'].map(k=>`
               <div class="at-bloc">
                 <div class="at-bh"><span class="at-bn">${NOMS[k]}</span><span class="at-bc" data-cnt="${k}">${(blocs[k]||'').length}</span></div>
@@ -4541,6 +4836,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
               </div>`).join('')}</div>
             <div class="at-f"><span class="at-lbl">Objectif du passage</span>
               <textarea class="at-bt" id="atObj" rows="2" style="border:1px solid var(--line);border-radius:var(--r-sm)" aria-label="Objectif">${esc2(p.objectif||'')}</textarea></div>
+            <div id="atCorrEnAttente"></div>
             <div class="at-frow"><button class="at-btn" id="atSave">Enregistrer en v${p.consigne_ver+1}</button>
               <span class="at-td" id="atSaveEtat"></span></div>
           </div>
@@ -4601,6 +4897,29 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         pousser(t);
         const c=t.dataset.bloc&&$(`#atPosteBody .at-bc[data-cnt="${t.dataset.bloc}"]`);if(c)c.textContent=t.value.length})});
       $$('#atPosteBody .at-tool').forEach(l=>l.addEventListener('change',()=>l.classList.toggle('on',l.querySelector('input').checked)));
+
+      /* Comparer : les quatre éditeurs basculent en lecture, seuls les mots
+         qui ont bougé sont marqués. Un bloc inchangé le dit et se tait. */
+      const selCmp=$('#atCmp');
+      selCmp&&selCmp.addEventListener('change',()=>{
+        const v=selCmp.value;
+        const zone=$('#atPosteBody .at-blocs');
+        if(!v){peindrePoste(p,cons,passages);return}
+        const ref=(cons||[]).find(c=>String(c.version)===String(v));
+        let avant={};try{avant=JSON.parse(ref.blocs)}catch(e){}
+        zone.innerHTML=['role','methode','interdits','format'].map(k=>{
+          const a=avant[k]||'',b=blocs[k]||'';
+          const inchange=a.trim()===b.trim();
+          return `<div class="at-bloc">
+            <div class="at-bh"><span class="at-bn">${NOMS[k]}</span>
+              <span class="at-bc">${inchange?'inchangé':'modifié'}</span></div>
+            <div class="at-diff${inchange?' at-diff-off':''}">${inchange?esc2(b||'—'):rendDiff(motsDiff(a,b))}</div>
+          </div>`}).join('');
+        const bar=document.createElement('div');
+        bar.className='at-frow';bar.style.marginTop='var(--s-3)';
+        bar.innerHTML=`<span class="at-td">v${v} → v${p.consigne_ver} · <del class="at-del">retiré</del> <ins class="at-ins">ajouté</ins></span>`;
+        zone.after(bar);
+      });
       $('#atCad').addEventListener('change',e=>{$('#atCronF').hidden=e.target.value!=='cron'});
       $('#atSave').addEventListener('click',()=>enregistrer(p));
       $('#atLancer').addEventListener('click',()=>lancer(p,'reel'));
@@ -4710,14 +5029,74 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           ? '<p class="at-td">En attente de ta signature — rien n\'a encore été écrit.</p>'
           : (d.mode==='repetition'?'<p class="at-td">Répétition : rien n\'a été écrit, seul le plan a été relevé.</p>':'');return}
         const plein=await api('/livrables/'+lv.id);
+        const HAUT='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 22V10l5-8a2 2 0 0 1 2 2v5h5a2 2 0 0 1 2 2.4l-1.6 8A2 2 0 0 1 17.4 22H7z"/><path d="M7 10H4v12h3"/></svg>';
+        const BAS='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M17 2v12l-5 8a2 2 0 0 1-2-2v-5H5a2 2 0 0 1-2-2.4l1.6-8A2 2 0 0 1 6.6 2H17z"/><path d="M17 14h3V2h-3"/></svg>';
         zone.innerHTML=`<div class="at-livr">
           <div class="at-livr-h"><span class="at-livr-t">${esc2(plein.titre)}</span>
             <span class="at-livr-m">${hhmm(plein.cree_at)} · ${eur(d.cout_cents||0)}</span></div>
           <div class="at-livr-c bubble md">${renderMD(String(plein.corps||''))}</div>
-          <div class="at-frow"><button class="at-btn" id="atCopie">Copier</button></div></div>`;
+          <div class="at-frow">
+            <div class="at-pouce">
+              <button class="at-pb" id="atPHaut" aria-label="Ce livrable est bon" title="Ce livrable est bon">${HAUT}</button>
+              <button class="at-pb bas" id="atPBas" aria-label="Ce livrable ne va pas" title="Ce livrable ne va pas">${BAS}</button>
+            </div>
+            <input class="at-motif" id="atMotif" hidden placeholder="En deux mots, qu'est-ce qui ne va pas ? « prix inventé »" aria-label="Motif du recalage">
+            <button class="at-btn" id="atCopie">Copier</button>
+          </div>
+          <div id="atCorrectif"></div></div>`;
         const cp=$('#atCopie');cp&&cp.addEventListener('click',()=>{
           navigator.clipboard.writeText(plein.corps||'').then(()=>toast('Livrable copié')).catch(()=>toast('Copie impossible'))});
+        brancherPouce(plein.id);
       }catch(e){c.innerHTML='<p class="at-td">'+esc2(friendlyErr(e))+'</p>'}
+    }
+
+    /* ═══ Le pouce ══════════════════════════════════════════════════════════
+       Il ne sert pas à faire des statistiques. Un pouce en bas + deux mots,
+       et quand le même reproche revient trois fois, l'atelier propose la ligne
+       d'interdit qui l'empêchera. Sans le motif, on n'a qu'une humeur. */
+    function brancherPouce(livrableId){
+      const h=$('#atPHaut'),b=$('#atPBas'),m=$('#atMotif'),z=$('#atCorrectif');
+      if(!h||!b)return;
+      const envoyer=async(pouce)=>{
+        try{
+          const r=await api('/livrables/'+livrableId+'/verdict',
+            {method:'POST',body:JSON.stringify({pouce,motif:pouce===-1?(m.value||'').trim():''})});
+          h.classList.toggle('on',pouce===1);b.classList.toggle('on',pouce===-1);
+          toast(pouce===1?'Noté — c\'est ce qu\'on veut':'Recalé');
+          if(r.correctif)montrerCorrectif(r.correctif,z);
+        }catch(e){toast(friendlyErr(e))}
+      };
+      h.addEventListener('click',()=>{m.hidden=true;envoyer(1)});
+      b.addEventListener('click',()=>{
+        if(m.hidden){m.hidden=false;m.focus();return}   // premier clic : on demande pourquoi
+        envoyer(-1);
+      });
+      m.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();envoyer(-1)}});
+    }
+
+    /* Un correctif modifie la consigne : c'est une écriture, donc il attend une
+       signature — et Mazen peut réécrire la phrase avant d'accepter. */
+    function montrerCorrectif(c,zone){
+      if(!zone)return;
+      zone.innerHTML=`<div class="at-corr">
+        <div class="at-corr-h"><span class="at-corr-b">${c.action==='remplacer'?'remplacer dans':'ajouter aux'} ${NOMS[c.bloc]||c.bloc}</span>
+          <span class="at-td">fondé sur ${c.n} livrables recalés pour « ${esc2(c.motif)} »</span></div>
+        <textarea class="at-corr-t" id="atCorrTxt" aria-label="Phrase proposée">${esc2(c.texte)}</textarea>
+        <div class="at-acts">
+          <button class="at-btn" data-c="refuser">Pas celle-là</button>
+          <button class="at-btn plein" data-c="accepter">Ajouter à la consigne</button>
+        </div></div>`;
+      $$('[data-c]',zone).forEach(bt=>bt.addEventListener('click',async()=>{
+        $$('[data-c]',zone).forEach(x=>x.disabled=true);
+        try{
+          const d=bt.dataset.c==='accepter'
+            ? await api('/correctifs/'+c.id,{method:'POST',body:JSON.stringify({decision:'accepter',texte:$('#atCorrTxt').value})})
+            : await api('/correctifs/'+c.id,{method:'POST',body:JSON.stringify({decision:'refuser'})});
+          zone.innerHTML='';
+          if(bt.dataset.c==='accepter'){toast('Consigne passée en v'+d.version);await rafraichir();ouvrirPoste(c.poste_id||posteOuvert.id)}
+          else toast('Proposition écartée — le reproche reste noté');
+        }catch(e){toast(friendlyErr(e));$$('[data-c]',zone).forEach(x=>x.disabled=false)}
+      }));
     }
 
     /* ═══ Le contrôle ═══ */

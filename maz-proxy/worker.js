@@ -246,7 +246,7 @@ export default {
        Tout est isolé par user_id en requête préparée, et chaque écriture prend
        un numéro au compteur monotone : GET /delta?depuis=<seq> rejoue ensuite
        exactement ce qui a changé, sans rien retélécharger. */
-    if (/^\/(atelier|delta|forge|chantiers|ouvriers|postes|passages|controle|livrables)(\/|$|\?)/.test(path)) {
+    if (/^\/(atelier|delta|forge|chantiers|ouvriers|postes|passages|controle|livrables|correctifs)(\/|$|\?)/.test(path)) {
       if (!user) return J({ error: 'code_required' }, 401, cors);
       const corps = ['POST', 'PATCH', 'PUT'].includes(req.method) ? await req.json().catch(() => ({})) : {};
       const seg = path.split('/').filter(Boolean);
@@ -465,6 +465,52 @@ export default {
                 corps.correction ? JSON.stringify(corps.correction) : null, Date.now(), await A.seqNext(env, user.id)).run();
             const r = await A.reprendre(env, user, c, d, corps.correction || null);
             return J(r, 200, cors);
+          }
+        }
+
+        /* ── le pouce : un verdict par livrable, et il fabrique les interdits ── */
+        if (seg[0] === 'livrables' && seg.length === 3 && seg[2] === 'verdict' && req.method === 'POST') {
+          const l = await lire('livrables', seg[1]); if (!l) return J({ error: 'introuvable' }, 404, cors);
+          const pouce = corps.pouce === -1 || corps.pouce === 1 ? corps.pouce : null;
+          if (!pouce) return J({ error: 'pouce_invalide' }, 400, cors);
+          const pa = await db.prepare('SELECT consigne_ver FROM passages WHERE id=?1').bind(l.passage_id).first();
+          const motif = String(corps.motif || '').slice(0, 120).trim();
+          await db.prepare(
+            `INSERT INTO verdicts (livrable_id,user_id,poste_id,passage_id,consigne_ver,pouce,motif,motif_cle,cree_at,seq)
+             VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)
+             ON CONFLICT(livrable_id) DO UPDATE SET pouce=?6,motif=?7,motif_cle=?8,cree_at=?9,seq=?10,traite=0`
+          ).bind(l.id, user.id, l.poste_id, l.passage_id, (pa && pa.consigne_ver) || 1,
+            pouce, motif || null, A.motifCle(motif), Date.now(), await A.seqNext(env, user.id)).run();
+          // Un pouce en bas peut déclencher une proposition — jamais bloquante :
+          // le verdict est déjà enregistré, la proposition arrivera au prochain coup d'œil.
+          let propose = null;
+          if (pouce === -1 && motif) {
+            try { propose = await A.peutEtreCorrige(env, user.id, l.poste_id); }
+            catch (e) { try { console.warn('[MAZ correctif]', String(e).slice(0, 200)); } catch (_) {} }
+          }
+          return J({ ok: true, correctif: propose }, 200, cors);
+        }
+
+        /* ── correctifs : proposés par l'atelier, décidés par Mazen ── */
+        if (seg[0] === 'correctifs') {
+          if (req.method === 'GET' && seg.length === 1) {
+            const rows = await db.prepare(
+              `SELECT c.*, p.nom poste_nom FROM correctifs c LEFT JOIN postes p ON p.id=c.poste_id
+               WHERE c.user_id=?1 AND c.statut='attente' ORDER BY c.cree_at DESC`).bind(user.id).all();
+            return J(rows.results, 200, cors);
+          }
+          if (req.method === 'POST' && seg.length === 2) {
+            const c = await lire('correctifs', seg[1]); if (!c) return J({ error: 'introuvable' }, 404, cors);
+            if (c.statut !== 'attente') return J({ error: 'deja_decide', statut: c.statut }, 409, cors);
+            if (corps.decision === 'refuser') {
+              await db.prepare('UPDATE correctifs SET statut=?2,decide_at=?3 WHERE id=?1')
+                .bind(c.id, 'refuse', Date.now()).run();
+              // Les recalages restent « non traités » : un refus n'efface pas le reproche,
+              // il refuse cette formulation-là.
+              return J({ ok: true }, 200, cors);
+            }
+            if (corps.texte) c.texte = String(corps.texte).slice(0, 600);   // Mazen peut réécrire avant d'accepter
+            return J(await A.appliquerCorrectif(env, user.id, c), 200, cors);
           }
         }
 

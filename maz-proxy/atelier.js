@@ -661,6 +661,135 @@ export function router(phrase, a) {
   return { modele: m.id, ouvrier: a.metier || 'Ouvrier', outillage, rpm: m.rpm, pourquoi: trace };
 }
 
+/* ═══ les corrections : ce qu'on recale devient un interdit ════════════════
+   Le seuil est à trois recalages du même motif — deux, c'est une coïncidence ;
+   à partir de trois, c'est un défaut de consigne. Le correctif n'est jamais
+   appliqué tout seul : il attend une décision, comme une écriture. */
+
+const SEUIL_CORRECTIF = 3;
+
+/** Normalise un motif pour le regroupement : « Prix inventé » et « prix invente »
+ *  sont le même reproche. */
+export function motifCle(s) {
+  return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60);
+}
+
+const SCHEMA_CORRECTIF = {
+  type: 'json_schema',
+  json_schema: {
+    name: 'correctif', strict: true,
+    schema: {
+      type: 'object', additionalProperties: false,
+      required: ['bloc', 'action', 'texte'],
+      properties: {
+        bloc: { type: 'string', enum: ['role', 'methode', 'interdits', 'format'] },
+        action: { type: 'string', enum: ['ajouter', 'remplacer'] },
+        texte: { type: 'string', description: 'UNE phrase, à la deuxième personne, impérative.' },
+        remplace: { type: 'string', description: "La phrase existante à remplacer, copiée mot pour mot. Vide si action='ajouter'." },
+      },
+    },
+  },
+};
+
+const SYS_CORRECTIF = `Tu répares une consigne d'agent à partir de ce que son propriétaire a recalé.
+
+On te donne la consigne actuelle (quatre blocs nommés), le reproche répété, et des extraits des
+livrables refusés. Tu produis UNE opération sur UN bloc, rien de plus.
+
+Règles :
+- Tu n'as le droit d'écrire QU'UNE phrase. Une consigne qui gonfle à chaque correction devient illisible.
+- Écris-la à la deuxième personne, à l'impératif, et dis quoi faire À LA PLACE — un interdit sans
+  porte de sortie pousse le modèle à improviser ailleurs. « N'invente jamais un prix : si tu ne le
+  trouves pas, écris « introuvable ». »
+- Vise le bloc « interdits » par défaut. Ne touche « methode » que si le reproche porte sur un
+  enchaînement manquant, et « format » que s'il porte sur la forme du livrable.
+- Si une phrase existante dit déjà la chose mais mal, choisis « remplacer » et copie-la mot pour mot
+  dans « remplace ».
+- Zéro banalité, zéro « veille à », zéro « assure-toi de ». Une instruction vérifiable.`;
+
+/** Regarde si un poste a accumulé assez de recalages concordants pour mériter
+ *  une proposition. Appelée après chaque pouce en bas — jamais bloquante. */
+export async function peutEtreCorrige(env, userId, posteId) {
+  const dejaEnAttente = await env.maz_db.prepare(
+    `SELECT id FROM correctifs WHERE poste_id=?1 AND statut='attente'`).bind(posteId).first();
+  if (dejaEnAttente) return null;   // on n'empile pas les propositions
+
+  const grp = await env.maz_db.prepare(
+    `SELECT motif_cle, COUNT(*) n FROM verdicts
+     WHERE poste_id=?1 AND pouce=-1 AND traite=0 AND motif_cle IS NOT NULL AND motif_cle<>''
+     GROUP BY motif_cle ORDER BY n DESC LIMIT 1`).bind(posteId).first();
+  if (!grp || grp.n < SEUIL_CORRECTIF) return null;
+
+  const cas = await env.maz_db.prepare(
+    `SELECT v.livrable_id, v.motif, l.titre, substr(l.corps,1,700) extrait
+     FROM verdicts v LEFT JOIN livrables l ON l.id=v.livrable_id
+     WHERE v.poste_id=?1 AND v.pouce=-1 AND v.traite=0 AND v.motif_cle=?2
+     ORDER BY v.cree_at DESC LIMIT 4`).bind(posteId, grp.motif_cle).all();
+
+  const poste = await env.maz_db.prepare('SELECT * FROM postes WHERE id=?1').bind(posteId).first();
+  const cv = await env.maz_db.prepare('SELECT blocs FROM consignes_versions WHERE poste_id=?1 AND version=?2')
+    .bind(posteId, poste.consigne_ver).first();
+  let blocs = {}; try { blocs = JSON.parse(cv.blocs); } catch (_) {}
+
+  const motif = (cas.results[0] || {}).motif || grp.motif_cle;
+  const corpsCas = cas.results.map((c, i) =>
+    `— Livrable ${i + 1} « ${c.titre || ''} », recalé pour « ${c.motif || motif} » :\n${(c.extrait || '').slice(0, 700)}`).join('\n\n');
+
+  const r = await miFetch(env, '/v1/chat/completions', {
+    model: 'mistral-large-latest', temperature: 0.2, max_tokens: 500,
+    messages: [
+      { role: 'system', content: SYS_CORRECTIF },
+      { role: 'user', content:
+        `CONSIGNE ACTUELLE (v${poste.consigne_ver})\n` +
+        ['role', 'methode', 'interdits', 'format'].map(k => `## ${k}\n${blocs[k] || '(vide)'}`).join('\n\n') +
+        `\n\nREPROCHE RÉPÉTÉ ${grp.n} FOIS : « ${motif} »\n\nLIVRABLES REFUSÉS\n${corpsCas}` },
+    ],
+    response_format: SCHEMA_CORRECTIF,
+  });
+  const c = JSON.parse(r.choices[0].message.content);
+
+  const id = uid(), t = jNow(), seq = await seqNext(env, userId);
+  await env.maz_db.prepare(
+    `INSERT INTO correctifs (id,user_id,poste_id,bloc,action,texte,remplace,motif,preuves,cree_at,seq)
+     VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)`
+  ).bind(id, userId, posteId, c.bloc, c.action, c.texte, c.remplace || null, motif,
+    JSON.stringify(cas.results.map(x => x.livrable_id)), t, seq).run();
+  return { id, ...c, motif, n: grp.n };
+}
+
+/** Applique un correctif accepté : crée une NOUVELLE version de consigne.
+ *  L'ancienne n'est jamais écrasée — c'est ce qui rend le diff possible. */
+export async function appliquerCorrectif(env, userId, correctif) {
+  const poste = await env.maz_db.prepare('SELECT * FROM postes WHERE id=?1 AND user_id=?2')
+    .bind(correctif.poste_id, userId).first();
+  const cv = await env.maz_db.prepare('SELECT * FROM consignes_versions WHERE poste_id=?1 AND version=?2')
+    .bind(poste.id, poste.consigne_ver).first();
+  let blocs = {}; try { blocs = JSON.parse(cv.blocs); } catch (_) {}
+
+  const avant = String(blocs[correctif.bloc] || '');
+  if (correctif.action === 'remplacer' && correctif.remplace && avant.includes(correctif.remplace)) {
+    blocs[correctif.bloc] = avant.replace(correctif.remplace, correctif.texte);
+  } else {
+    blocs[correctif.bloc] = (avant ? avant.replace(/\s*$/, '') + '\n' : '') + correctif.texte;
+  }
+
+  const v = poste.consigne_ver + 1, t = jNow();
+  await env.maz_db.batch([
+    env.maz_db.prepare(
+      `INSERT INTO consignes_versions (poste_id,version,blocs,modele,outillage,motif,cree_at)
+       VALUES (?1,?2,?3,?4,?5,?6,?7)`
+    ).bind(poste.id, v, JSON.stringify(blocs), cv.modele, cv.outillage,
+      `correctif accepté — « ${correctif.motif} » (${JSON.parse(correctif.preuves || '[]').length} livrables recalés)`, t),
+    env.maz_db.prepare('UPDATE postes SET consigne_ver=?2,maj_at=?3 WHERE id=?1').bind(poste.id, v, t),
+    env.maz_db.prepare('UPDATE correctifs SET statut=?2,decide_at=?3 WHERE id=?1').bind(correctif.id, 'accepte', t),
+    env.maz_db.prepare(
+      `UPDATE verdicts SET traite=1 WHERE poste_id=?1 AND pouce=-1 AND traite=0 AND motif_cle=?2`
+    ).bind(poste.id, motifCle(correctif.motif)),
+  ]);
+  return { version: v, blocs };
+}
+
 /* ═══ le battement ════════════════════════════════════════════════════════ */
 
 /**
