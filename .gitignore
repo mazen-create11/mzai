@@ -17,3 +17,7 @@ _da-*.html
 _da-*.png
 _canva-render.png
 logo-explorations/
+
+# secrets de développement local (wrangler dev) — jamais versionnés
+maz-proxy/.dev.vars
+.dev.vars

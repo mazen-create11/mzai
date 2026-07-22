@@ -2,6 +2,12 @@ name = "maz-proxy"
 main = "worker.js"
 compatibility_date = "2026-07-01"
 
+# Le battement de l'atelier : un seul déclencheur pour TOUS les postes.
+# Le plafond est de 5 par COMPTE (pas par service) — « un cron par poste » est
+# structurellement impossible, d'où la table de planning et le tick à la minute.
+[triggers]
+crons = ["* * * * *"]
+
 [vars]
 # Origines autorisées à appeler le backend (séparées par des virgules).
 ALLOWED_ORIGINS = "https://mazen-create11.github.io"
