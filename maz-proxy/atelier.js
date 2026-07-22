@@ -591,14 +591,36 @@ quand même, avec une section « Ce qui manque ». Écris les interdits en cons�
 Sois honnête sur les trois notes : un travail qui « donne un avis » sur un livrable client engage une réputation, ce n'est pas de la reformulation.
 N'écris jamais de banalité. Pas de « n'hésite pas », pas de « dans un monde où ».`;
 
-export async function forger(env, phrase) {
+/* Deuxième porte d'entrée : un échange de l'Établi qui a marché.
+   On ne demande pas au modèle de résumer la conversation — on lui demande d'en
+   extraire la MÉTHODE, celle qui a produit la bonne réponse, pour qu'elle
+   se rejoue sur une autre matière. C'est toute la différence entre archiver
+   un résultat et fabriquer un outil. */
+const SYS_DEPUIS_ECHANGE = `${SYS_FORGE}
+
+ENTRÉE PARTICULIÈRE : on te donne un échange entre Mazen et une IA qui a bien fonctionné.
+Tu n'en fais pas le résumé. Tu en extrais la MÉTHODE qui a produit la bonne réponse, pour qu'elle
+se rejoue demain sur une AUTRE matière du même genre.
+Concrètement : ce que Mazen a demandé devient la méthode ; ce qu'il a corrigé ou reformulé en cours
+de route devient un interdit ; la forme de la réponse qui lui a convenu devient le format.
+Les données précises de cet échange-là (ces noms, ces chiffres, ces dates) n'entrent JAMAIS dans la
+consigne : elles seront collées au lancement du prochain passage.`;
+
+export async function forger(env, phrase, echange) {
+  const depuis = !!(echange && String(echange).trim());
+  const contenu = depuis
+    ? `Échange à transformer en poste :\n\n${String(echange).slice(0, 24000)}`
+    : String(phrase).slice(0, 2000);
   const r = await miFetch(env, '/v1/chat/completions', {
-    model: 'mistral-large-latest', temperature: 0.35, max_tokens: 1400,
-    messages: [{ role: 'system', content: SYS_FORGE }, { role: 'user', content: String(phrase).slice(0, 2000) }],
+    model: 'mistral-large-latest', temperature: 0.35, max_tokens: 1600,
+    messages: [{ role: 'system', content: depuis ? SYS_DEPUIS_ECHANGE : SYS_FORGE },
+               { role: 'user', content: contenu }],
     response_format: SCHEMA_FORGE,
   });
   const spec = JSON.parse(r.choices[0].message.content);
-  return { ...spec, ...router(String(phrase), spec) };
+  // Le routage se décide sur la demande, pas sur le verbatim de l'échange :
+  // un long copier-coller ferait déclencher n'importe quel mot-clé.
+  return { ...spec, ...router(`${spec.objectif} ${spec.metier}`, spec), depuis_echange: depuis };
 }
 
 /** Décide du modèle et de l'outillage. Explique sa décision : une boîte noire

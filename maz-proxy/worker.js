@@ -59,7 +59,10 @@ function corsHeaders(req, allowed) {
   const reqH = req.headers.get('Access-Control-Request-Headers');
   return {
     'Access-Control-Allow-Origin': ok ? origin : (allowed[0] || 'null'),
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    // PATCH est indispensable : toute modification de poste, d'ouvrier ou de
+    // chantier passe par lui. Son absence ici bloquait le préflight — invisible
+    // en curl, fatal dans un navigateur.
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': reqH || 'Content-Type, Authorization, X-Maz-Code, X-Admin-Key, HTTP-Referer, X-Title',
     'Access-Control-Max-Age': '600',
     'Vary': 'Origin',
@@ -285,8 +288,9 @@ export default {
         /* ── la forge : une phrase en entrée, une fiche relisible en sortie ── */
         if (path === '/forge' && req.method === 'POST') {
           const phrase = String(corps.phrase || '').trim();
-          if (phrase.length < 12) return J({ error: 'phrase_trop_courte' }, 400, cors);
-          return J(await A.forger(env, phrase), 200, cors);
+          const echange = String(corps.echange || '').trim();
+          if (!echange && phrase.length < 12) return J({ error: 'phrase_trop_courte' }, 400, cors);
+          return J(await A.forger(env, phrase, echange), 200, cors);
         }
 
         /* ── chantiers & ouvriers : même moule ── */
@@ -361,7 +365,8 @@ export default {
             const b = corps.blocs || {};
             await db.prepare(`INSERT INTO consignes_versions (poste_id,version,blocs,modele,outillage,motif,cree_at)
                               VALUES (?1,1,?2,?3,?4,?5,?6)`)
-              .bind(id, JSON.stringify(b), corps.modele || null, JSON.stringify(corps.outillage || []), 'création', t).run();
+              .bind(id, JSON.stringify(b), corps.modele || null, JSON.stringify(corps.outillage || []),
+                String(corps.motif || 'création').slice(0, 400), t).run();
             return J(await lire('postes', id), 200, cors);
           }
           const p = seg.length >= 2 ? await lire('postes', seg[1]) : null;
@@ -377,6 +382,16 @@ export default {
                 .bind(p.id, v, JSON.stringify(corps.blocs), corps.modele || null,
                   JSON.stringify(corps.outillage || []), String(corps.motif || `v${v}`), t).run();
               await db.prepare('UPDATE postes SET consigne_ver=?2 WHERE id=?1').bind(p.id, v).run();
+            }
+            /* On ne planifie jamais un travail qu'on n'a jamais vu tourner.
+               Vérifié côté SERVEUR : contourner le bouton ne contourne pas la règle. */
+            if (corps.etat === 'actif' && p.etat !== 'actif') {
+              const vu = await db.prepare(
+                `SELECT COUNT(*) n FROM passages WHERE poste_id=?1 AND statut='fini'`).bind(p.id).first();
+              if (!vu || !vu.n) return J({
+                error: 'jamais_repete',
+                hint: "Fais-le d'abord tourner à blanc : « Répéter à blanc » n'écrit rien et montre ce qu'il produirait.",
+              }, 409, cors);
             }
             const champs = ['nom', 'objectif', 'chantier_id', 'ouvrier_id', 'cadence', 'cron', 'tz',
               'livrable_forme', 'destinataire', 'ecriture_auto', 'budget_cents', 'etat'];

@@ -155,6 +155,29 @@
 /* ── chiffres : toujours alignés, jamais en corps de texte ── */
 .at-num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;letter-spacing:var(--tr-normal)}
 
+/* ── le pont : pied de conversation, hors du fil pour ne rien perturber ── */
+.at-pont{display:flex;align-items:center;gap:var(--s-3);justify-content:flex-end;
+  padding:var(--s-3) var(--s-6) var(--s-2);max-width:var(--thread-max);margin:0 auto;width:100%;
+  animation:at-monte var(--dur-3) var(--ease) both}
+.at-pont[hidden]{display:none}
+.at-pont-t{font-size:var(--fs-xs);color:var(--ink-faint)}
+@keyframes at-monte{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@media (max-width:760px){.at-pont{padding-inline:var(--s-4)}}
+@media (prefers-reduced-motion:reduce){.at-pont{animation:none}}
+
+/* ── le livrable : c'est le produit du poste, il se lit en grand ── */
+.at-livr{border:1px solid var(--line);border-left:2px solid var(--accent);border-radius:var(--r-sm);
+  background:var(--surface-2);padding:var(--s-4) var(--s-5);display:flex;flex-direction:column;gap:var(--s-3)}
+.at-livr-h{display:flex;align-items:baseline;gap:var(--s-3);flex-wrap:wrap}
+.at-livr-t{font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--ink)}
+.at-livr-m{margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--ink-faint);
+  font-variant-numeric:tabular-nums}
+.at-livr-c{max-height:26em;overflow:auto;font-size:var(--fs-sm);line-height:var(--lh-normal)}
+.at-livr-c>:first-child{margin-top:0}
+.at-livr-c>:last-child{margin-bottom:0}
+.at-livr-c table{width:auto;min-width:100%}
+.at-livr-c th{white-space:nowrap}
+
 /* compteur de signatures en attente, dans la navigation */
 .at-nav-n{margin-left:auto;min-width:18px;height:18px;padding:0 5px;border-radius:var(--r-pill);
   background:var(--accent);color:var(--ink-on-accent);font-family:var(--font-mono);font-size:10px;
@@ -198,6 +221,14 @@
 .at-rt .at-k{font-family:var(--font-mono);font-size:10px;color:var(--ink-faint);letter-spacing:.02em}
 .at-rt.att .at-v{color:var(--ink)}
 .at-rt.ko .at-v{color:var(--danger-strong)}
+/* Au pouce, la colonne de droite serrait le sous-titre : elle passe dessous,
+   alignée à gauche, et la jauge tient la colonne de tête. */
+@media (max-width:600px){
+  .at-row{grid-template-columns:30px minmax(0,1fr);gap:2px var(--s-3);padding:var(--s-4)}
+  .at-gauge{grid-row:span 3}
+  .at-rt{grid-row:auto;grid-column:2;text-align:left;flex-direction:row;align-items:baseline;gap:var(--s-2);margin-top:var(--s-1)}
+  .at-rt .at-k::before{content:'· '}
+}
 
 /* ── l'état vide : il ne s'excuse pas, il propose ── */
 .at-empty{border:1px dashed var(--line-strong);border-radius:var(--r-md);padding:var(--s-8) var(--s-6);
@@ -322,6 +353,18 @@
 .at-sk:first-child{border-top:0}
 @keyframes at-sh{to{background-position:-200% 0}}
 @media (prefers-reduced-motion:reduce){.at-sk,.at-ev.run{animation:none}}
+
+/* ── Au pouce ─────────────────────────────────────────────────────────────
+   EN DERNIER dans le bloc, volontairement : à spécificité égale c'est l'ordre
+   qui tranche, et placée plus haut cette règle se faisait écraser par la
+   définition des champs. Aucune cible sous 44 px, champs compris — on les
+   vise aussi mal que les boutons. */
+@media (max-width:760px){
+  .at-btn{min-height:44px;padding:0 var(--s-5)}
+  .at-in,.at-sel{min-height:44px}
+  .at-sel{background-position:calc(100% - 15px) 20px,calc(100% - 10px) 20px}
+  .at-tool{padding:var(--s-4) var(--s-3)}
+}
 
 /* ============================================================
    BASE
@@ -1617,6 +1660,14 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       <!-- CHAT : fil de conversation (seule zone scrollable) -->
       <section class="view" id="view-chat" aria-label="Conversation">
         <div class="thread" id="chat" role="log" aria-live="polite"></div>
+        <!-- Le pont entre les deux moitiés de l'app : cet échange a marché, il devient un poste. -->
+        <div class="at-pont" id="atPont" hidden>
+          <span class="at-pont-t">Cet échange a marché&nbsp;?</span>
+          <button class="at-btn" id="atPontBtn">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.6 15.1 8.9 21.4 12 15.1 15.1 12 21.4 8.9 15.1 2.6 12 8.9 8.9Z"/></svg>
+            Mettre en poste
+          </button>
+        </div>
       </section>
 
       <!-- BIBLIOTHÈQUE -->
@@ -2468,6 +2519,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     if(v==='persona')fillPersona();else if(v==='prompts')renderPromptsView();else if(v==='help')renderHelp();   // vues in-place (ex-modales)
     if(v==='atelier'&&typeof AT!=='undefined'){AT.peindre();AT.rafraichir()}
     else if(v==='controle'&&typeof AT!=='undefined')AT.peindreControle();
+    if(typeof AT!=='undefined')AT.syncPont();
     $('#app').dataset.view=v;                 // pilote le dock (#dockChat visible seulement en chat) + le clavier mobile
     const navv=v==='project'?'projects':v;
     $$('.nav-item').forEach(n=>{const on=n.dataset.view===navv;n.classList.toggle('active',on);if(on)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current')});
@@ -4317,7 +4369,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(finis)bouts.push(`<span class="at-em">${finis} passage${finis>1?'s':''}</span> ${finis>1?'ont abouti':'a abouti'}`);
       if(ko)bouts.push(`${ko} ${ko>1?'ont cassé':'a cassé'}`);
       if(att)bouts.push(`<span class="at-em">${att}</span> ${att>1?'attendent':'attend'} ta signature`);
-      const corps=bouts.length?bouts.join(', ')+'.':'rien n\'a encore tourné aujourd\'hui.';
+      const corps=bouts.length?bouts.join(', ')+'.':'Rien n\'a encore tourné aujourd\'hui.';
       return `<p class="at-narr">${esc2(jour[0].toUpperCase()+jour.slice(1))}. ${corps}
         <span class="at-mute">Ce mois : <span class="at-num">${eur(etat.mois_cents)}</span>.</span></p>`;
     }
@@ -4336,6 +4388,22 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         <div class="at-daybar">${g}<span class="at-now" style="left:${pc(Date.now()).toFixed(2)}%"></span>${pts}</div></div>`;
     }
 
+    /* « il y a 12 min », « demain 08:03 » — un horaire brut oblige à faire le
+       calcul de tête à chaque coup d'œil, et cet écran se lit d'un coup d'œil. */
+    function depuis(ms){
+      const d=Math.round((Date.now()-ms)/60000);
+      if(d<1)return 'à l\'instant';
+      if(d<60)return 'il y a '+d+' min';
+      if(d<1440)return 'il y a '+Math.round(d/60)+' h';
+      return 'il y a '+Math.round(d/1440)+' j';
+    }
+    function bientot(ms){
+      const d=new Date(ms),now=new Date();
+      const j=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate())-new Date(now.getFullYear(),now.getMonth(),now.getDate()))/86400000);
+      const h=hhmm(ms);
+      return j<=0?h:j===1?'demain '+h:d.toLocaleDateString('fr-FR',{weekday:'short'})+' '+h;
+    }
+
     function lignePoste(p){
       const att=etat.controles.filter(c=>c.poste_id===p.id).length;
       const der=etat.journee.filter(x=>x.poste_id===p.id)[0];
@@ -4344,9 +4412,11 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const sousTitre=[esc2(p.ouvrier_nom||''),esc2(p.chantier_nom||''),cad].filter(Boolean).join(' · ');
       let k='',v='',cls='';
       if(att){cls='att';v=att+' à signer';k='en attente'}
-      else if(p.etat==='disjoncte'){cls='ko';v='enveloppe';k='atteinte'}
-      else if(der&&(der.statut==='echec'||der.statut==='coupe')){cls='ko';v='échec';k=hhmm(der.debut_at)}
-      else if(der){v=eur(p.depense_cents||0);k='ce mois'}
+      else if(p.etat==='disjoncte'){cls='ko';v='enveloppe atteinte';k=eur(p.depense_cents||0)+' ce mois'}
+      else if(der&&(der.statut==='echec'||der.statut==='coupe')){cls='ko';v='échec';k=depuis(der.debut_at)}
+      else if(p.etat==='actif'&&p.prochain_at){v=bientot(p.prochain_at);k='prochain passage'}
+      else if(der){v=depuis(der.debut_at);k=eur(p.depense_cents||0)+' ce mois'}
+      else if(p.etat==='brouillon'){v='brouillon';k='jamais tourné'}
       else{v='jamais lancé';k=''}
       return `<button class="at-row" data-poste="${esc2(p.id)}">
         ${jauge(p.sante)}
@@ -4405,12 +4475,20 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         const ouv=await assurerOuvrier(spec);
         const p=await api('/postes',{method:'POST',body:JSON.stringify({
           nom:spec.nom,objectif:spec.objectif,ouvrier_id:ouv.id,cadence:'demande',
-          blocs:spec.blocs,outillage:spec.outillage,modele:spec.modele,budget_cents:300})});
+          blocs:spec.blocs,outillage:spec.outillage,modele:spec.modele,budget_cents:300,
+          motif:motifForge(spec)})});
         ta.value='';et.textContent='';
         await rafraichir();ouvrirPoste(p.id);
         toast('Poste forgé — relis la consigne avant de le lancer');
       }catch(e){et.textContent=friendlyErr(e)}
       finally{bt.disabled=false}
+    }
+    /* Le routeur explique déjà pourquoi il a choisi ce modèle — on garde sa
+       raison dans la version de consigne. Une boîte noire qui choisit juste
+       reste une boîte noire. */
+    function motifForge(spec){
+      const t=(spec.pourquoi||[]).join(' · ');
+      return `forgé — ${spec.modele} (${spec.rpm}/min)${t?' · '+t:''}`.slice(0,400);
     }
     /* Un ouvrier par couple (modèle, outillage) : on n'en empile pas un par poste. */
     async function assurerOuvrier(spec){
@@ -4476,6 +4554,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
                 <div class="at-f"><span class="at-lbl">Enveloppe / mois</span>
                   <input class="at-in at-num" id="atBudget" type="number" min="0" step="0.5" value="${((p.budget_cents||0)/100).toFixed(2)}" aria-label="Enveloppe mensuelle en euros"></div>
               </div>
+              ${cv.motif?`<p class="at-td" style="margin:calc(-1 * var(--s-2)) 0 0">${esc2(cv.motif)}</p>`:''}
               <div class="at-f"><span class="at-lbl">Outillage</span>
                 ${OUTILLAGE.map(o=>`<label class="at-tool${outil.includes(o.cle)?' on':''}" data-tool="${o.cle}">
                   <input type="checkbox" ${outil.includes(o.cle)?'checked':''} aria-label="${esc2(o.nom)}">
@@ -4504,8 +4583,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
             </div>
 
             <div class="at-card">
-              <p class="at-ct">Derniers passages</p>
-              ${der?`<div class="at-steps" id="atJournal"></div>`:'<p class="at-td">Aucun passage. « Répéter à blanc » n\'écrit rien : c\'est le bon premier geste.</p>'}
+              <p class="at-ct">${der?'Dernier passage':'Passages'}</p>
+              ${der?`<div class="at-steps" id="atJournal"></div><div id="atLivrable"></div>`:'<p class="at-td">Aucun passage. « Répéter à blanc » n\'écrit rien : c\'est le bon premier geste.</p>'}
               ${(passages||[]).length?`<div class="at-f"><span class="at-lbl">Historique</span>${passages.slice(0,6).map(x=>{
                 const k=x.statut==='fini'?'':(x.statut==='attente'?'att':'ko');
                 return `<button class="at-step" data-passage="${x.id}" style="background:none;border:0;border-top:1px solid var(--line-faint);width:100%;cursor:pointer;text-align:left;font:inherit">
@@ -4556,7 +4635,50 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     async function etatPoste(p,etatV){
       try{await api('/postes/'+p.id,{method:'PATCH',body:JSON.stringify({etat:etatV})});
         toast(etatV==='actif'?'Poste en service':'Poste en pause');await rafraichir();ouvrirPoste(p.id)}
-      catch(e){toast(friendlyErr(e))}
+      catch(e){
+        /* Le serveur refuse de planifier un poste jamais vu tourner. Plutôt que
+           d'afficher le refus, on propose le geste qui débloque. */
+        if(e.corps&&e.corps.error==='jamais_repete'){
+          const et=$('#atRunEtat');if(et)et.textContent=e.corps.hint;
+          toast('Fais-le tourner à blanc d\'abord');
+          const rp=$('#atRepet');if(rp){rp.classList.add('plein');rp.focus()}
+          const la=$('#atLancer');if(la)la.classList.remove('plein');
+          return;
+        }
+        toast(friendlyErr(e));
+      }
+    }
+
+    /* ═══ Le pont : un échange de l'Établi devient un poste ═══
+       On n'archive pas le résultat, on extrait la méthode qui l'a produit. */
+    async function depuisEchange(){
+      const c=convoById(activeId);
+      if(!c||!c.msgs||c.msgs.length<2){toast('Ouvre une conversation qui a produit quelque chose');return}
+      const bt=$('#atPontBtn');bt.disabled=true;
+      const lbl=bt.innerHTML;bt.innerHTML='La forge lit l\'échange…';
+      try{
+        const echange=c.msgs.filter(m=>m&&typeof m.text==='string'&&m.text.trim())
+          .slice(-12)
+          .map(m=>(m.role==='user'?'MAZEN : ':'IA : ')+m.text.trim())
+          .join('\n\n---\n\n');
+        const spec=await api('/forge',{method:'POST',body:JSON.stringify({echange})});
+        const ouv=await assurerOuvrier(spec);
+        const p=await api('/postes',{method:'POST',body:JSON.stringify({
+          nom:spec.nom,objectif:spec.objectif,ouvrier_id:ouv.id,cadence:'demande',
+          blocs:spec.blocs,outillage:spec.outillage,modele:spec.modele,budget_cents:300,
+          motif:'tiré de la conversation « '+(c.title||'sans titre').slice(0,40)+' » · '+motifForge(spec)})});
+        await rafraichir();ouvrirPoste(p.id);
+        toast('Poste tiré de la conversation — relis la consigne');
+      }catch(e){toast(friendlyErr(e))}
+      finally{bt.disabled=false;bt.innerHTML=lbl}
+    }
+    /* Le pont n'apparaît que quand il y a matière : au moins une vraie réponse. */
+    function syncPont(){
+      const el=$('#atPont');if(!el)return;
+      const c=convoById(activeId);
+      // La convention du fil est role:'ai' (pas 'assistant') — s'y tromper masque le pont en silence.
+      const utile=!!(c&&(c.msgs||[]).some(m=>m&&m.role==='ai'&&!m.error&&typeof m.text==='string'&&m.text.trim().length>80));
+      el.hidden=!(utile&&$('#app').dataset.view==='chat');
     }
     async function lancer(p,mode){
       const et=$('#atRunEtat'),bs=[$('#atLancer'),$('#atRepet')].filter(Boolean);
@@ -4574,12 +4696,27 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const c=$('#atJournal');if(!c)return;
       try{
         const d=await api('/passages/'+pid);
-        c.innerHTML=(d.etapes||[]).map(e=>{
+        const etapes=(d.etapes||[]).map(e=>{
           const k=e.statut==='simule'?'sim':(e.statut==='echec'?'ko':(e.statut==='attente'?'att':''));
           const val=e.ms?e.ms+' ms':(e.sortie||'');
           return `<div class="at-step"><span class="at-si ${k}"></span><span class="at-sn">${esc2(e.nom)}${e.statut==='simule'?' — simulé':''}</span><span class="at-sv">${esc2(String(val).slice(0,26))}</span></div>`
             +(e.plan?`<div class="at-plan">${esc2(e.plan)}</div>`:'');
         }).join('')||'<p class="at-td">Aucune étape.</p>';
+        c.innerHTML=etapes;
+        // Le livrable est le PRODUIT du poste : il se lit ici, pas dans un journal technique.
+        const zone=$('#atLivrable');if(!zone)return;
+        const lv=(d.livrables||[])[0];
+        if(!lv){zone.innerHTML=d.statut==='attente'
+          ? '<p class="at-td">En attente de ta signature — rien n\'a encore été écrit.</p>'
+          : (d.mode==='repetition'?'<p class="at-td">Répétition : rien n\'a été écrit, seul le plan a été relevé.</p>':'');return}
+        const plein=await api('/livrables/'+lv.id);
+        zone.innerHTML=`<div class="at-livr">
+          <div class="at-livr-h"><span class="at-livr-t">${esc2(plein.titre)}</span>
+            <span class="at-livr-m">${hhmm(plein.cree_at)} · ${eur(d.cout_cents||0)}</span></div>
+          <div class="at-livr-c bubble md">${renderMD(String(plein.corps||''))}</div>
+          <div class="at-frow"><button class="at-btn" id="atCopie">Copier</button></div></div>`;
+        const cp=$('#atCopie');cp&&cp.addEventListener('click',()=>{
+          navigator.clipboard.writeText(plein.corps||'').then(()=>toast('Livrable copié')).catch(()=>toast('Copie impossible'))});
       }catch(e){c.innerHTML='<p class="at-td">'+esc2(friendlyErr(e))+'</p>'}
     }
 
@@ -4616,11 +4753,17 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       }catch(e){et.textContent=friendlyErr(e);bs.forEach(b=>b.disabled=false)}
     }
 
-    return{rafraichir,peindre,peindreControle,ouvrirPoste,etat:()=>etat};
+    return{rafraichir,peindre,peindreControle,ouvrirPoste,depuisEchange,syncPont,etat:()=>etat};
   })();
 
   $('#atRefresh')&&$('#atRefresh').addEventListener('click',()=>AT.rafraichir());
   $('#atBack')&&$('#atBack').addEventListener('click',()=>showView('atelier'));
+  $('#atPontBtn')&&$('#atPontBtn').addEventListener('click',()=>AT.depuisEchange());
+  /* Le fil est réécrit par plusieurs chemins (ouverture, streaming, régénération,
+     édition) : on observe le résultat plutôt que d'aller brancher chacun d'eux. */
+  (function(){const fil=$('#chat');if(!fil)return;
+    let t=0;new MutationObserver(()=>{clearTimeout(t);t=setTimeout(()=>AT.syncPont(),260)})
+      .observe(fil,{childList:true,subtree:true,characterData:true});})();
 
   /* ===== accessibilité : modales (aria-modal + piège de focus + retour focus) ===== */
   (function(){
