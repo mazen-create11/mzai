@@ -4475,7 +4475,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   const AT=(function(){
     const base=()=>_PB;                       // même Worker que la synchro
     let etat={postes:[],journee:[],controles:[],mois_cents:0,seq:0};
-    let ouvriers=[],chantiers=[],charge=false,perime=false,posteOuvert=null;
+    let ouvriers=[],chantiers=[],charge=false,perime=false,sansAcces=false,posteOuvert=null;
 
     /* Le code d'accès n'est injecté par l'intercepteur que si VIA_PROXY ;
        l'atelier parle au Worker dans tous les cas, il pose donc son en-tête. */
@@ -4683,6 +4683,14 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     function peindre(){
       const b=$('#atBody');if(!b)return;
       if(!charge){b.innerHTML=`<div class="at-list">${'<div class="at-sk"></div>'.repeat(3)}</div>`;return}
+      if(sansAcces){
+        b.innerHTML=`<div class="at-empty">
+          <p class="at-et">L'atelier demande ton code d'accès.</p>
+          <p class="at-es">Tes postes vivent sur le serveur pour tourner sans onglet ouvert — il faut donc savoir à qui ils appartiennent. Recharge la page&nbsp;: MAZ te demandera ton code, et l'atelier s'ouvrira.</p>
+          <button class="at-btn plein" id="atRecharge">Recharger</button></div>`;
+        const r=$('#atRecharge');r&&r.addEventListener('click',()=>{try{localStorage.removeItem('mzai:acode')}catch(e){}location.reload()});
+        return;
+      }
       const hors=perime?`<div class="at-off"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6M12 16v6" stroke-linecap="round"/><circle cx="12" cy="12" r="2"/></svg>Connexion perdue — voici le dernier état connu.</div>`:'';
       const liste=etat.postes.length
         ? `<div${perime?' class="at-stale"':''}>${strates()}</div>`
@@ -4713,7 +4721,12 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         const d=await api('/atelier');etat=d;perime=false;charge=true;
         const[o,c]=await Promise.all([api('/ouvriers').catch(()=>[]),api('/chantiers').catch(()=>[])]);
         ouvriers=o||[];chantiers=c||[];
-      }catch(e){perime=true;charge=true;if(e.statut===401)toast('Connecte-toi pour ouvrir l\'atelier')}
+      }catch(e){
+        /* Un refus d'accès n'est pas une panne réseau. Afficher « connexion
+           perdue » quand le vrai problème est « code manquant » envoie
+           chercher un problème qui n'existe pas. */
+        charge=true;sansAcces=(e.statut===401);perime=!sansAcces;
+      }
       peindre();
     }
 
