@@ -129,6 +129,201 @@
 }
 
 /* ============================================================
+   L'ATELIER — espace de noms `.at-` ÉTANCHE
+   ------------------------------------------------------------
+   Règle tenue sans exception : aucun sélecteur d'élément nu, aucun nom de
+   classe déjà employé ailleurs, aucune valeur brute — tout passe par les
+   tokens du haut de cette feuille. La cascade historique tient par l'ordre
+   d'écriture (`.tools-btn` est redéfini quatre fois) : plutôt que d'aplatir
+   1 300 lignes sous une app en production, on rend la collision IMPOSSIBLE.
+
+   Intention : un instrument de mesure. Trois signaux, jamais quatre —
+   émeraude (en cours, réussi) · craie (attend un humain) · brique (cassé).
+   Tout chiffre est en chasse fixe alignée : c'est ce qui sépare un
+   instrument d'une page web.
+   ============================================================ */
+.at-wrap{display:flex;flex-direction:column;gap:var(--s-7);padding:var(--s-6) var(--s-6) var(--s-10);max-width:1080px;width:100%;margin:0 auto}
+@media (max-width:760px){.at-wrap{padding:var(--s-4) var(--s-4) var(--s-9);gap:var(--s-6)}}
+
+/* ── le bandeau narratif : le SEUL moment éditorial de l'atelier ── */
+.at-narr{font-family:var(--font-serif);font-size:var(--fs-md);line-height:var(--lh-snug);
+  color:var(--ink);margin:0;max-width:56ch;font-weight:var(--fw-reg);text-wrap:pretty}
+.at-narr .at-em{color:var(--accent);font-style:italic}
+.at-narr .at-mute{color:var(--ink-soft)}
+@media (min-width:761px){.at-narr{font-size:var(--fs-lg)}}
+
+/* ── chiffres : toujours alignés, jamais en corps de texte ── */
+.at-num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;letter-spacing:var(--tr-normal)}
+
+/* compteur de signatures en attente, dans la navigation */
+.at-nav-n{margin-left:auto;min-width:18px;height:18px;padding:0 5px;border-radius:var(--r-pill);
+  background:var(--accent);color:var(--ink-on-accent);font-family:var(--font-mono);font-size:10px;
+  font-weight:var(--fw-semi);display:inline-flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+
+/* ── surtitre ── */
+.at-lbl{font-family:var(--font-mono);font-size:var(--fs-xs);letter-spacing:var(--tr-wide);
+  text-transform:uppercase;color:var(--ink-faint);display:block}
+
+/* ── la ligne de journée : 24 h de haut en bas d'un trait ── */
+.at-day{display:flex;flex-direction:column;gap:var(--s-2)}
+.at-daybar{position:relative;height:38px;border-bottom:1px solid var(--line);overflow:hidden}
+.at-tick{position:absolute;bottom:0;width:1px;height:5px;background:var(--line-strong)}
+.at-th{position:absolute;bottom:8px;transform:translateX(-50%);font-family:var(--font-mono);
+  font-size:10px;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.at-ev{position:absolute;bottom:14px;width:9px;height:9px;border-radius:var(--r-pill);
+  transform:translateX(-50%);border:1.5px solid transparent;cursor:pointer}
+.at-ev.ok{background:var(--accent)}
+.at-ev.att{background:transparent;border-color:var(--ink-faint)}
+.at-ev.ko{background:var(--danger)}
+.at-ev.run{background:var(--accent);animation:at-pulse 2.4s var(--ease) infinite}
+.at-now{position:absolute;top:0;bottom:0;width:1px;background:var(--accent);opacity:.5}
+@keyframes at-pulse{0%,100%{opacity:1;transform:translateX(-50%) scale(1)}50%{opacity:.45;transform:translateX(-50%) scale(.8)}}
+
+/* ── la liste des postes ── */
+.at-list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r-md);
+  background:var(--surface);overflow:hidden;box-shadow:var(--shadow-xs)}
+.at-row{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:var(--s-2) var(--s-4);
+  align-items:center;padding:var(--s-4) var(--s-5);background:transparent;border:0;border-top:1px solid var(--line-faint);
+  text-align:left;color:inherit;font:inherit;cursor:pointer;width:100%;transition:background var(--dur-1) var(--ease)}
+.at-row:first-child{border-top:0}
+.at-row:hover,.at-row:focus-visible{background:var(--surface-2)}
+.at-row:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.at-gauge{grid-row:span 2;width:30px;height:30px;display:block}
+.at-nm{font-size:var(--fs-base);font-weight:var(--fw-semi);letter-spacing:var(--tr-snug);
+  color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.at-sub{grid-column:2;font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--ink-faint);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.at-rt{grid-row:span 2;grid-column:3;text-align:right;display:flex;flex-direction:column;gap:2px}
+.at-rt .at-v{font-family:var(--font-mono);font-size:var(--fs-sm);font-variant-numeric:tabular-nums;color:var(--ink-soft)}
+.at-rt .at-k{font-family:var(--font-mono);font-size:10px;color:var(--ink-faint);letter-spacing:.02em}
+.at-rt.att .at-v{color:var(--ink)}
+.at-rt.ko .at-v{color:var(--danger-strong)}
+
+/* ── l'état vide : il ne s'excuse pas, il propose ── */
+.at-empty{border:1px dashed var(--line-strong);border-radius:var(--r-md);padding:var(--s-8) var(--s-6);
+  text-align:center;display:flex;flex-direction:column;align-items:center;gap:var(--s-4)}
+.at-empty .at-et{font-family:var(--font-serif);font-size:var(--fs-md);color:var(--ink);margin:0}
+.at-empty .at-es{font-size:var(--fs-sm);color:var(--ink-soft);margin:0;max-width:44ch}
+
+/* ── la forge : une phrase, un poste ── */
+.at-forge{display:flex;flex-direction:column;gap:var(--s-3);border:1px solid var(--line);
+  border-radius:var(--r-md);background:var(--surface);padding:var(--s-5);box-shadow:var(--shadow-xs)}
+.at-forge:focus-within{border-color:var(--accent);box-shadow:var(--focus-ring)}
+.at-ta{width:100%;border:0;background:transparent;color:var(--ink);font-family:var(--font-sans);
+  font-size:var(--fs-base);line-height:var(--lh-normal);resize:none;min-height:2.6em;padding:0}
+.at-ta:focus{outline:0}
+.at-ta::placeholder{color:var(--ink-faint)}
+.at-frow{display:flex;align-items:center;gap:var(--s-3);flex-wrap:wrap}
+
+/* ── boutons : plats, un seul plein par écran ── */
+.at-btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s-2);
+  min-height:38px;padding:0 var(--s-4);border-radius:var(--r-sm);border:1px solid var(--line-strong);
+  background:var(--surface);color:var(--ink);font-family:var(--font-sans);font-size:var(--fs-sm);
+  font-weight:var(--fw-semi);cursor:pointer;transition:background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),transform var(--dur-1) var(--ease)}
+.at-btn:hover{background:var(--surface-2);border-color:var(--ink-faint)}
+.at-btn:active{transform:scale(.985)}
+.at-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.at-btn[disabled]{opacity:.45;cursor:not-allowed}
+.at-btn.plein{background:var(--accent);border-color:var(--accent);color:var(--ink-on-accent)}
+.at-btn.plein:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.at-btn.danger{color:var(--danger-strong);border-color:var(--line-strong)}
+.at-btn.danger:hover{border-color:var(--danger)}
+
+/* ── la fiche de poste : deux colonnes, la consigne à gauche ── */
+.at-fiche{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--s-6)}
+@media (min-width:900px){.at-fiche{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);align-items:start}}
+.at-card{border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);
+  padding:var(--s-5);display:flex;flex-direction:column;gap:var(--s-4);box-shadow:var(--shadow-xs)}
+.at-ct{font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--ink);letter-spacing:var(--tr-snug);margin:0}
+
+/* les quatre blocs nommés — la structure EST la méthode */
+.at-blocs{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden}
+.at-bloc{border-top:1px solid var(--line);display:flex;flex-direction:column}
+.at-bloc:first-child{border-top:0}
+.at-bh{display:flex;align-items:baseline;gap:var(--s-2);padding:var(--s-3) var(--s-4) 0}
+.at-bn{font-family:var(--font-mono);font-size:10px;letter-spacing:var(--tr-wide);text-transform:uppercase;color:var(--accent)}
+.at-bc{margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.at-bt{width:100%;border:0;background:transparent;color:var(--ink);font-family:var(--font-sans);
+  font-size:var(--fs-sm);line-height:var(--lh-normal);resize:vertical;min-height:3.4em;padding:var(--s-2) var(--s-4) var(--s-3)}
+.at-bt:focus{outline:0;background:var(--surface-2)}
+.at-bt::placeholder{color:var(--ink-faint)}
+
+/* champs */
+.at-f{display:flex;flex-direction:column;gap:var(--s-2)}
+.at-in,.at-sel{width:100%;min-height:38px;border:1px solid var(--line-strong);border-radius:var(--r-sm);
+  background:var(--surface);color:var(--ink);font-family:var(--font-sans);font-size:var(--fs-sm);padding:0 var(--s-3)}
+.at-sel{-webkit-appearance:none;appearance:none;cursor:pointer;
+  background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
+  background-position:calc(100% - 15px) 17px,calc(100% - 10px) 17px;background-size:5px 5px;background-repeat:no-repeat;padding-right:var(--s-8)}
+.at-in:focus,.at-sel:focus{outline:0;border-color:var(--accent);box-shadow:var(--focus-ring)}
+.at-grid2{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-3)}
+
+/* outillage : le prix est là où on clique, pas dans une page de facturation */
+.at-tool{display:flex;align-items:flex-start;gap:var(--s-3);padding:var(--s-3);border-radius:var(--r-sm);
+  border:1px solid var(--line);cursor:pointer;transition:border-color var(--dur-1) var(--ease)}
+.at-tool:hover{border-color:var(--line-strong)}
+.at-tool.on{border-color:var(--accent);background:var(--accent-tint)}
+.at-tool input{margin:2px 0 0;accent-color:var(--accent);width:15px;height:15px;flex:0 0 auto}
+.at-tn{font-size:var(--fs-sm);font-weight:var(--fw-med);color:var(--ink);display:block}
+.at-td{font-family:var(--font-mono);font-size:10px;color:var(--ink-faint);display:block;margin-top:1px}
+.at-td.cher{color:var(--warning-strong)}
+
+/* ── le journal d'un passage : une étape par ligne ── */
+.at-steps{display:flex;flex-direction:column;gap:0;font-family:var(--font-mono);font-size:var(--fs-xs)}
+.at-step{display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:var(--s-3);align-items:baseline;
+  padding:var(--s-2) 0;border-top:1px solid var(--line-faint)}
+.at-step:first-child{border-top:0}
+.at-si{width:7px;height:7px;border-radius:var(--r-pill);background:var(--accent);align-self:center}
+.at-si.sim{background:transparent;border:1.5px solid var(--ink-faint)}
+.at-si.ko{background:var(--danger)}
+.at-si.att{background:var(--ink-faint)}
+.at-sn{color:var(--ink);overflow:hidden;text-overflow:ellipsis}
+.at-sv{color:var(--ink-faint);font-variant-numeric:tabular-nums;white-space:nowrap}
+.at-plan{grid-column:2/-1;color:var(--ink-soft);font-family:var(--font-sans);font-size:var(--fs-xs);
+  padding:var(--s-1) 0 var(--s-2);line-height:var(--lh-snug)}
+
+/* ── le contrôle : ce qui va partir, en clair ── */
+.at-ctrl{border:1px solid var(--line);border-left:2px solid var(--ink-faint);border-radius:var(--r-md);
+  background:var(--surface);padding:var(--s-5);display:flex;flex-direction:column;gap:var(--s-4)}
+.at-ctrl-h{display:flex;align-items:baseline;gap:var(--s-3);flex-wrap:wrap}
+.at-ctrl-t{font-size:var(--fs-base);font-weight:var(--fw-semi);color:var(--ink)}
+.at-exp{margin-left:auto;font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.at-prev{border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface-2);
+  padding:var(--s-4) var(--s-5);max-height:24em;overflow:auto;font-size:var(--fs-sm);
+  line-height:var(--lh-normal);color:var(--ink);word-break:break-word}
+.at-prev>:first-child{margin-top:0}
+.at-prev>:last-child{margin-bottom:0}
+/* Un tableau défile, il ne s'écrase pas : sans ça les en-têtes se coupent en
+   « RÉFÉREN / CE » et une date devient « 10/07/20 / 26 ». */
+.at-prev table{width:auto;min-width:100%}
+.at-prev th{white-space:nowrap}
+.at-prev td{white-space:normal}
+.at-why{font-size:var(--fs-xs);color:var(--ink-soft);margin:0}
+/* Deux boutons ne s'étirent pas sur 1 400 px de large : taille réelle, posés à droite. */
+.at-acts{display:flex;gap:var(--s-3);flex-wrap:wrap;justify-content:flex-end}
+.at-acts .at-btn{min-width:134px;padding:0 var(--s-5)}
+@media (max-width:560px){.at-acts .at-btn{flex:1 1 auto;min-width:0}}
+
+/* ── enveloppe consommée ── */
+.at-jauge{height:3px;border-radius:var(--r-pill);background:var(--surface-3);overflow:hidden}
+.at-jauge i{display:block;height:100%;background:var(--accent);border-radius:inherit;transition:width var(--dur-3) var(--ease)}
+.at-jauge.chaud i{background:var(--warning)}
+.at-jauge.plein i{background:var(--danger)}
+
+/* ── bandeau d'état hors-ligne : on grise, on ne cache jamais ── */
+.at-off{display:flex;align-items:center;gap:var(--s-2);padding:var(--s-3) var(--s-4);border-radius:var(--r-sm);
+  background:var(--warning-tint);color:var(--warning-strong);font-size:var(--fs-sm)}
+.at-stale{opacity:.5}
+
+/* ── squelette de chargement, aux hauteurs exactes des vraies lignes ── */
+.at-sk{height:62px;border-top:1px solid var(--line-faint);
+  background:linear-gradient(90deg,var(--surface) 0%,var(--surface-2) 50%,var(--surface) 100%);
+  background-size:200% 100%;animation:at-sh 1.4s linear infinite}
+.at-sk:first-child{border-top:0}
+@keyframes at-sh{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.at-sk,.at-ev.run{animation:none}}
+
+/* ============================================================
    BASE
    ============================================================ */
 *,*::before,*::after{box-sizing:border-box}
@@ -1314,6 +1509,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       </button>
 
       <nav class="nav" aria-label="Espaces">
+        <button class="nav-item" data-view="atelier" data-tip="Atelier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M12 2.6 15.1 8.9 21.4 12 15.1 15.1 12 21.4 8.9 15.1 2.6 12 8.9 8.9Z"/><circle cx="12" cy="12" r="2.1" fill="currentColor" stroke="none"/></svg><span class="lbl">Atelier</span><span class="at-nav-n" id="atNavN" hidden></span></button>
         <button class="nav-item" data-view="library" data-tip="Discussions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/></svg><span class="lbl">Discussions</span></button>
         <button class="nav-item" data-view="projects" data-tip="Projets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4.5 16.5 12 21l7.5-4.5M4.5 12 12 16.5 19.5 12M12 3 4.5 7.5 12 12l7.5-4.5L12 3z"/></svg><span class="lbl">Projets</span></button>
         <button class="nav-item" data-view="integrations" data-tip="Intégrations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></svg><span class="lbl">Intégrations</span></button>
@@ -1424,6 +1620,27 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       </section>
 
       <!-- BIBLIOTHÈQUE -->
+      <!-- ================= L'ATELIER ================= -->
+      <section class="view" id="view-atelier" aria-label="Atelier">
+        <header class="vhead"><div class="min0"><div class="vt">Atelier</div><div class="vs" id="atSub">Les travaux qui tournent pour toi</div></div><span class="tb-spacer"></span><button class="vbtn" id="atRefresh" aria-label="Actualiser"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>Actualiser</button></header>
+        <div class="vbody"><div class="at-wrap" id="atBody"></div></div>
+      </section>
+
+      <!-- ================= FICHE DE POSTE ================= -->
+      <section class="view" id="view-poste" aria-label="Poste">
+        <header class="vhead">
+          <button class="back-btn" id="atBack" aria-label="Retour à l'atelier" data-tip="Retour"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="min0"><div class="vt" id="atPosteNom">Poste</div><div class="vs" id="atPosteSub"></div></div>
+        </header>
+        <div class="vbody"><div class="at-wrap" id="atPosteBody"></div></div>
+      </section>
+
+      <!-- ================= LE CONTRÔLE ================= -->
+      <section class="view" id="view-controle" aria-label="Contrôle">
+        <header class="vhead"><div class="min0"><div class="vt">Contrôle</div><div class="vs">Rien ne part sans ta signature</div></div></header>
+        <div class="vbody"><div class="at-wrap" id="atCtrlBody"></div></div>
+      </section>
+
       <section class="view" id="view-library" aria-label="Discussions">
         <header class="vhead"><div class="min0"><div class="vt">Discussions</div><div class="vs">Toutes tes conversations</div></div></header>
         <div class="vsearch"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4" stroke-linecap="round"/></svg><input id="libSearch" placeholder="Rechercher une discussion…" aria-label="Rechercher une discussion"></div>
@@ -2249,6 +2466,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     $$('.view').forEach(s=>s.classList.remove('active'));
     $('#view-'+v).classList.add('active');
     if(v==='persona')fillPersona();else if(v==='prompts')renderPromptsView();else if(v==='help')renderHelp();   // vues in-place (ex-modales)
+    if(v==='atelier'&&typeof AT!=='undefined'){AT.peindre();AT.rafraichir()}
+    else if(v==='controle'&&typeof AT!=='undefined')AT.peindreControle();
     $('#app').dataset.view=v;                 // pilote le dock (#dockChat visible seulement en chat) + le clavier mobile
     const navv=v==='project'?'projects':v;
     $$('.nav-item').forEach(n=>{const on=n.dataset.view===navv;n.classList.toggle('active',on);if(on)n.setAttribute('aria-current','page');else n.removeAttribute('aria-current')});
@@ -4034,6 +4253,375 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   });
   /* a11y : reflète l'état réel des interrupteurs/segments après bascule */
   document.addEventListener('click',e=>{const t=e.target&&e.target.closest('.toggle,.sg,.ob-theme,.ps-preset,.ptype,.chip');if(!t)return;setTimeout(()=>{const grp=t.parentElement?t.parentElement.querySelectorAll('.toggle,.sg,.ob-theme,.ps-preset,.ptype,.chip'):[t];(grp.length?grp:[t]).forEach(el=>{const on=el.classList.contains('on')||el.classList.contains('active');if(el.matches('.toggle'))el.setAttribute('aria-checked',on?'true':'false');else el.setAttribute('aria-pressed',on?'true':'false');});},0);});
+  /* ═══════════════════════════════════════════════════════════════════════
+     L'ATELIER — postes, passages, contrôle
+     ───────────────────────────────────────────────────────────────────────
+     Le chat reste l'Établi : on y met une consigne au point. Quand elle
+     marche, on l'accroche à un poste, et le poste tourne sans onglet ouvert.
+     Tout l'état vit côté serveur : ici, on affiche et on signe.
+     ═══════════════════════════════════════════════════════════════════════ */
+  const AT=(function(){
+    const base=()=>_PB;                       // même Worker que la synchro
+    let etat={postes:[],journee:[],controles:[],mois_cents:0,seq:0};
+    let ouvriers=[],chantiers=[],charge=false,perime=false,posteOuvert=null;
+
+    /* Le code d'accès n'est injecté par l'intercepteur que si VIA_PROXY ;
+       l'atelier parle au Worker dans tous les cas, il pose donc son en-tête. */
+    async function api(chemin,opt){
+      opt=opt||{};const h=new Headers(opt.headers||{});
+      const c=_acode();if(c)h.set('X-Maz-Code',c);
+      if(opt.body&&!h.has('Content-Type'))h.set('Content-Type','application/json');
+      const r=await fetch(base()+chemin,Object.assign({},opt,{headers:h}));
+      const t=await r.text();let d=null;try{d=JSON.parse(t)}catch(e){}
+      if(!r.ok)throw Object.assign(new Error((d&&(d.message||d.error))||('erreur '+r.status)),{statut:r.status,corps:d});
+      return d;
+    }
+    const eur=c=>(c/100).toFixed(c<10?3:2).replace('.',',')+' €';
+    const hhmm=ms=>new Date(ms).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    const esc2=s=>esc(String(s==null?'':s));
+
+    /* ── Le khatam-jauge : les 8 branches sont les 8 derniers passages.
+          Un seul élément graphique dans tout l'atelier, et il porte la donnée. ── */
+    /* Géométrie réelle du khatam : deux carrés entrelacés, donc huit pointes
+       extérieures à R et huit sommets intérieurs à R·cos45/cos22,5 ≈ 0,765·R.
+       Chaque branche est le triangle (intérieur k−1, pointe k, intérieur k) —
+       une branche par passage, la plus récente en haut, dans le sens horaire.
+       Ce n'est pas un scintillement décoratif : la forme est le logo, et elle
+       porte la donnée. */
+    const ETATS={O:'var(--accent)','?':'var(--ink-faint)',X:'var(--danger)','.':'var(--line-strong)'};
+    function jauge(sante,taille){
+      const n=taille||30,c=n/2,R=n*.47,r=R*0.7654,S=(sante||'').padStart(8,'.').slice(-8);
+      const pt=(ang,ray)=>[c+Math.cos((ang-90)*Math.PI/180)*ray,c+Math.sin((ang-90)*Math.PI/180)*ray];
+      let p='';
+      for(let i=0;i<8;i++){
+        const [ax,ay]=pt(i*45-22.5,r),[bx,by]=pt(i*45,R),[dx,dy]=pt(i*45+22.5,r);
+        const e=S[i]||'.',col=ETATS[e]||ETATS['.'];
+        const d=`M${ax.toFixed(2)} ${ay.toFixed(2)}L${bx.toFixed(2)} ${by.toFixed(2)}L${dx.toFixed(2)} ${dy.toFixed(2)}`;
+        p+= e==='O' ? `<path d="${d}Z" fill="${col}"/>`
+          : e==='?' ? `<path d="${d}Z" fill="${col}" fill-opacity=".38"/>`
+          : `<path d="${d}" fill="none" stroke="${col}" stroke-width="${e==='X'?1.5:1}" stroke-linejoin="round"/>`;
+      }
+      // le cabochon central : la couleur du dernier passage, comme la gemme du logo
+      return `<svg class="at-gauge" viewBox="0 0 ${n} ${n}" width="${n}" height="${n}" aria-hidden="true">`
+        + p + `<circle cx="${c}" cy="${c}" r="${(n*.115).toFixed(2)}" fill="${ETATS[S[7]]||ETATS['.']}"/></svg>`;
+    }
+
+    /* ── Le récit du haut : ce qui s'est passé, en français, pas en compteurs ── */
+    function recit(){
+      const j=etat.journee,finis=j.filter(p=>p.statut==='fini').length,
+            ko=j.filter(p=>p.statut==='echec'||p.statut==='coupe').length,
+            att=etat.controles.length,
+            jour=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+      if(!etat.postes.length)return `<p class="at-narr">${esc2(jour[0].toUpperCase()+jour.slice(1))}. <span class="at-mute">L'atelier est vide — décris en une phrase un travail qui revient, et il tournera sans toi.</span></p>`;
+      const bouts=[];
+      if(finis)bouts.push(`<span class="at-em">${finis} passage${finis>1?'s':''}</span> ${finis>1?'ont abouti':'a abouti'}`);
+      if(ko)bouts.push(`${ko} ${ko>1?'ont cassé':'a cassé'}`);
+      if(att)bouts.push(`<span class="at-em">${att}</span> ${att>1?'attendent':'attend'} ta signature`);
+      const corps=bouts.length?bouts.join(', ')+'.':'rien n\'a encore tourné aujourd\'hui.';
+      return `<p class="at-narr">${esc2(jour[0].toUpperCase()+jour.slice(1))}. ${corps}
+        <span class="at-mute">Ce mois : <span class="at-num">${eur(etat.mois_cents)}</span>.</span></p>`;
+    }
+
+    /* ── 24 heures sur un trait. Chaque point est un passage, cliquable. ── */
+    function ligneJour(){
+      const d=new Date(),d0=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime();
+      const pc=ms=>Math.max(0,Math.min(100,((ms-d0)/86400000)*100));
+      let g='';for(let h=0;h<=24;h+=4)g+=`<span class="at-tick" style="left:${(h/24*100).toFixed(2)}%"></span><span class="at-th" style="left:${(h/24*100).toFixed(2)}%">${String(h%24).padStart(2,'0')}</span>`;
+      const pts=etat.journee.filter(p=>p.debut_at>=d0).map(p=>{
+        const k=p.statut==='fini'?'ok':(p.statut==='attente'?'att':(p.statut==='encours'?'run':'ko'));
+        const t=`${hhmm(p.debut_at)} · ${p.statut}${p.cout_cents?' · '+eur(p.cout_cents):''}`;
+        return `<span class="at-ev ${k}" style="left:${pc(p.debut_at).toFixed(2)}%" title="${esc2(t)}" data-passage="${esc2(p.id)}"></span>`;
+      }).join('');
+      return `<div class="at-day"><span class="at-lbl">La journée</span>
+        <div class="at-daybar">${g}<span class="at-now" style="left:${pc(Date.now()).toFixed(2)}%"></span>${pts}</div></div>`;
+    }
+
+    function lignePoste(p){
+      const att=etat.controles.filter(c=>c.poste_id===p.id).length;
+      const der=etat.journee.filter(x=>x.poste_id===p.id)[0];
+      const cad=p.cadence==='cron'?(p.cron?'cadence '+esc2(p.cron):'planifié')
+               :p.cadence==='demande'?'à la demande':esc2(p.cadence);
+      const sousTitre=[esc2(p.ouvrier_nom||''),esc2(p.chantier_nom||''),cad].filter(Boolean).join(' · ');
+      let k='',v='',cls='';
+      if(att){cls='att';v=att+' à signer';k='en attente'}
+      else if(p.etat==='disjoncte'){cls='ko';v='enveloppe';k='atteinte'}
+      else if(der&&(der.statut==='echec'||der.statut==='coupe')){cls='ko';v='échec';k=hhmm(der.debut_at)}
+      else if(der){v=eur(p.depense_cents||0);k='ce mois'}
+      else{v='jamais lancé';k=''}
+      return `<button class="at-row" data-poste="${esc2(p.id)}">
+        ${jauge(p.sante)}
+        <span class="at-nm">${esc2(p.nom)}</span>
+        <span class="at-sub">${sousTitre}</span>
+        <span class="at-rt ${cls}"><span class="at-v">${esc2(v)}</span><span class="at-k">${esc2(k)}</span></span>
+      </button>`;
+    }
+
+    /* ── La forge : une phrase suffit, le reste est déduit puis relu ── */
+    function forge(){
+      return `<div class="at-forge">
+        <span class="at-lbl">Nouveau poste</span>
+        <textarea class="at-ta" id="atForge" rows="2" aria-label="Décris le travail à confier"
+          placeholder="Décris un travail en une phrase — « relire mes emails de prospection et me dire s'ils sonnent IA »"></textarea>
+        <div class="at-frow">
+          <button class="at-btn plein" id="atForger">Forger le poste</button>
+          <span class="at-td" id="atForgeEtat"></span>
+        </div>
+      </div>`;
+    }
+
+    function peindre(){
+      const b=$('#atBody');if(!b)return;
+      if(!charge){b.innerHTML=`<div class="at-list">${'<div class="at-sk"></div>'.repeat(3)}</div>`;return}
+      const hors=perime?`<div class="at-off"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6M12 16v6" stroke-linecap="round"/><circle cx="12" cy="12" r="2"/></svg>Connexion perdue — voici le dernier état connu.</div>`:'';
+      const liste=etat.postes.length
+        ? `<div class="at-list${perime?' at-stale':''}">${etat.postes.map(lignePoste).join('')}</div>`
+        : `<div class="at-empty"><p class="at-et">Un poste, c'est un travail qui revient.</p>
+             <p class="at-es">Ou qui part sur commande. Décris-le en une phrase : le modèle, l'outillage et la consigne en découlent — tu relis avant de valider.</p></div>`;
+      b.innerHTML=hors+recit()+ligneJour()+liste+forge();
+      $$('#atBody .at-row').forEach(r=>r.addEventListener('click',()=>ouvrirPoste(r.dataset.poste)));
+      const f=$('#atForger');f&&f.addEventListener('click',forger);
+      const ta=$('#atForge');ta&&ta.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();forger()}});
+      const n=$('#atNavN');if(n){n.textContent=etat.controles.length||'';n.hidden=!etat.controles.length}
+      const s=$('#atSub');if(s)s.textContent=etat.postes.length?`${etat.postes.length} poste${etat.postes.length>1?'s':''} · ${eur(etat.mois_cents)} ce mois`:'Les travaux qui tournent pour toi';
+    }
+
+    async function rafraichir(){
+      try{
+        const d=await api('/atelier');etat=d;perime=false;charge=true;
+        const[o,c]=await Promise.all([api('/ouvriers').catch(()=>[]),api('/chantiers').catch(()=>[])]);
+        ouvriers=o||[];chantiers=c||[];
+      }catch(e){perime=true;charge=true;if(e.statut===401)toast('Connecte-toi pour ouvrir l\'atelier')}
+      peindre();
+    }
+
+    /* ── Forger : le modèle rédige la fiche, Mazen relit et ajuste ── */
+    async function forger(){
+      const ta=$('#atForge'),et=$('#atForgeEtat'),bt=$('#atForger');
+      const phrase=(ta&&ta.value||'').trim();
+      if(phrase.length<12){et.textContent='Encore une phrase, un peu plus précise.';ta&&ta.focus();return}
+      bt.disabled=true;et.textContent='La forge écrit la fiche…';
+      try{
+        const spec=await api('/forge',{method:'POST',body:JSON.stringify({phrase})});
+        const ouv=await assurerOuvrier(spec);
+        const p=await api('/postes',{method:'POST',body:JSON.stringify({
+          nom:spec.nom,objectif:spec.objectif,ouvrier_id:ouv.id,cadence:'demande',
+          blocs:spec.blocs,outillage:spec.outillage,modele:spec.modele,budget_cents:300})});
+        ta.value='';et.textContent='';
+        await rafraichir();ouvrirPoste(p.id);
+        toast('Poste forgé — relis la consigne avant de le lancer');
+      }catch(e){et.textContent=friendlyErr(e)}
+      finally{bt.disabled=false}
+    }
+    /* Un ouvrier par couple (modèle, outillage) : on n'en empile pas un par poste. */
+    async function assurerOuvrier(spec){
+      const cle=JSON.stringify((spec.outillage||[]).slice().sort());
+      const dej=ouvriers.find(o=>o.modele===spec.modele&&JSON.stringify(JSON.parse(o.outillage||'[]').slice().sort())===cle);
+      if(dej)return dej;
+      const o=await api('/ouvriers',{method:'POST',body:JSON.stringify({
+        nom:spec.ouvrier||'Ouvrier',metier:spec.metier||'',modele:spec.modele,outillage:spec.outillage||[]})});
+      ouvriers.push(o);return o;
+    }
+
+    /* ═══ La fiche de poste ═══ */
+    const OUTILLAGE=[
+      {cle:'web_search',nom:'Recherche web',note:'≈ 0,03 € par appel — 180× une requête simple',cher:true},
+      {cle:'code_interpreter',nom:'Calcul Python',note:'≈ 0,00003 € par appel — négligeable'},
+    ];
+    const NOMS={role:'Rôle',methode:'Méthode',interdits:'Interdits',format:'Format de sortie'};
+    const AIDE={role:'Qui il est, et pour qui il travaille.',methode:'Les étapes, dans l\'ordre.',
+      interdits:'Ce qu\'il ne doit jamais faire. C\'est le bloc qui sauve.',format:'La forme exacte du livrable.'};
+
+    async function ouvrirPoste(id){
+      showView('poste');
+      const b=$('#atPosteBody');b.innerHTML=`<div class="at-list">${'<div class="at-sk"></div>'.repeat(2)}</div>`;
+      try{
+        const[p,cons,passages]=await Promise.all([
+          api('/postes').then(l=>l.find(x=>x.id===id)),
+          api('/postes/'+id+'/consignes'),api('/postes/'+id+'/passages')]);
+        posteOuvert=p;peindrePoste(p,cons,passages);
+      }catch(e){b.innerHTML=`<div class="at-empty"><p class="at-et">Poste illisible</p><p class="at-es">${esc2(friendlyErr(e))}</p></div>`}
+    }
+
+    function peindrePoste(p,cons,passages){
+      const cv=(cons||[])[0]||{blocs:'{}'};let blocs={};try{blocs=JSON.parse(cv.blocs)}catch(e){}
+      const outil=(()=>{try{return JSON.parse(cv.outillage||'[]')}catch(e){return[]}})();
+      const ouv=ouvriers.find(o=>o.id===p.ouvrier_id)||{};
+      $('#atPosteNom').textContent=p.nom;
+      $('#atPosteSub').textContent=`consigne v${p.consigne_ver} · ${ouv.modele||'—'} · ${p.etat}`;
+      const pct=p.budget_cents?Math.min(100,(p.depense_cents/p.budget_cents)*100):0;
+      const cl=pct>=100?' plein':(pct>=70?' chaud':'');
+      const der=(passages||[])[0];
+
+      $('#atPosteBody').innerHTML=`
+        <div class="at-fiche">
+          <div class="at-card">
+            <p class="at-ct">Consigne <span class="at-bc" style="margin-left:6px">v${p.consigne_ver}</span></p>
+            <div class="at-blocs">${['role','methode','interdits','format'].map(k=>`
+              <div class="at-bloc">
+                <div class="at-bh"><span class="at-bn">${NOMS[k]}</span><span class="at-bc" data-cnt="${k}">${(blocs[k]||'').length}</span></div>
+                <textarea class="at-bt" data-bloc="${k}" rows="2" aria-label="${NOMS[k]}" placeholder="${esc2(AIDE[k])}">${esc2(blocs[k]||'')}</textarea>
+              </div>`).join('')}</div>
+            <div class="at-f"><span class="at-lbl">Objectif du passage</span>
+              <textarea class="at-bt" id="atObj" rows="2" style="border:1px solid var(--line);border-radius:var(--r-sm)" aria-label="Objectif">${esc2(p.objectif||'')}</textarea></div>
+            <div class="at-frow"><button class="at-btn" id="atSave">Enregistrer en v${p.consigne_ver+1}</button>
+              <span class="at-td" id="atSaveEtat"></span></div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:var(--s-6)">
+            <div class="at-card">
+              <p class="at-ct">Réglages</p>
+              <div class="at-grid2">
+                <div class="at-f"><span class="at-lbl">Modèle</span>
+                  <select class="at-sel" id="atModele">${['mistral-large-latest','magistral-medium-latest','mistral-medium-latest','ministral-8b-latest','ministral-3b-latest','devstral-medium-latest','codestral-latest'].map(m=>`<option value="${m}"${ouv.modele===m?' selected':''}>${m.replace('-latest','')}</option>`).join('')}</select></div>
+                <div class="at-f"><span class="at-lbl">Enveloppe / mois</span>
+                  <input class="at-in at-num" id="atBudget" type="number" min="0" step="0.5" value="${((p.budget_cents||0)/100).toFixed(2)}" aria-label="Enveloppe mensuelle en euros"></div>
+              </div>
+              <div class="at-f"><span class="at-lbl">Outillage</span>
+                ${OUTILLAGE.map(o=>`<label class="at-tool${outil.includes(o.cle)?' on':''}" data-tool="${o.cle}">
+                  <input type="checkbox" ${outil.includes(o.cle)?'checked':''} aria-label="${esc2(o.nom)}">
+                  <span><span class="at-tn">${o.nom}</span><span class="at-td${o.cher?' cher':''}">${o.note}</span></span></label>`).join('')}</div>
+              <div class="at-grid2">
+                <div class="at-f"><span class="at-lbl">Cadence</span>
+                  <select class="at-sel" id="atCad">
+                    <option value="demande"${p.cadence==='demande'?' selected':''}>À la demande</option>
+                    <option value="cron"${p.cadence==='cron'?' selected':''}>Planifiée</option></select></div>
+                <div class="at-f" id="atCronF" ${p.cadence==='cron'?'':'hidden'}><span class="at-lbl">Quand</span>
+                  <select class="at-sel" id="atCron">
+                    ${[['0 8 * * *','Chaque jour à 8h'],['0 20 * * *','Chaque jour à 20h'],['0 9 * * 1','Chaque lundi à 9h'],['0 * * * *','Toutes les heures'],['*/30 * * * *','Toutes les 30 min']]
+                      .map(([v,l])=>`<option value="${v}"${p.cron===v?' selected':''}>${l}</option>`).join('')}</select></div>
+              </div>
+              <div class="at-f"><span class="at-lbl">Enveloppe consommée — <span class="at-num">${eur(p.depense_cents||0)}</span> sur <span class="at-num">${eur(p.budget_cents||0)}</span></span>
+                <div class="at-jauge${cl}"><i style="width:${pct.toFixed(1)}%"></i></div></div>
+              <div class="at-f"><span class="at-lbl">Matière du passage <span style="text-transform:none;letter-spacing:0">— colle ici ce sur quoi il doit travailler</span></span>
+                <textarea class="at-bt" id="atEntree" rows="2" style="border:1px solid var(--line);border-radius:var(--r-sm)"
+                  aria-label="Matière du passage" placeholder="Facultatif si l'ouvrier cherche lui-même sur le web."></textarea></div>
+              <div class="at-frow">
+                <button class="at-btn" id="atRepet">Répéter à blanc</button>
+                <button class="at-btn plein" id="atLancer">Lancer maintenant</button>
+                ${p.etat==='actif'?'<button class="at-btn" id="atPause">Mettre en pause</button>':'<button class="at-btn" id="atActiver">Mettre en service</button>'}
+              </div>
+              <p class="at-td" id="atRunEtat">${p.cadence==='cron'&&p.prochain_at?'Prochain passage '+new Date(p.prochain_at).toLocaleString('fr-FR',{weekday:'short',hour:'2-digit',minute:'2-digit'}):''}</p>
+            </div>
+
+            <div class="at-card">
+              <p class="at-ct">Derniers passages</p>
+              ${der?`<div class="at-steps" id="atJournal"></div>`:'<p class="at-td">Aucun passage. « Répéter à blanc » n\'écrit rien : c\'est le bon premier geste.</p>'}
+              ${(passages||[]).length?`<div class="at-f"><span class="at-lbl">Historique</span>${passages.slice(0,6).map(x=>{
+                const k=x.statut==='fini'?'':(x.statut==='attente'?'att':'ko');
+                return `<button class="at-step" data-passage="${x.id}" style="background:none;border:0;border-top:1px solid var(--line-faint);width:100%;cursor:pointer;text-align:left;font:inherit">
+                  <span class="at-si ${k}"></span><span class="at-sn">${hhmm(x.debut_at)} · ${esc2(x.mode)} · ${esc2(x.declencheur)}</span>
+                  <span class="at-sv">${eur(x.cout_cents||0)}</span></button>`}).join('')}</div>`:''}
+            </div>
+          </div>
+        </div>`;
+
+      /* Une consigne ne se lit pas à travers une meurtrière : chaque bloc prend
+         la hauteur de son contenu, et la garde à la frappe. */
+      const pousser=t=>{t.style.height='auto';t.style.height=Math.min(t.scrollHeight,420)+'px'};
+      $$('#atPosteBody .at-bt').forEach(t=>{pousser(t);t.addEventListener('input',()=>{
+        pousser(t);
+        const c=t.dataset.bloc&&$(`#atPosteBody .at-bc[data-cnt="${t.dataset.bloc}"]`);if(c)c.textContent=t.value.length})});
+      $$('#atPosteBody .at-tool').forEach(l=>l.addEventListener('change',()=>l.classList.toggle('on',l.querySelector('input').checked)));
+      $('#atCad').addEventListener('change',e=>{$('#atCronF').hidden=e.target.value!=='cron'});
+      $('#atSave').addEventListener('click',()=>enregistrer(p));
+      $('#atLancer').addEventListener('click',()=>lancer(p,'reel'));
+      $('#atRepet').addEventListener('click',()=>lancer(p,'repetition'));
+      const pa=$('#atPause'),ac=$('#atActiver');
+      pa&&pa.addEventListener('click',()=>etatPoste(p,'pause'));
+      ac&&ac.addEventListener('click',()=>etatPoste(p,'actif'));
+      $$('#atPosteBody [data-passage]').forEach(x=>x.addEventListener('click',()=>journal(x.dataset.passage)));
+      if(der)journal(der.id);
+    }
+
+    async function enregistrer(p){
+      const et=$('#atSaveEtat');et.textContent='Enregistrement…';
+      const blocs={};$$('#atPosteBody .at-bt[data-bloc]').forEach(t=>blocs[t.dataset.bloc]=t.value.trim());
+      const outillage=[...$$('#atPosteBody .at-tool')].filter(l=>l.querySelector('input').checked).map(l=>l.dataset.tool);
+      const cad=$('#atCad').value;
+      try{
+        const modele=$('#atModele').value;
+        /* Un ouvrier = un couple (modèle, outillage). On réutilise celui qui
+           correspond, sinon on en crée un : changer le modèle d'un poste ne
+           doit pas modifier celui des autres postes qui partagent l'ouvrier. */
+        const ouv=await assurerOuvrier({modele,outillage,nom:'Ouvrier '+modele.replace('-latest','')});
+        if(ouv.id!==p.ouvrier_id)await api('/postes/'+p.id,{method:'PATCH',body:JSON.stringify({ouvrier_id:ouv.id})});
+        await api('/postes/'+p.id,{method:'PATCH',body:JSON.stringify({
+          blocs,outillage,modele,motif:'modifié depuis la fiche',
+          objectif:$('#atObj').value.trim(),cadence:cad,cron:cad==='cron'?$('#atCron').value:null,
+          budget_cents:Math.round(parseFloat($('#atBudget').value||'0')*100)})});
+        et.textContent='';toast('Consigne enregistrée en v'+(p.consigne_ver+1));
+        await rafraichir();ouvrirPoste(p.id);
+      }catch(e){et.textContent=friendlyErr(e)}
+    }
+    async function etatPoste(p,etatV){
+      try{await api('/postes/'+p.id,{method:'PATCH',body:JSON.stringify({etat:etatV})});
+        toast(etatV==='actif'?'Poste en service':'Poste en pause');await rafraichir();ouvrirPoste(p.id)}
+      catch(e){toast(friendlyErr(e))}
+    }
+    async function lancer(p,mode){
+      const et=$('#atRunEtat'),bs=[$('#atLancer'),$('#atRepet')].filter(Boolean);
+      bs.forEach(b=>b.disabled=true);
+      et.textContent=mode==='repetition'?'Répétition en cours — aucune écriture ne partira…':'Passage en cours…';
+      try{
+        const ent=($('#atEntree')&&$('#atEntree').value.trim())||null;
+        const r=await api('/postes/'+p.id+'/lancer',{method:'POST',body:JSON.stringify({mode,entree:ent})});
+        if(r.statut==='attente'){et.textContent='Arrêté au contrôle — ta signature est demandée.';await rafraichir();showView('controle');peindreControle()}
+        else{et.textContent=r.statut==='fini'?'Passage terminé.':'Passage '+r.statut+(r.erreur?' — '+r.erreur:'');await rafraichir();ouvrirPoste(p.id)}
+      }catch(e){et.textContent=friendlyErr(e)}
+      finally{bs.forEach(b=>b.disabled=false)}
+    }
+    async function journal(pid){
+      const c=$('#atJournal');if(!c)return;
+      try{
+        const d=await api('/passages/'+pid);
+        c.innerHTML=(d.etapes||[]).map(e=>{
+          const k=e.statut==='simule'?'sim':(e.statut==='echec'?'ko':(e.statut==='attente'?'att':''));
+          const val=e.ms?e.ms+' ms':(e.sortie||'');
+          return `<div class="at-step"><span class="at-si ${k}"></span><span class="at-sn">${esc2(e.nom)}${e.statut==='simule'?' — simulé':''}</span><span class="at-sv">${esc2(String(val).slice(0,26))}</span></div>`
+            +(e.plan?`<div class="at-plan">${esc2(e.plan)}</div>`:'');
+        }).join('')||'<p class="at-td">Aucune étape.</p>';
+      }catch(e){c.innerHTML='<p class="at-td">'+esc2(friendlyErr(e))+'</p>'}
+    }
+
+    /* ═══ Le contrôle ═══ */
+    function peindreControle(){
+      const b=$('#atCtrlBody');if(!b)return;
+      if(!etat.controles.length){
+        b.innerHTML=`<div class="at-empty"><p class="at-et">Rien à signer.</p><p class="at-es">Tes postes tournent seuls.</p></div>`;return}
+      b.innerHTML=etat.controles.map(c=>{
+        let a={};try{a=JSON.parse(c.intention)}catch(e){}
+        const reste=Math.max(0,c.perime_at-Date.now()),h=Math.floor(reste/3600000),m=Math.floor(reste%3600000/60000);
+        return `<div class="at-ctrl" data-ctrl="${esc2(c.id)}">
+          <div class="at-ctrl-h"><span class="at-ctrl-t">${esc2(c.resume)}</span>
+            <span class="at-exp">expire dans ${h} h ${String(m).padStart(2,'0')}</span></div>
+          <p class="at-why">${esc2(c.poste_nom||'')} — ${esc2(c.pourquoi||'')}</p>
+          <div class="at-prev bubble md">${renderMD(String(a.corps||a.titre||c.intention))}</div>
+          <div class="at-acts">
+            <button class="at-btn danger" data-d="refuser">Refuser</button>
+            <button class="at-btn plein" data-d="valider">Valider</button>
+          </div>
+          <p class="at-td" data-etat></p>
+        </div>`}).join('');
+      $$('#atCtrlBody .at-ctrl').forEach(el=>{
+        $$('[data-d]',el).forEach(bt=>bt.addEventListener('click',()=>decider(el,bt.dataset.d)));
+      });
+    }
+    async function decider(el,d){
+      const et=$('[data-etat]',el),bs=$$('[data-d]',el);
+      bs.forEach(b=>b.disabled=true);et.textContent=d==='valider'?'Exécution de ce qui a été signé…':'Refus transmis…';
+      try{
+        await api('/controle/'+el.dataset.ctrl,{method:'POST',body:JSON.stringify({decision:d})});
+        await rafraichir();peindreControle();
+        toast(d==='valider'?'Signé — le livrable est déposé':'Refusé');
+      }catch(e){et.textContent=friendlyErr(e);bs.forEach(b=>b.disabled=false)}
+    }
+
+    return{rafraichir,peindre,peindreControle,ouvrirPoste,etat:()=>etat};
+  })();
+
+  $('#atRefresh')&&$('#atRefresh').addEventListener('click',()=>AT.rafraichir());
+  $('#atBack')&&$('#atBack').addEventListener('click',()=>showView('atelier'));
+
   /* ===== accessibilité : modales (aria-modal + piège de focus + retour focus) ===== */
   (function(){
     const SEL='a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';

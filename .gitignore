@@ -21,3 +21,8 @@ logo-explorations/
 # secrets de développement local (wrangler dev) — jamais versionnés
 maz-proxy/.dev.vars
 .dev.vars
+_essai-atelier.html
+
+# état local de wrangler dev (base miniflare, caches) — jamais versionné
+maz-proxy/.wrangler/
+.wrangler/

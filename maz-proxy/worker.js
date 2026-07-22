@@ -243,7 +243,7 @@ export default {
        Tout est isolé par user_id en requête préparée, et chaque écriture prend
        un numéro au compteur monotone : GET /delta?depuis=<seq> rejoue ensuite
        exactement ce qui a changé, sans rien retélécharger. */
-    if (/^\/(atelier|delta|chantiers|ouvriers|postes|passages|controle|livrables)(\/|$|\?)/.test(path)) {
+    if (/^\/(atelier|delta|forge|chantiers|ouvriers|postes|passages|controle|livrables)(\/|$|\?)/.test(path)) {
       if (!user) return J({ error: 'code_required' }, 401, cors);
       const corps = ['POST', 'PATCH', 'PUT'].includes(req.method) ? await req.json().catch(() => ({})) : {};
       const seg = path.split('/').filter(Boolean);
@@ -280,6 +280,13 @@ export default {
           const out = {}; tables.forEach((t, i) => { out[t] = r[i].results; });
           out.seq = ((await db.prepare('SELECT seq FROM compteurs WHERE user_id=?1').bind(user.id).first()) || {}).seq || 0;
           return J(out, 200, cors);
+        }
+
+        /* ── la forge : une phrase en entrée, une fiche relisible en sortie ── */
+        if (path === '/forge' && req.method === 'POST') {
+          const phrase = String(corps.phrase || '').trim();
+          if (phrase.length < 12) return J({ error: 'phrase_trop_courte' }, 400, cors);
+          return J(await A.forger(env, phrase), 200, cors);
         }
 
         /* ── chantiers & ouvriers : même moule ── */
