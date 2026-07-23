@@ -1418,7 +1418,14 @@ textarea.inp{resize:vertical;line-height:1.55;min-height:84px}
      la cible tactile de 44px passe par un pseudo étendu, invisible. Fini les
      grosses tuiles. */
   .act,.la{width:32px;height:32px;min-width:0;min-height:0;background:transparent;border:0;position:relative}
-  .act::after,.la::after{content:"";position:absolute;inset:-6px}   /* 44px de zone de contact, 0px de visuel en plus */
+  /* le rang déplié doit loger la boîte 40px. ⚠ pas de marge négative pour l'alignement
+     optique : elle sortirait le 1er bouton de la boîte de confinement de .msg → zone morte */
+  .msg.ai:hover .actions,.msg.user:hover .actions,.msg .actions{max-height:44px}
+  /* ⚠ pas de ::after ici — il appartient au tooltip [data-tip] (fond crème, z-index toast) :
+     partager le pseudo écrasait son texte mais gardait son fond → boîte crème opaque
+     par-dessus l'icône au survol/tap. Payé le 23/07. */
+  .act{width:40px;height:40px}   /* vraie boîte 40px, invisible (fond transparent) : le confinement content-visibility de .msg clippe un pseudo qui dépasse, jamais une vraie boîte */
+  .la::before{content:"";position:absolute;inset:-6px}   /* 44px de contact hors .msg (la sidebar n'a pas de confinement) */
   .act:active,.la:active{background:var(--surface-2)}
   .att-chip .ax,.mc-x{min-width:26px;min-height:26px;padding:4px}   /* croix de chips : zone de contact élargie sans casser le chip */
   .send{border-radius:var(--r-md)}
@@ -1446,7 +1453,7 @@ textarea.inp{resize:vertical;line-height:1.55;min-height:84px}
 
 /* tactile : ce qui n'apparaît qu'au survol doit rester atteignable */
 @media (hover:none){
-  .msg .actions{max-height:36px!important;margin-top:0!important;opacity:1!important;transform:none!important}
+  .msg .actions{max-height:44px!important;margin-top:0!important;opacity:1!important;transform:none!important;overflow:visible}   /* toujours dépliées au tactile, assez hautes pour la boîte 40px ; le clip ne sert qu'au repli desktop */
   .lacts{opacity:1!important;transform:none!important}
   /* tactile : les actions n'apparaissent que sur la conversation ACTIVE (sinon elles écrasent le titre dans une sidebar étroite) */
   .chat-pill.active .pill-acts{display:flex!important}
