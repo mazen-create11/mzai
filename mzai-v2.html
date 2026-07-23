@@ -963,7 +963,9 @@ a.src .su{flex-shrink:0;font-size:11px;color:var(--accent-strong);font-weight:va
    COMPOSER (nœud unique #composer relogé entre #dockHome / #dockChat)
    ============================================================ */
 .composer{position:relative;overflow:visible;padding:14px 18px max(14px,env(safe-area-inset-bottom));background:var(--bg)}
-.composer-dock .composer{border-top:1px solid var(--line)}
+/* Pas de filet au-dessus du composer : c'est la même coupure qu'en haut de
+   page, un étage plus bas. Le champ se détache déjà par son propre cadre. */
+.composer-dock .composer{border-top:0}
 .input-shell{max-width:var(--thread-max);margin-inline:auto;display:flex;flex-direction:column;border:1px solid var(--line-strong);border-radius:var(--r-lg);background:var(--surface);box-shadow:var(--shadow-sm),inset 0 1px 1px rgba(255,255,255,.5);max-height:min(62dvh,560px,calc(var(--app-h) - var(--topbar-h) - 28px));overflow-y:auto;transition:.2s var(--ease)}
 .input-shell:focus-within{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-ring),var(--shadow-md)}
 .attachrow,.attachRow,#attachRow{display:flex;flex-wrap:wrap;gap:8px;padding:10px 12px 0;max-height:min(22dvh,calc(var(--app-h) - var(--topbar-h) - 120px));overflow-y:auto;overscroll-behavior:contain}
@@ -1337,6 +1339,9 @@ textarea.inp{resize:vertical;line-height:1.55;min-height:84px}
   }
   .sidebar.open{transform:translateX(0)}
   .sidebar.collapsed{width:min(var(--sidebar-w),calc(100vw - var(--s-9)))}
+  /* En tiroir, la barre passe PAR-DESSUS le contenu : translucide, on lirait
+     les deux à la fois. Elle redevient donc pleine, avec son ombre. */
+  .sidebar{background:var(--surface);backdrop-filter:none;box-shadow:var(--shadow-lg)}
   .scrim.show{opacity:1;visibility:visible}
 }
 @media (min-width:1025px){.menu-btn{display:none}.scrim{display:none}}
@@ -1571,8 +1576,11 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   .pop.optmenu .opt-item{min-height:44px}
 }
 
-.shell{background:var(--bg)}
-.shell::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(700px 420px at 58% 36%,rgba(22,184,122,.075),transparent 64%),radial-gradient(520px 360px at 96% 100%,rgba(22,184,122,.035),transparent 68%);opacity:.9}
+/* La lumière vit désormais sur la RACINE (#app::before), pas sur la colonne de
+   contenu : elle traverse donc aussi la barre latérale, et l'app se lit d'un
+   seul tenant. La colonne de contenu ne pose plus de fond, sinon elle la
+   masquerait. Voir le bloc « La lumière » plus bas. */
+.shell{background:transparent}
 .shell>*{position:relative;z-index:1}
 /* Une seule page : la barre du haut ne pose plus ni fond, ni flou, ni filet.
    Son fond semi-opaque coupait la lumière net à sa base — c'était ça, la
@@ -1657,23 +1665,47 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
    assise basse à gauche qui creuse la profondeur. Rayons volontairement plus
    grands que le viewport — c'est ce qui évite le « blob » de dégradé
    générique : on ne doit jamais voir où la lumière s'arrête. */
-.shell::before{background:
+/* Posée sur la racine, donc COMMUNE à la barre latérale et au contenu :
+   c'est ce qui fait qu'on ne lit plus l'app en deux morceaux. */
+/* z-index:-1 et non pas 0 : la nappe se glisse SOUS les enfants sans qu'on ait
+   à leur imposer un empilement. Une règle `.sidebar{position:relative}` posée
+   ici écraserait le `position:fixed` du tiroir mobile déclaré plus haut — et
+   toute l'app disparaissait derrière la lumière sous 1024 px. `isolation` sur
+   #app garde la nappe dans son propre contexte : elle ne passe jamais derrière
+   la page. */
+#app{position:relative}
+#app::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:
   /* le halo : centré sur le contenu, pas sur le cadre — c'est lui qui donne
      le relief. Rayon très supérieur au viewport : on ne voit jamais son bord. */
-  radial-gradient(1150px 640px at 52% 30%, color-mix(in srgb,var(--accent) 36%,transparent), transparent 58%),
+  radial-gradient(1150px 640px at 58% 30%, color-mix(in srgb,var(--accent) 36%,transparent), transparent 58%),
   /* la reprise haute : la source déborde par le dessus, la page n'a pas de plafond */
-  radial-gradient(1400px 520px at 46% -18%, color-mix(in srgb,var(--accent) 18%,transparent), transparent 62%),
+  radial-gradient(1400px 520px at 52% -18%, color-mix(in srgb,var(--accent) 18%,transparent), transparent 62%),
   /* l'assise : creuse le bas-gauche pour que le halo ne flotte pas dans le noir */
-  radial-gradient(1000px 780px at 2% 108%, color-mix(in srgb,var(--accent) 10%,transparent), transparent 64%);
-  opacity:1}
+  radial-gradient(1000px 780px at 0% 108%, color-mix(in srgb,var(--accent) 11%,transparent), transparent 64%),
+  /* la nappe de gauche : sans elle le halo n'atteint pas la barre latérale
+     (mesuré : vert-net à 0), et la barre redevenait une plaque morte à côté
+     d'un contenu éclairé. Étroite et haute, elle la baigne sans déplacer le
+     centre optique de la page. */
+  radial-gradient(620px 1000px at 4% 46%, color-mix(in srgb,var(--accent) 13%,transparent), transparent 66%)}
+/* La barre latérale devient un voile : la lumière la traverse, elle reste
+   lisible parce qu'elle garde 62 % de sa surface. Plus d'ombre portée — une
+   ombre entre deux zones du même plan recrée la couture qu'on efface. */
+/* Pas de backdrop-filter : derrière il n'y a qu'un dégradé lisse, un flou n'y
+   change rien de visible et coûte une couche de composition à chaque image. */
+.sidebar{background:color-mix(in srgb,var(--surface) 58%,transparent);
+  border-right:1px solid var(--line-faint);box-shadow:none;backdrop-filter:none}
 /* Pas de fil sur l'arête haute : quelle que soit sa finesse, une ligne en
    travers de l'écran redevient la séparation qu'on vient d'enlever. La
    lumière suffit, et elle n'a pas de bord. */
 /* En clair, la même lumière écraserait le texte : on la divise par trois. */
-:root:not([data-theme="dark"]) .shell::before{background:
-  radial-gradient(1150px 640px at 52% 30%, color-mix(in srgb,var(--accent) 9%,transparent), transparent 58%),
-  radial-gradient(1400px 520px at 46% -18%, color-mix(in srgb,var(--accent) 5%,transparent), transparent 62%),
-  radial-gradient(1000px 780px at 2% 108%, color-mix(in srgb,var(--accent) 4%,transparent), transparent 64%)}
+:root:not([data-theme="dark"]) #app::before{background:
+  radial-gradient(1150px 640px at 58% 30%, color-mix(in srgb,var(--accent) 9%,transparent), transparent 58%),
+  radial-gradient(1400px 520px at 52% -18%, color-mix(in srgb,var(--accent) 5%,transparent), transparent 62%),
+  radial-gradient(1000px 780px at 0% 108%, color-mix(in srgb,var(--accent) 4%,transparent), transparent 64%),
+  radial-gradient(620px 1000px at 4% 46%, color-mix(in srgb,var(--accent) 5%,transparent), transparent 66%)}
+/* En clair, un voile à 62 % laisserait la lumière remonter sur le texte de la
+   barre : on la remonte à 82 %, elle reste solidaire sans se délaver. */
+:root:not([data-theme="dark"]) .sidebar{background:color-mix(in srgb,var(--surface) 82%,transparent)}
 
 /* ── Le trait vert sous la barre du haut n'était pas une séparation ───────
    C'était l'anneau de focus de #main — focusable uniquement pour que le
