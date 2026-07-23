@@ -17,7 +17,7 @@
 <link rel="manifest" href="data:application/manifest+json,%7B%22name%22:%20%22MAZ%22,%20%22short_name%22:%20%22MAZ%22,%20%22start_url%22:%20%22.%22,%20%22display%22:%20%22standalone%22,%20%22background_color%22:%20%22%2308080A%22,%20%22theme_color%22:%20%22%2308080A%22,%20%22icons%22:%20%5B%7B%22src%22:%20%22https://mazen-create11.github.io/mzai/icon.png%22,%20%22sizes%22:%20%22180x180%22,%20%22type%22:%20%22image/png%22%7D%5D%7D">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400..700&family=Martian+Mono:wdth,wght@87.5,400&family=Syne:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400&display=swap" rel="stylesheet">
 <script>try{var t=JSON.parse(localStorage.getItem('mzai:theme'));var hh=new Date().getHours();
 var d=t==='auto'?!(hh>=7&&hh<19):t!=='light';   /* 'auto' résolu ICI aussi, sinon un flash sombre avant que le script principal ne tranche */
 document.documentElement.dataset.theme=d?'dark':'light'}catch(e){document.documentElement.dataset.theme='dark'}</script>
@@ -34,9 +34,9 @@ document.documentElement.dataset.theme=d?'dark':'light'}catch(e){document.docume
   color-scheme: light;
 
   /* ── Familles ── */
-  --font-display:'Syne', ui-sans-serif, system-ui, sans-serif;
-  --font-sans:'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono:'Martian Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-display:'Geist', ui-sans-serif, system-ui, sans-serif;   /* une seule famille : la hiérarchie vient du réglage, pas d'une fonte décorative */
+  --font-sans:'Geist', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   /* ── Surfaces (crème → blanc) ── */
   --bg:#FAF8F3; --surface:#FFFFFF; --surface-2:#F1EEE5; --surface-3:#E9E5D8;
@@ -627,7 +627,7 @@ button{font-family:inherit}
 .sb-head{flex-shrink:0;min-width:0;display:flex;align-items:center;gap:10px;padding:max(14px,env(safe-area-inset-top)) 16px 14px}
 .brand-mini{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
 .mark{width:30px;height:30px;border-radius:9px;flex-shrink:0;display:grid;place-items:center;background:var(--accent);color:var(--ink-on-accent);font-family:var(--font-display);font-weight:var(--fw-semi);font-size:16px;line-height:1;box-shadow:var(--shadow-xs)}
-.wordmark{font-family:var(--font-sans);font-weight:var(--fw-bold);font-size:17px;letter-spacing:-.3px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wordmark{font-family:var(--font-sans);font-weight:var(--fw-bold);font-size:17px;letter-spacing:-.2px;color:var(--ink);white-space:nowrap;flex:0 0 auto;min-width:max-content}   /* jamais d'ellipsis sur 3 lettres : vu tronqué en « M… » chez Mazen */
 .wordmark i,.wordmark .ai{font-style:normal;color:var(--accent-strong);font-weight:var(--fw-semi)}
 
 .sb-scroll{flex:1 1 auto;display:flex;flex-direction:column;gap:4px;padding:8px 12px}
@@ -694,7 +694,7 @@ button{font-family:inherit}
   padding:env(safe-area-inset-top) max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left));
   border-bottom:0;background:var(--bg);
 }
-.menu-btn{width:40px;height:40px;border-radius:var(--r-sm);border:0;background:transparent;color:var(--ink-soft);display:none;place-items:center;cursor:pointer;transition:.18s var(--ease);flex-shrink:0;order:99;margin-left:4px}   /* à DROITE de la topbar (choix Mazen 21/07) */
+.menu-btn{width:40px;height:40px;border-radius:var(--r-sm);border:0;background:transparent;color:var(--ink-soft);display:none;place-items:center;cursor:pointer;transition:.18s var(--ease);flex-shrink:0;margin-right:4px}   /* à GAUCHE (Mazen, 23/07) : le spacer pousse modèle + réglages à droite */
 .menu-btn:hover{background:var(--surface-2);color:var(--ink)}
 .brand{display:flex;align-items:center;gap:10px;border:0;background:transparent;cursor:pointer;padding:4px 6px;border-radius:var(--r-sm);min-width:0}
 .brand:hover{background:var(--surface-2)}
@@ -721,7 +721,7 @@ button{font-family:inherit}
    ============================================================ */
 #view-home .home-wrap{flex:1 1 auto;display:grid;grid-template-columns:minmax(0,1fr);place-items:safe center;padding:24px;overflow-y:auto}
 .home-center{width:100%;max-width:var(--thread-max);min-width:0;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px}
-.home-greet{font-family:var(--font-display);font-weight:700;font-size:clamp(30px,4.6vw,46px);line-height:1.02;letter-spacing:-.03em;margin:0;color:var(--ink)}
+.home-greet{font-family:var(--font-display);font-weight:700;font-size:clamp(30px,4.6vw,46px);line-height:1.04;letter-spacing:-.025em;margin:0;color:var(--ink)}
 .home-greet b{font-weight:700}   /* même encre que le reste : le motif « prénom en accent » est le tell du hero génératif */
 .home-greet .greet-mark{display:inline-block;width:.34em;height:.34em;margin-left:.22em;color:var(--accent);vertical-align:baseline}
 /* la ligne d'état : la date et le parc, en fonte de DONNÉES — le premier écran dit l'état, pas la bienvenue */
@@ -2628,7 +2628,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     _gateEl();
   })();
   const USER=DB.get('user',{name:'Mazen',email:'mazenchaban09@gmail.com',role:'Compte développeur',avColor:ARGILE_AV});
-  if(/#7fa9dc|#5e86c9|#6ba3ff|#b6c4d8|#6b7e97|#2c4a8f/i.test(USER.avColor||'')){USER.avColor=ARGILE_AV;DB.set('user',USER)}   /* migration : avatar bleu/ardoise hérité → argile DA */
+  if(/#7fa9dc|#5e86c9|#6ba3ff|#b6c4d8|#6b7e97|#2c4a8f|#d08b5c|#a85e2e|#b85335|#9e4a2b|#a4472b|#c76b4a/i.test(USER.avColor||'')){USER.avColor=ARGILE_AV;DB.set('user',USER)}   /* migration : avatars bleus ET argile hérités → émeraude Damas */
   const firstName=()=>(USER.name||'Mazen').trim().split(' ')[0];
   const modelById=id=>MODELS.find(m=>m.id===id)||MODELS[0];
   {const _bm=modelById(currentModel);if(_bm&&/image|video|audio/.test(_bm.kind||''))currentModel='MAZ Auto';}  // au boot on démarre en conversation texte : un modèle média persisté (FLUX/Wan/voix) retombe sur l'assistant, sinon le 1er message texte partirait en réponse simulée
@@ -2824,7 +2824,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const comp=$('#composer');if(!comp)return;
     const dest=(v==='chat')?$('#dockChat'):$('#dockHome');
     if(dest&&comp.parentElement!==dest)dest.appendChild(comp);
-    if(v==='home'||v==='chat')setTimeout(()=>{try{$('#prompt').focus()}catch(e){}},0);
+    if((v==='home'||v==='chat')&&matchMedia('(pointer: fine)').matches)setTimeout(()=>{try{$('#prompt').focus()}catch(e){}},0);
   }
   function showView(v){
     if(typeof stopTTS==='function')stopTTS();   // on ne laisse pas une lecture vocale continuer après un changement de vue
