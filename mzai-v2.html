@@ -17,7 +17,7 @@
 <link rel="manifest" href="data:application/manifest+json,%7B%22name%22:%20%22MAZ%22,%20%22short_name%22:%20%22MAZ%22,%20%22start_url%22:%20%22.%22,%20%22display%22:%20%22standalone%22,%20%22background_color%22:%20%22%2308080A%22,%20%22theme_color%22:%20%22%2308080A%22,%20%22icons%22:%20%5B%7B%22src%22:%20%22https://mazen-create11.github.io/mzai/icon.png%22,%20%22sizes%22:%20%22180x180%22,%20%22type%22:%20%22image/png%22%7D%5D%7D">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Hanken+Grotesk:ital,wght@0,400;0,450;0,500;0,600;0,700;1,500;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400..700&family=Martian+Mono:wdth,wght@87.5,400&family=Syne:wght@700&display=swap" rel="stylesheet">
 <script>try{var t=JSON.parse(localStorage.getItem('mzai:theme'));var hh=new Date().getHours();
 var d=t==='auto'?!(hh>=7&&hh<19):t!=='light';   /* 'auto' résolu ICI aussi, sinon un flash sombre avant que le script principal ne tranche */
 document.documentElement.dataset.theme=d?'dark':'light'}catch(e){document.documentElement.dataset.theme='dark'}</script>
@@ -34,9 +34,9 @@ document.documentElement.dataset.theme=d?'dark':'light'}catch(e){document.docume
   color-scheme: light;
 
   /* ── Familles ── */
-  --font-serif:'Fraunces', ui-serif, Georgia, 'Times New Roman', serif;
-  --font-sans:'Hanken Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono:'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-display:'Syne', ui-sans-serif, system-ui, sans-serif;
+  --font-sans:'Archivo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:'Martian Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   /* ── Surfaces (crème → blanc) ── */
   --bg:#FAF8F3; --surface:#FFFFFF; --surface-2:#F1EEE5; --surface-3:#E9E5D8;
@@ -151,9 +151,9 @@ document.documentElement.dataset.theme=d?'dark':'light'}catch(e){document.docume
 @media (max-width:760px){.at-wrap{padding:var(--s-4) var(--s-4) var(--s-9);gap:var(--s-6)}}
 
 /* ── le bandeau narratif : le SEUL moment éditorial de l'atelier ── */
-.at-narr{font-family:var(--font-serif);font-size:var(--fs-md);line-height:var(--lh-snug);
-  color:var(--ink);margin:0;max-width:56ch;font-weight:var(--fw-reg);text-wrap:pretty}
-.at-narr .at-em{color:var(--accent);font-style:italic}
+.at-narr{font-family:var(--font-display);font-size:var(--fs-md);line-height:1.4;
+  color:var(--ink);margin:0;max-width:56ch;font-weight:700;letter-spacing:-.01em;text-wrap:pretty}
+.at-narr .at-em{color:var(--accent);font-style:normal}   /* pas d'italique chargée : l'oblique synthétique est un défaut, pas un style */
 .at-narr .at-mute{color:var(--ink-soft)}
 @media (min-width:761px){.at-narr{font-size:var(--fs-lg)}}
 
@@ -245,7 +245,7 @@ document.documentElement.dataset.theme=d?'dark':'light'}catch(e){document.docume
 .at-c{min-width:0}
 .at-poincon{display:flex;color:var(--at-encre-3)}
 .at-ident{display:grid;row-gap:2px;min-width:0}
-.at-nm{margin:0;font-family:var(--font-serif);font-size:var(--fs-base);font-weight:var(--fw-med);
+.at-nm{margin:0;font-family:var(--font-sans);font-size:14px;font-weight:var(--fw-semi);
   line-height:1.25;color:var(--at-encre);display:flex;align-items:baseline;gap:var(--s-2);min-width:0}
 .at-nm>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .at-obj{margin:0;font-size:var(--fs-sm);line-height:1.35;color:var(--at-encre-2);
@@ -309,7 +309,7 @@ document.documentElement.dataset.theme=d?'dark':'light'}catch(e){document.docume
 .at-ligne[data-etat="disjoncte"] .at-cad{color:var(--danger-strong)}
 .at-ligne[data-etat="brouillon"],.at-ligne[data-etat="sommeil"]{
   --at-encre:var(--ink-soft);--at-encre-2:var(--ink-faint);--at-encre-3:var(--ink-faint)}
-.at-ligne[data-etat="brouillon"] .at-nm{font-style:italic}
+/* brouillon : l'encre douce suffit — une oblique synthétique sur Archivo signalerait surtout la synthèse */
 .at-ligne[data-etat="brouillon"] .at-mnt,.at-ligne[data-etat="brouillon"] .at-env{opacity:.45}
 
 /* ── les brouillons se replient : ils ne méritent pas le haut de l'écran ── */
@@ -355,7 +355,7 @@ document.documentElement.dataset.theme=d?'dark':'light'}catch(e){document.docume
 /* ── l'état vide : il ne s'excuse pas, il propose ── */
 .at-empty{border:1px dashed var(--line-strong);border-radius:var(--r-md);padding:var(--s-8) var(--s-6);
   text-align:center;display:flex;flex-direction:column;align-items:center;gap:var(--s-4)}
-.at-empty .at-et{font-family:var(--font-serif);font-size:var(--fs-md);color:var(--ink);margin:0}
+.at-empty .at-et{font-family:var(--font-display);font-weight:700;letter-spacing:-.01em;font-size:var(--fs-md);color:var(--ink);margin:0}
 .at-empty .at-es{font-size:var(--fs-sm);color:var(--ink-soft);margin:0;max-width:44ch}
 
 /* ── la forge : une phrase, un poste ── */
@@ -626,9 +626,9 @@ button{font-family:inherit}
 }
 .sb-head{flex-shrink:0;min-width:0;display:flex;align-items:center;gap:10px;padding:max(14px,env(safe-area-inset-top)) 16px 14px}
 .brand-mini{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
-.mark{width:30px;height:30px;border-radius:9px;flex-shrink:0;display:grid;place-items:center;background:var(--accent);color:var(--ink-on-accent);font-family:var(--font-serif);font-weight:var(--fw-semi);font-size:16px;line-height:1;box-shadow:var(--shadow-xs)}
+.mark{width:30px;height:30px;border-radius:9px;flex-shrink:0;display:grid;place-items:center;background:var(--accent);color:var(--ink-on-accent);font-family:var(--font-display);font-weight:var(--fw-semi);font-size:16px;line-height:1;box-shadow:var(--shadow-xs)}
 .wordmark{font-family:var(--font-sans);font-weight:var(--fw-bold);font-size:17px;letter-spacing:-.3px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.wordmark i,.wordmark .ai{font-style:italic;color:var(--accent-strong);font-weight:var(--fw-semi)}
+.wordmark i,.wordmark .ai{font-style:normal;color:var(--accent-strong);font-weight:var(--fw-semi)}
 
 .sb-scroll{flex:1 1 auto;display:flex;flex-direction:column;gap:4px;padding:8px 12px}
 .sb-label{flex-shrink:0;font-size:var(--fs-xs);letter-spacing:var(--tr-wide);text-transform:uppercase;color:var(--ink-soft);font-weight:var(--fw-semi);margin:14px 4px 4px;white-space:nowrap}
@@ -721,8 +721,11 @@ button{font-family:inherit}
    ============================================================ */
 #view-home .home-wrap{flex:1 1 auto;display:grid;grid-template-columns:minmax(0,1fr);place-items:safe center;padding:24px;overflow-y:auto}
 .home-center{width:100%;max-width:var(--thread-max);min-width:0;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px}
-.home-greet{font-family:var(--font-serif);font-weight:var(--fw-semi);font-size:clamp(26px,4vw,var(--fs-3xl));letter-spacing:var(--tr-tight);margin:0;color:var(--ink)}
-.home-greet b{color:var(--accent);font-weight:var(--fw-semi)}
+.home-greet{font-family:var(--font-display);font-weight:700;font-size:clamp(30px,4.6vw,46px);line-height:1.02;letter-spacing:-.03em;margin:0;color:var(--ink)}
+.home-greet b{font-weight:700}   /* même encre que le reste : le motif « prénom en accent » est le tell du hero génératif */
+.home-greet .greet-mark{display:inline-block;width:.34em;height:.34em;margin-left:.22em;color:var(--accent);vertical-align:baseline}
+/* la ligne d'état : la date et le parc, en fonte de DONNÉES — le premier écran dit l'état, pas la bienvenue */
+.home-status{font-family:var(--font-mono);font-size:11px;font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 12px;font-variant-numeric:tabular-nums}
 .home-sub{margin:0 0 6px;color:var(--ink-soft);font-size:var(--fs-md)}
 .home-dock{width:100%}
 .home-suggest{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:6px}
@@ -734,7 +737,7 @@ button{font-family:inherit}
    ============================================================ */
 .vhead{flex-shrink:0;min-height:0;display:flex;align-items:center;gap:12px;padding:20px 26px 12px}
 .vhead .min0,.vhead>div:first-child{min-width:0}
-.vt{font-family:var(--font-sans);font-size:var(--fs-lg);font-weight:var(--fw-bold);letter-spacing:var(--tr-snug);line-height:1.2;color:var(--ink);min-width:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.vt{font-family:var(--font-display);font-size:var(--fs-lg);font-weight:700;letter-spacing:-.02em;line-height:1.2;color:var(--ink);min-width:0;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
 .vs{font-size:var(--fs-sm);color:var(--ink-soft);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .vbtn{display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:var(--r-sm);border:0;background:var(--accent);color:var(--ink-on-accent);font:inherit;font-size:var(--fs-sm);font-weight:var(--fw-semi);cursor:pointer;box-shadow:var(--shadow-xs);transition:.18s var(--ease);flex-shrink:0}
 .vbtn:hover{background:var(--accent-hover);transform:translateY(-1px)}
@@ -756,7 +759,7 @@ button{font-family:inherit}
 .pcard:hover::before{opacity:1}
 .pcard-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
 .pcard .pic,.pcard-top .pic{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;margin-bottom:0;color:var(--ink-on-accent);box-shadow:var(--shadow-xs)}
-.pcard .pn{font-family:var(--font-serif);font-size:var(--fs-lg);font-weight:var(--fw-semi);margin-bottom:4px;color:var(--ink)}
+.pcard .pn{font-family:var(--font-display);font-size:var(--fs-lg);font-weight:700;letter-spacing:-.015em;margin-bottom:4px;color:var(--ink)}
 .pcard .pd{font-size:var(--fs-sm);color:var(--ink-soft);line-height:1.45;margin-bottom:13px}
 .pcard .pm{font-size:12px;color:var(--ink-soft);display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .pcard .pm-i{display:inline-flex;align-items:center;gap:6px}
@@ -773,7 +776,7 @@ button{font-family:inherit}
 
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 20px;color:var(--ink-soft)}
 .es-ic{width:58px;height:58px;border-radius:17px;display:grid;place-items:center;background:var(--surface-2);border:1px solid var(--line-strong);color:var(--accent-strong);margin-bottom:16px}
-.es-t{font-family:var(--font-serif);font-size:var(--fs-lg);font-weight:var(--fw-semi);color:var(--ink);margin-bottom:5px}
+.es-t{font-family:var(--font-display);font-size:var(--fs-lg);font-weight:700;letter-spacing:-.015em;color:var(--ink);margin-bottom:5px}
 .es-d{font-size:var(--fs-sm);line-height:1.5;max-width:320px;color:var(--ink-soft)}
 
 /* panneau projet : contexte + fichiers */
@@ -875,7 +878,7 @@ body.dense .msg.user .bubble{padding:8px 13px}
 .bubble.md{white-space:normal}
 .bubble.md p{margin:0 0 10px}.bubble.md p:last-child{margin-bottom:0}
 .bubble.md h3{font-family:var(--font-sans);font-size:var(--fs-md);font-weight:var(--fw-bold);margin:14px 0 8px;letter-spacing:var(--tr-snug)}
-.bubble.md strong{font-weight:var(--fw-semi);color:var(--ink)}.bubble.md em{font-style:italic;color:var(--ink-soft)}
+.bubble.md strong{font-weight:var(--fw-semi);color:var(--ink)}.bubble.md em{font-style:normal;font-weight:var(--fw-semi);color:var(--ink-soft)}
 .bubble.md a{color:var(--accent-strong);text-decoration:none;border-bottom:1px solid var(--accent-tint-2);transition:.15s}
 .bubble.md a:hover{color:var(--accent-press);border-color:var(--accent)}
 .bubble.md .tablewrap{overflow-x:auto;margin:6px 0 12px;border:1px solid var(--line-strong);border-radius:var(--r-md)}
@@ -902,7 +905,7 @@ body.dense .msg.user .bubble{padding:8px 13px}
 .codeblock pre code{display:block;padding:13px 15px;overflow-x:auto;font-family:var(--font-mono);font-size:var(--fs-sm);line-height:1.7;color:var(--ink);white-space:pre}
 .t-kw{color:var(--accent-strong);font-weight:var(--fw-semi)}
 .t-str{color:var(--success-strong)}
-.t-com{color:var(--ink-faint);font-style:italic}
+.t-com{color:var(--ink-faint)}
 .t-num{color:var(--warning-strong)}
 /* carte d'erreur API (texte, image, voix, transcription) — accordée à la DA */
 .api-err{margin:2px 0;padding:12px 14px;border-radius:var(--r-md);background:var(--danger-tint);border:1px solid var(--danger);color:var(--danger-strong);font-size:var(--fs-sm);line-height:1.5}
@@ -1304,7 +1307,7 @@ textarea.inp{resize:vertical;line-height:1.55;min-height:84px}
 .ob-dot.on{width:22px;border-radius:4px;background:var(--accent)}
 .ob-logo{width:64px;height:64px;border-radius:20px;margin:0 auto 18px;display:grid;place-items:center;background:var(--accent);color:var(--ink-on-accent);box-shadow:var(--shadow-sm)}
 .ob-logo.ok{background:var(--success-tint);color:var(--success-strong);border:1px solid var(--success);box-shadow:none}
-.ob-t{font-family:var(--font-serif);font-size:var(--fs-xl);font-weight:var(--fw-semi);margin-bottom:8px;color:var(--ink)}
+.ob-t{font-family:var(--font-display);font-size:var(--fs-xl);font-weight:700;letter-spacing:-.02em;margin-bottom:8px;color:var(--ink)}
 .ob-d{font-size:var(--fs-sm);color:var(--ink-soft);line-height:1.55;max-width:340px;margin:0 auto 20px}
 .ob-themes{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;margin-bottom:6px}
 .ob-theme{padding:14px 10px 11px;border-radius:var(--r-md);border:1px solid var(--line-strong);background:var(--surface-2);cursor:pointer;transition:.16s var(--ease)}
@@ -1605,7 +1608,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 .home-kicker i{width:22px;height:1px;background:var(--line-strong);margin:0 2px;font-style:normal}
 .home-kicker-status{display:inline-flex;align-items:center;gap:5px;letter-spacing:.02em;text-transform:none;font-weight:var(--fw-med);color:var(--accent-strong)}
 .home-status-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--accent-tint)}
-.home-greet{font-size:clamp(30px,4.4vw,3.25rem);text-wrap:balance}
+.home-greet{text-wrap:balance}
 .home-sub{max-width:420px;margin-bottom:3px;font-size:var(--fs-md);color:var(--ink-soft)}
 .home-meta{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 0 7px;color:var(--ink-faint);font-size:11.5px}
 .home-meta span{display:inline-flex;align-items:center;gap:5px}
@@ -1654,7 +1657,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   .input-shell{border-radius:22px}
   .hint-shortcut{display:none}
   .home-kicker{font-size:9.5px}
-  .home-greet{font-size:clamp(28px,9vw,34px)}
+  .home-greet{font-size:clamp(26px,7.4vw,32px)}
   .home-sub{font-size:15px}
   .home-suggest{margin-top:8px}
   .home-quick-head{font-size:9px}
@@ -1729,6 +1732,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 /* En clair, un voile à 62 % laisserait la lumière remonter sur le texte de la
    barre : on la remonte à 82 %, elle reste solidaire sans se délaver. */
 :root:not([data-theme="dark"]) .sidebar{background:color-mix(in srgb,var(--surface) 82%,transparent)}
+:root:not([data-theme="dark"]) .home-status{color:var(--accent-strong)}   /* #16B87A = 2,4:1 sur crème — interdit en texte */
 
 /* ── Le trait vert sous la barre du haut n'était pas une séparation ───────
    C'était l'anneau de focus de #main — focusable uniquement pour que le
@@ -1854,9 +1858,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       <section class="view active" id="view-home" aria-label="Accueil">
         <div class="home-wrap">
           <div class="home-center">
-            <h2 class="home-greet" id="greet">Bonjour, <b>Mazen</b></h2>
-            
-            <div class="home-meta" aria-label="Capacités de MAZ"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"/></svg>Routage intelligent</span><span class="home-meta-sep" aria-hidden="true"></span><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16M4 12h11M4 19h7"/></svg>Réponses ajustées à ton intention</span></div>
+            <p class="home-status" id="homeEtat" aria-live="polite"></p>
+            <h2 class="home-greet" id="greet">Bonjour, <b>Mazen</b><svg class="greet-mark" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.2" y="3.2" width="9.6" height="9.6" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3.2" y="3.2" width="9.6" height="9.6" fill="none" stroke="currentColor" stroke-width="1.6" transform="rotate(45 8 8)"/></svg></h2>
             <!-- #dockHome reçoit le composer unique à l'accueil -->
             <div class="home-dock" id="dockHome">
 
@@ -2240,9 +2243,21 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   /* ripple */
   $$('.rip').forEach(el=>el.addEventListener('pointerdown',e=>{const r=el.getBoundingClientRect(),d=Math.max(r.width,r.height),s=document.createElement('span');s.className='r';s.style.width=s.style.height=d+'px';s.style.left=(e.clientX-r.left)+'px';s.style.top=(e.clientY-r.top)+'px';el.appendChild(s);setTimeout(()=>s.remove(),600)}));
 
-  /* greeting */
+  /* greeting — la ligne d'état au-dessus dit des FAITS : la date, puis le parc
+     dès que l'atelier a répondu. Les slogans n'ont rien à faire sur un instrument. */
+  window.__parc=null;   // rempli par l'atelier à chaque peinture
+  function majHomeEtat(){
+    const el=document.getElementById('homeEtat');if(!el)return;
+    const d=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+    let t=d;
+    if(window.__parc){const p=window.__parc;
+      if(p.actifs)t+=' · '+p.actifs+' poste'+(p.actifs>1?'s':'')+' actif'+(p.actifs>1?'s':'');
+      if(p.signer)t+=' · '+p.signer+' à signer';}
+    el.textContent=t;
+  }
   const h=new Date().getHours();
-  $('#greet').innerHTML=(h<6?'Bonne nuit':h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir')+', <b>Mazen</b>';
+  $('#greet').innerHTML=(h<6?'Bonne nuit':h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir')+', <b>Mazen</b><svg class="greet-mark" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.2" y="3.2" width="9.6" height="9.6" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3.2" y="3.2" width="9.6" height="9.6" fill="none" stroke="currentColor" stroke-width="1.6" transform="rotate(45 8 8)"/></svg>';
+  majHomeEtat();
 
   /* ═══ La lumière ═════════════════════════════════════════════════════════
      Deux mouvements, tous deux volontairement à la limite du perceptible :
@@ -2894,7 +2909,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       ['help','Aide',GLYPH.help]
     ];
     $('#popProfile').innerHTML=
-      `<div class="pi sel"><div class="pi-i" style="background:var(--accent);color:var(--ink-on-accent);border-color:transparent;font-family:var(--font-serif);font-weight:600">${esc(ini)}</div><div class="pi-main"><div class="pi-t">${esc(USER.name||'Mazen')}</div><div class="pi-d">${esc(email)}</div></div></div><div class="sep"></div>`
+      `<div class="pi sel"><div class="pi-i" style="background:var(--accent);color:var(--ink-on-accent);border-color:transparent;font-family:var(--font-display);font-weight:600">${esc(ini)}</div><div class="pi-main"><div class="pi-t">${esc(USER.name||'Mazen')}</div><div class="pi-d">${esc(email)}</div></div></div><div class="sep"></div>`
       +items.map(([pf,t,svg])=>`<div class="pi" data-pf="${pf}">${pfIco(svg)}<div class="pi-main"><div class="pi-t">${t}</div></div>${pf==='theme'?`<span class="pi-tail">${themeLabel()}</span>`:''}</div>`).join('')
       +'<div class="sep"></div>'
       +(VIA_PROXY?`<div class="pi" data-pf="logout">${pfIco('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>')}<div class="pi-main"><div class="pi-t">Se déconnecter</div></div></div>`:'')
@@ -2925,7 +2940,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const av=$('.profile .avatar');if(av){av.textContent=ini;av.style.background=USER.avColor}
     const nm=$('.profile .name');if(nm)nm.textContent=USER.name;
     const sb=$('.profile .sub');if(sb)sb.textContent=USER.role;
-    const h=new Date().getHours();$('#greet').innerHTML=(h<6?'Bonne nuit':h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir')+', <b>'+esc(firstName())+'</b>';
+    const h=new Date().getHours();$('#greet').innerHTML=(h<6?'Bonne nuit':h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir')+', <b>'+esc(firstName())+'</b><svg class="greet-mark" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.2" y="3.2" width="9.6" height="9.6" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3.2" y="3.2" width="9.6" height="9.6" fill="none" stroke="currentColor" stroke-width="1.6" transform="rotate(45 8 8)"/></svg>';
+    majHomeEtat();
     const hp=$('#popProfile .pi.sel');if(hp){const i=hp.querySelector('.pi-i');i.textContent=ini;i.style.background=USER.avColor;hp.querySelector('.pi-t').textContent=USER.name;hp.querySelector('.pi-d').textContent=USER.email}
   }
   /* profil */
@@ -4882,6 +4898,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const f=$('#atForger');f&&f.addEventListener('click',forger);
       const ta=$('#atForge');ta&&ta.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();forger()}});
       const n=$('#atNavN');if(n){n.textContent=etat.controles.length||'';n.hidden=!etat.controles.length}
+      window.__parc={actifs:etat.postes.filter(p=>p.etat==='actif').length,signer:etat.controles.length};
+      if(typeof majHomeEtat==='function')majHomeEtat();
       const s=$('#atSub');if(s)s.textContent=etat.postes.length?`${etat.postes.length} poste${etat.postes.length>1?'s':''} · ${eur(etat.mois_cents)} ce mois`:'Les travaux qui tournent pour toi';
     }
 
@@ -5082,7 +5100,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         pousser(t);
         const c=t.dataset.bloc&&$(`#atPosteBody .at-bc[data-cnt="${t.dataset.bloc}"]`);if(c)c.textContent=t.value.length})});
       /* Les polices arrivent après le premier calcul : la hauteur serait mesurée
-         avec la police de repli, puis Hanken la dépasserait — et comme le champ
+         avec la police de repli, puis Archivo la dépasserait — et comme le champ
          est en overflow:hidden, la fin de la consigne disparaîtrait SANS barre
          de défilement pour le dire. On remesure quand les polices sont prêtes. */
       if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{
