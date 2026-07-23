@@ -1673,11 +1673,17 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
    toute l'app disparaissait derrière la lumière sous 1024 px. `isolation` sur
    #app garde la nappe dans son propre contexte : elle ne passe jamais derrière
    la page. */
-#app{position:relative}
-#app::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:
+/* --halo-y : la hauteur de la source, réglée sur l'heure (voir « l'heure » dans
+   le script). --lx/--ly : le déport très amorti qui suit le pointeur.
+   La nappe déborde de 12 % : ses bords restent hors cadre, on peut donc la
+   TRANSLATER sans jamais les voir entrer. Une translation se compose sur le
+   GPU — repeindre un dégradé plein écran à chaque image ne passerait pas. */
+#app{position:relative;--halo-y:30%;--halo-i:36%;--lx:0px;--ly:0px}
+#app::before{content:"";position:absolute;inset:-12%;z-index:-1;pointer-events:none;
+  transform:translate3d(var(--lx),var(--ly),0);will-change:transform;background:
   /* le halo : centré sur le contenu, pas sur le cadre — c'est lui qui donne
      le relief. Rayon très supérieur au viewport : on ne voit jamais son bord. */
-  radial-gradient(1150px 640px at 58% 30%, color-mix(in srgb,var(--accent) 36%,transparent), transparent 58%),
+  radial-gradient(1150px 640px at 58% var(--halo-y), color-mix(in srgb,var(--accent) var(--halo-i),transparent), transparent 58%),
   /* la reprise haute : la source déborde par le dessus, la page n'a pas de plafond */
   radial-gradient(1400px 520px at 52% -18%, color-mix(in srgb,var(--accent) 18%,transparent), transparent 62%),
   /* l'assise : creuse le bas-gauche pour que le halo ne flotte pas dans le noir */
@@ -1699,7 +1705,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
    lumière suffit, et elle n'a pas de bord. */
 /* En clair, la même lumière écraserait le texte : on la divise par trois. */
 :root:not([data-theme="dark"]) #app::before{background:
-  radial-gradient(1150px 640px at 58% 30%, color-mix(in srgb,var(--accent) 9%,transparent), transparent 58%),
+  radial-gradient(1150px 640px at 58% var(--halo-y), color-mix(in srgb,var(--accent) calc(var(--halo-i) / 4),transparent), transparent 58%),
   radial-gradient(1400px 520px at 52% -18%, color-mix(in srgb,var(--accent) 5%,transparent), transparent 62%),
   radial-gradient(1000px 780px at 0% 108%, color-mix(in srgb,var(--accent) 4%,transparent), transparent 64%),
   radial-gradient(620px 1000px at 4% 46%, color-mix(in srgb,var(--accent) 5%,transparent), transparent 66%)}
@@ -2220,6 +2226,55 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   /* greeting */
   const h=new Date().getHours();
   $('#greet').innerHTML=(h<6?'Bonne nuit':h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir')+', <b>Mazen</b>';
+
+  /* ═══ La lumière ═════════════════════════════════════════════════════════
+     Deux mouvements, tous deux volontairement à la limite du perceptible :
+     on ne doit pas les voir, on doit sentir que la page est vivante. */
+  (function(){
+    const app=document.getElementById('app');if(!app)return;
+
+    /* — l'heure — Mêmes seuils que le salut ci-dessus (6/12/18) : la lumière
+       et les mots ne peuvent pas se contredire. Le matin la source est haute
+       et franche ; le soir elle descend et s'approfondit ; la nuit elle
+       s'efface presque, on ne veut pas d'un écran qui crie à 3 h. */
+    function heure(){
+      const t=new Date().getHours();
+      const [y,i] = t<6  ? ['40%','24%']    // nuit    — basse, retenue
+                  : t<12 ? ['22%','34%']    // matin   — haute et franche
+                  : t<18 ? ['30%','36%']    // journée — l'assiette de référence
+                  :        ['40%','40%'];   // soir    — basse et profonde
+      app.style.setProperty('--halo-y',y);
+      app.style.setProperty('--halo-i',i);
+    }
+    heure();
+    setInterval(heure,15*60*1000);   // le basculement se fait sans recharger
+
+    /* — le pointeur — La nappe se déporte de 14 px au maximum, avec un fort
+       amortissement : elle traîne derrière la souris au lieu de la suivre.
+       Une translation seulement (composée sur le GPU), jamais un repaint.
+       La boucle s'arrête d'elle-même dès que le déport est stabilisé. */
+    if(!window.matchMedia)return;
+    if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    if(!matchMedia('(pointer: fine)').matches)return;   // au doigt, rien à suivre
+
+    const AMPL=14;
+    let cx=0,cy=0,vx=0,vy=0,anim=0;
+    function boucle(){
+      vx+=(cx-vx)*.045;vy+=(cy-vy)*.045;
+      app.style.setProperty('--lx',vx.toFixed(2)+'px');
+      app.style.setProperty('--ly',vy.toFixed(2)+'px');
+      if(Math.abs(cx-vx)>.15||Math.abs(cy-vy)>.15)anim=requestAnimationFrame(boucle);
+      else anim=0;
+    }
+    addEventListener('pointermove',e=>{
+      cx=((e.clientX/innerWidth)-.5)*2*AMPL;
+      cy=((e.clientY/innerHeight)-.5)*2*AMPL;
+      if(!anim)anim=requestAnimationFrame(boucle);
+    },{passive:true});
+    // La souris quitte la fenêtre : la lumière revient à sa place, elle ne
+    // reste pas figée dans un coin.
+    addEventListener('pointerleave',()=>{cx=0;cy=0;if(!anim)anim=requestAnimationFrame(boucle)},{passive:true});
+  })();
 
   /* ===== data ===== */
   const now=()=>Date.now();
