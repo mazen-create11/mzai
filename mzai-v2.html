@@ -1839,6 +1839,42 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   .toggle.on::before{background:var(--accent);border-color:transparent}
   .toggle.on::after{left:32px}
 }
+
+/* ═══ Polish 23/07 — retours et rythme (additif, cascade intacte) ═══ */
+/* rouvrir une conversation POSE l'historique, il ne rejoue pas son entrée ; seuls
+   les vrais nouveaux messages bougent — et le tien claque plus vite que la réponse */
+.msg.settled{animation:none}
+.msg.user{animation-duration:.22s}
+/* la bascule vers le chat est le geste le plus fréquent : elle tombe à 180ms,
+   les autres vues gardent leur respiration — la hiérarchie temporelle dit la fréquence */
+#view-chat.active{animation-duration:.18s}
+/* la ligne de routage est un cadran d'instrument : chiffres en chasse fixe,
+   seul le nom du modèle reste en Figtree */
+.msg-stats{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:10.5px;letter-spacing:0}
+.msg-stats b{font-family:var(--font-sans);font-size:11px;letter-spacing:.02em}
+.ms-why{color:var(--ink-faint)}
+/* la signature : le sceau de routage se pose APRÈS le texte (délai court, 4px, fondu) —
+   uniquement sur une vraie fin de génération (.live), jamais au rendu de l'historique */
+.msg-stats.live{animation:statsIn .26s var(--ease) .12s both}
+@keyframes statsIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+/* le compteur de tokens encaisse le coût : montée émeraude instantanée, retour lent
+   (répare l'état .pulse mort — le JS le posait déjà, le CSS ne faisait rien) */
+.tok-count{transition:opacity .3s,color .5s var(--ease)}
+.tok-count.pulse{color:var(--accent-strong);transition:color .08s}
+/* la pill confirme le choix de modèle sur place — le toast à l'autre bout est retiré */
+.model-pill.m-flash{animation:pillFlash .28s var(--ease)}
+@keyframes pillFlash{from{transform:translateY(3px);opacity:.35}to{transform:none;opacity:1}}
+/* Figtree n'a pas d'axe italique : le blockquote penché était une oblique simulée */
+.bubble.md blockquote{font-style:normal}
+.bubble.md td,.bubble.md th{font-variant-numeric:tabular-nums}
+/* la dictée répond au doigt AVANT la permission micro (l'armement était muet ~1s) */
+#dictateBtn.arming{color:var(--danger-strong);background:var(--danger-tint);border-color:var(--danger)}
+/* redescendre : la pilule apparaît dès qu'on remonte lire, pile au-dessus du composer */
+#view-chat{position:relative}
+.jump-down{position:absolute;left:50%;bottom:14px;transform:translateX(-50%) translateY(8px);width:38px;height:38px;border-radius:50%;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-soft);display:grid;place-items:center;cursor:pointer;box-shadow:var(--shadow-md);opacity:0;visibility:hidden;transition:opacity .18s var(--ease),transform .18s var(--ease),visibility 0s .18s;z-index:5}
+.jump-down.show{opacity:1;visibility:visible;transform:translateX(-50%);transition:opacity .18s var(--ease),transform .18s var(--ease)}
+.jump-down:hover{color:var(--accent-strong);border-color:var(--accent)}
+.jump-down:focus-visible{outline:1px solid var(--line-strong);outline-offset:2px}
 </style>
 </head>
 <body>
@@ -1983,6 +2019,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       <!-- CHAT : fil de conversation (seule zone scrollable) -->
       <section class="view" id="view-chat" aria-label="Conversation">
         <div class="thread" id="chat" role="log" aria-live="polite"></div>
+        <button class="jump-down" id="jumpDown" aria-label="Revenir en bas"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg></button>
         <!-- Le pont entre les deux moitiés de l'app : cet échange a marché, il devient un poste. -->
         <div class="at-pont" id="atPont" hidden>
           <span class="at-pont-t">Cet échange a marché&nbsp;?</span>
@@ -2951,7 +2988,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       ms.forEach(m=>{const pr=PROVIDERS[m.provider];const ok=hasKey(m.provider);html+=`<div class="pi${ok?'':' nokey'}" data-model="${m.id}" style="--ac:${pr.ac}"><div class="pi-i acc">${brandLogo(m)}</div><div class="pi-main"><div class="pi-t">${m.id}${m.tag?` <span class="tagm" style="background:var(--surface-2);color:var(--ink-soft);border:1px solid var(--line)">${m.tag}</span>`:''}${ok?'':'<span class="keyhint">clé requise</span>'}</div><div class="pi-d">${m.d}</div><div class="pi-cap">${spdDots(m.spd)}${m.ctx&&m.ctx!=='-'?`<span class="ctxchip">${m.ctx} ctx</span>`:''}</div></div>${CHK}</div>`})});
     html+=`<div class="pfoot"><button class="pf-btn" id="popPersona"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.sliders}</svg>Personnaliser mon IA</button></div>`;
     $('#popModel').innerHTML=html;
-    $$('#popModel .pi').forEach(p=>p.addEventListener('click',()=>{const id=p.dataset.model,m=modelById(id);const _cat=m&&m.kind?(m.kind==='audio'?'voice':m.kind):'text';if(typeof setMode==='function'&&_cat!==MODE_CAT[currentMode])setMode(_cat);currentModel=id;syncModel();closePop();if(!hasKey(m.provider)){if(VIA_PROXY){toast('Modèle indisponible pour l\'instant')}else{toast('Ajoute ta clé '+PROVIDERS[m.provider].name);openSettingsAt('api')}}else toast('Modèle : '+id)}));
+    $$('#popModel .pi').forEach(p=>p.addEventListener('click',()=>{const id=p.dataset.model,m=modelById(id);const _cat=m&&m.kind?(m.kind==='audio'?'voice':m.kind):'text';if(typeof setMode==='function'&&_cat!==MODE_CAT[currentMode])setMode(_cat);currentModel=id;syncModel();closePop();if(!hasKey(m.provider)){if(VIA_PROXY){toast('Modèle indisponible pour l\'instant')}else{toast('Ajoute ta clé '+PROVIDERS[m.provider].name);openSettingsAt('api')}}else{const mp=$('#modelPill');if(mp){mp.classList.remove('m-flash');void mp.offsetWidth;mp.classList.add('m-flash')}}}));   // le retour vit dans la pill elle-même, pas dans un toast à l'autre bout
     const _pk=$('#popKeys');if(_pk)_pk.addEventListener('click',()=>{closePop();openSettingsAt('api')});
     $('#popPersona').addEventListener('click',()=>{closePop();openPersona()});
   }
@@ -3339,7 +3376,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     return x;
   }
   let stickBottom=true;
-  chat.addEventListener('scroll',()=>{stickBottom=(chat.scrollHeight-chat.scrollTop-chat.clientHeight)<100;});  // l'utilisateur peut remonter lire pendant le streaming
+  chat.addEventListener('scroll',()=>{stickBottom=(chat.scrollHeight-chat.scrollTop-chat.clientHeight)<100;$('#jumpDown').classList.toggle('show',!stickBottom)});  // l'utilisateur peut remonter lire pendant le streaming
+  $('#jumpDown').addEventListener('click',()=>{stickBottom=true;$('#jumpDown').classList.remove('show');scrollDown(true)});
   const scrollDown=(force)=>{if(force||stickBottom)chat.scrollTop=chat.scrollHeight};
   const isOn=name=>name==='Recherche'?!!opts.search:name==='Réflexion'?!!opts.reason:false;  // état lu depuis le sélecteur d'outils (opts), plus depuis le DOM
   function attHTML(f,removable,idx){
@@ -3409,13 +3447,15 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function _renderTok(pulse){const el=$('#tokCount');if(!el)return;el.textContent=SESSION_TOKENS.toLocaleString('fr-FR')+' tokens'+(SESSION_COST>0?' · $'+SESSION_COST.toFixed(SESSION_COST<0.1?4:2):'');el.setAttribute('data-tip','Tokens'+(SESSION_COST>0?' et coût':'')+' cumulés cette session');if(pulse){el.classList.remove('pulse');void el.offsetWidth;el.classList.add('pulse');setTimeout(()=>el.classList.remove('pulse'),600);}}
   function addSessionTokens(n){if(!n)return;SESSION_TOKENS+=n;try{localStorage.setItem('mzai:stok',SESSION_TOKENS)}catch(e){}_renderTok(true);}
   function addSessionCost(c){c=+c;if(!c||!isFinite(c)||c<0)return;SESSION_COST+=c;try{localStorage.setItem('mzai:scost',String(SESSION_COST))}catch(e){}_renderTok(true);}
+  let _routeWhy=null;   // posé par le routeur MAZ Auto, consommé par le sceau de la réponse
   function statsEl(model,ms,usage,live){
     const known=MODELS.find(m=>m.id===model);const label=known?known.id:model;   // accepte un id connu OU un libellé (« MAZ Auto → DeepSeek V4 Pro »)
     const parts=['<b>'+esc(label)+'</b>'];
     if(ms)parts.push((ms/1000).toFixed(1)+'s');
     if(usage){const tot=usage.total_tokens||((usage.prompt_tokens||0)+(usage.completion_tokens||0));if(tot){parts.push(tot.toLocaleString('fr-FR')+' tokens');if(live)addSessionTokens(tot);}const cost=(usage.cost!=null?usage.cost:usage.total_cost);if(cost!=null&&+cost>0){parts.push('$'+(+cost<0.01?(+cost).toFixed(4):(+cost).toFixed(3)));if(live)addSessionCost(+cost);}}
+    if(live&&_routeWhy&&/MAZ Auto/.test(label)){parts.push('<span class="ms-why">'+esc(_routeWhy)+'</span>');_routeWhy=null;}   // le routeur dit POURQUOI, pas juste quoi
     if(parts.length<2)return null;
-    const d=document.createElement('div');d.className='msg-stats';d.innerHTML=parts.join('<span class="ms-dot"></span>');return d;
+    const d=document.createElement('div');d.className='msg-stats'+(live?' live':'');d.innerHTML=parts.join('<span class="ms-dot"></span>');return d;   // .live = le sceau se pose en fin de génération, jamais au rendu d'historique
   }
   function sourcesBlock(modelId,srcs){
     srcs=Array.from(new Map((srcs||[]).filter(s=>s&&s.url).map(s=>[s.url,s])).values());  // dédupe par URL
@@ -3550,16 +3590,17 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         const t=lastUser.toLowerCase();
         const hasImg=(lastMsg.files||[]).some(f=>f.isImg&&f.b64);
         let api,name;
-        if(hasImg){api=VISION_DOC;name='Qwen3-VL · vision';}                         // toute image → modèle vision
-        else if(currentMode==='code'){api='moonshotai/kimi-k2.7-code';name='Kimi K2.7 Code';}   // l'outil dicte le modèle…
-        else if(currentMode==='doc'||currentMode==='translate'||currentMode==='transcribe'){api='deepseek/deepseek-v4-pro';name='DeepSeek V4 Pro';}
+        _routeWhy=null;   // la raison du routage, révélée dans .msg-stats — la transparence est la signature
+        if(hasImg){api=VISION_DOC;name='Qwen3-VL · vision';_routeWhy='image jointe';}          // toute image → modèle vision
+        else if(currentMode==='code'){api='moonshotai/kimi-k2.7-code';name='Kimi K2.7 Code';_routeWhy='outil Code';}   // l'outil dicte le modèle…
+        else if(currentMode==='doc'||currentMode==='translate'||currentMode==='transcribe'){api='deepseek/deepseek-v4-pro';name='DeepSeek V4 Pro';_routeWhy='outil '+currentMode;}
         else{   // …sinon (Assistant), heuristique sur le contenu
           const isCode=/```/.test(lastUser)||/\b(code|coder|coding|fonction|function|bug|debug|refactor|déboguer|sql|regex|python|javascript|typescript|css|html|react|composant|component|api|endpoint|stack ?trace|compil)\b/.test(t);
           const isMath=/\b(calcul|équation|equation|intégrale|integral|dérivée|derivee|probabilit|matrice|théorème|theoreme|résous|resous|factorise)\b/.test(t)||/\d\s*[+\-*/^=]\s*[\d(]/.test(lastUser);
           const isHard=isMath||lastUser.length>600||/\b(analyse|raisonne|démontre|demontre|prouve|stratégie|strateg|compare|optimise|architecture|explique en détail|étape par étape|plan détaillé)\b/.test(t);
-          if(isCode){api='moonshotai/kimi-k2.7-code';name='Kimi K2.7 Code';}
-          else if(isHard){api='deepseek/deepseek-v4-pro';name='DeepSeek V4 Pro';}
-          else{api='deepseek/deepseek-v4-flash';name='DeepSeek V4 Flash';}
+          if(isCode){api='moonshotai/kimi-k2.7-code';name='Kimi K2.7 Code';_routeWhy='code détecté';}
+          else if(isHard){api='deepseek/deepseek-v4-pro';name='DeepSeek V4 Pro';_routeWhy=isMath?'calcul détecté':'demande complexe';}
+          else{api='deepseek/deepseek-v4-flash';name='DeepSeek V4 Flash';_routeWhy='demande courante';}
         }
         mData={...mData,provider:'openrouter',api};
         wasAuto=true;const rm=MODELS.find(m=>m.api===api);resolvedModel=rm?rm.id:name;
@@ -3981,7 +4022,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     (c.msgs||[]).forEach(m=>(m.files||[]).forEach(f=>{ if(f&&f._mid&&f._txt){ if(!f.textContent) tasks.push(MEDIA.get(f._mid).then(v=>{if(v)f.textContent=v})); } else if(f&&f._mid&&!f.b64&&!f.ocrPages){ tasks.push(MEDIA.get(f._mid).then(v=>{if(!v)return;if(f._ocr){try{f.ocrPages=JSON.parse(v)}catch(e){}}else{f.b64=v}})); } }));
     if(tasks.length)await Promise.all(tasks);
   }
-  async function openConvo(id){const c=convoById(id);if(!c)return;activeId=id;activeProject=c.pid||null;if(c.model&&MODELS.some(m=>m.id===c.model)){const _cm=modelById(c.model);currentModel=/image|video|audio/.test(_cm.kind||'')?'MAZ Auto':c.model;syncModel()}chat.innerHTML='';showView('chat');await rehydrateFiles(c);if(activeId!==id)return;c.msgs.forEach(m=>m.role==='user'?addUser(m.text,m.files):renderAIStored(m));refreshCtxBanner();renderChatHead(c);renderRecents();stickBottom=true;scrollDown(true);refreshSendBtn()}
+  async function openConvo(id){const c=convoById(id);if(!c)return;activeId=id;activeProject=c.pid||null;if(c.model&&MODELS.some(m=>m.id===c.model)){const _cm=modelById(c.model);currentModel=/image|video|audio/.test(_cm.kind||'')?'MAZ Auto':c.model;syncModel()}chat.innerHTML='';showView('chat');await rehydrateFiles(c);if(activeId!==id)return;c.msgs.forEach(m=>m.role==='user'?addUser(m.text,m.files):renderAIStored(m));chat.querySelectorAll('.msg').forEach(x=>x.classList.add('settled'));refreshCtxBanner();renderChatHead(c);renderRecents();stickBottom=true;scrollDown(true);refreshSendBtn()}
   function renderChatHead(c){
     if(c&&c.id&&activeId&&c.id!==activeId)return;   // ne pas écrire l'en-tête d'une convo qui n'est plus affichée (titre auto résolu après bascule)
     let h=chat.querySelector('.conv-head');
@@ -4245,16 +4286,17 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     if(!SR)return toast(IS_IOS?'Transcription live peu fiable sur iPhone — importe un audio (outil Voix) pour une transcription précise':'Reconnaissance vocale non supportée — utilise Chrome ou Edge');
     if(asrOn||_asrStarting){_asrStop=true;try{asrRec&&asrRec.stop()}catch(e){}return}   // 2e tap = arrêt (verrou synchrone)
     _asrStarting=true;_asrStop=false;
+    btn&&btn.classList.add('arming');   // teinte danger DÈS le tap — la permission micro peut prendre >1s, le geste ne doit jamais être muet
     asrRec=new SR();asrRec.lang=toolCfg.asrLang||'fr-FR';asrRec.interimResults=true;asrRec.continuous=true;
     const base=prompt.value;let finalT='';
-    asrRec.onstart=()=>{_asrStarting=false;asrOn=true;btn&&btn.classList.add('on');toast('Transcription live — parle, retape pour arrêter')};
+    asrRec.onstart=()=>{_asrStarting=false;asrOn=true;btn&&(btn.classList.remove('arming'),btn.classList.add('on'));toast('Transcription live — parle, retape pour arrêter')};
     asrRec.onresult=e=>{let interim='';for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)finalT+=r[0].transcript;else interim+=r[0].transcript}prompt.value=(base?base.trim()+' ':'')+finalT+interim;autoGrow();updateCount()};
-    asrRec.onerror=ev=>{_asrStarting=false;if(ev&&ev.error==='not-allowed'){_asrStop=true;toast('Micro refusé — autorise l\'accès au micro dans les réglages')}else if(ev&&ev.error!=='no-speech')toast('Micro indisponible — réessaie')};
+    asrRec.onerror=ev=>{_asrStarting=false;btn&&btn.classList.remove('arming');if(ev&&ev.error==='not-allowed'){_asrStop=true;toast('Micro refusé — autorise l\'accès au micro dans les réglages')}else if(ev&&ev.error!=='no-speech')toast('Micro indisponible — réessaie')};
     asrRec.onend=()=>{_asrStarting=false;
       // sur iOS/Safari, continuous=true se coupe à chaque pause → on relance tant que l'utilisateur n'a pas arrêté
       if(asrOn&&!_asrStop){try{asrRec.start();return}catch(e){}}
-      asrOn=false;btn&&btn.classList.remove('on')};
-    try{asrRec.start()}catch(e){_asrStarting=false;toast('Micro déjà actif — réessaie')}
+      asrOn=false;btn&&btn.classList.remove('on','arming')};
+    try{asrRec.start()}catch(e){_asrStarting=false;btn&&btn.classList.remove('arming');toast('Micro déjà actif — réessaie')}
   }
   /* ===== Transcription fichier audio → SiliconFlow ===== */
   /* Dispatcher : Qwen3-Omni (FR + multilingue, défaut) ou SenseVoice (zh/en, rapide). */
