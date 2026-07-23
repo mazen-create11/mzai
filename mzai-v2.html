@@ -18,7 +18,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=Hanken+Grotesk:ital,wght@0,400;0,450;0,500;0,600;0,700;1,500;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script>try{var t=JSON.parse(localStorage.getItem('mzai:theme'));var d=t!=='light';document.documentElement.dataset.theme=d?'dark':'light'}catch(e){document.documentElement.dataset.theme='dark'}</script>
+<script>try{var t=JSON.parse(localStorage.getItem('mzai:theme'));var hh=new Date().getHours();
+var d=t==='auto'?!(hh>=7&&hh<19):t!=='light';   /* 'auto' résolu ICI aussi, sinon un flash sombre avant que le script principal ne tranche */
+document.documentElement.dataset.theme=d?'dark':'light'}catch(e){document.documentElement.dataset.theme='dark'}</script>
 <style>
 /* ============================================================
    MAZ V2 — DESIGN SYSTEM « Encre & Crème »
@@ -1693,6 +1695,21 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
      d'un contenu éclairé. Étroite et haute, elle la baigne sans déplacer le
      centre optique de la page. */
   radial-gradient(620px 1000px at 4% 46%, color-mix(in srgb,var(--accent) 13%,transparent), transparent 66%)}
+
+/* ── Quand un agent travaille ─────────────────────────────────────────────
+   Une seconde nappe, plus serrée, qui se révèle le temps du passage. Elle
+   n'ajoute AUCUN repeint : seules l'opacité et l'échelle bougent, deux
+   propriétés composées sur le GPU. L'app dit qu'elle fait quelque chose sans
+   le moindre indicateur, et le silence revient tout seul quand c'est fini. */
+#app::after{content:"";position:absolute;inset:-12%;z-index:-1;pointer-events:none;opacity:0;
+  transition:opacity .9s var(--ease);
+  background:radial-gradient(560px 380px at 58% var(--halo-y),
+    color-mix(in srgb,var(--accent) 20%,transparent), transparent 62%)}
+#app[data-travail="1"]::after{opacity:1;animation:at-souffle 3.4s var(--ease) infinite}
+@keyframes at-souffle{0%,100%{transform:scale(1)}50%{transform:scale(.93)}}
+@media (prefers-reduced-motion:reduce){
+  #app[data-travail="1"]::after{animation:none}
+}
 /* La barre latérale devient un voile : la lumière la traverse, elle reste
    lisible parce qu'elle garde 62 % de sa surface. Plus d'ombre portée — une
    ombre entre deux zones du même plan recrée la couture qu'on efface. */
@@ -2864,7 +2881,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   const SET_GEAR='<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>';
   const SUN_IC='<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
   const pfIco=p=>`<div class="pi-i"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg></div>`;
-  function themeLabel(){return normTheme(DB.get('theme','dark'))==='dark'?'Sombre':'Clair'}
+  function themeLabel(){const c=DB.get('theme','dark');
+    return c==='auto'?'Auto':(c==='dark'?'Sombre':'Clair')}   /* le libellé dit le CHOIX, pas son résultat du moment */
   function renderProfilePop(){
     const email=(USER.email&&USER.email.trim())?USER.email:'Compte local';
     const ini=((USER.name||'').trim()[0]||'M').toUpperCase();
@@ -3031,9 +3049,15 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   $$('.set-body .toggle').forEach(t=>t.addEventListener('click',()=>{t.classList.toggle('on');const on=t.classList.contains('on');SETTINGS[t.dataset.set]=on;DB.set('settings',SETTINGS);if(t.dataset.set==='anim')applyAnim();toast(t.dataset.set+' '+(on?'activé':'désactivé'))}));
   /* thème : clair par défaut, dark via toggle explicite [data-theme="dark"] (plus de palettes fantaisie) */
   const THEME_LABELS={light:'Clair',dark:'Sombre'};
-  function normTheme(t){return t==='dark'?'dark':'light'}   /* ignore les valeurs legacy de palette → clair */
+  function normTheme(t){return t==='dark'?'dark':t==='auto'?'auto':'light'}   /* ignore les valeurs legacy de palette → clair */
+  /* Mode auto : clair de 7 h à 19 h, sombre le reste. Deux thèmes soignés
+     existent et personne ne pense à en changer — autant que la journée le
+     fasse. Les mêmes bornes que la lumière de fond, pour qu'ils s'accordent. */
+  const themeDeLHeure=()=>{const h=new Date().getHours();return (h>=7&&h<19)?'light':'dark'};
+  const themeEffectif=t=>normTheme(t)==='auto'?themeDeLHeure():normTheme(t);
   function applyTheme(c,silent){
-    const t=normTheme(c);
+    const choix=normTheme(c);
+    const t=themeEffectif(choix);
     document.documentElement.dataset.theme=t;
     const dark=t==='dark';
     const sun=$('#themeBtn .ic-sun'),moon=$('#themeBtn .ic-moon');
@@ -3042,15 +3066,28 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     let tc=document.querySelector('meta[name="theme-color"]:not([media])');
     if(!tc){tc=document.createElement('meta');tc.setAttribute('name','theme-color');document.head.appendChild(tc)}
     tc.setAttribute('content',dark?'#1A1916':'#FAF8F3');
-    DB.set('theme',t);
-    if(!silent)toast('Thème — '+THEME_LABELS[t]);
+    DB.set('theme',choix);   // on garde le CHOIX ('auto'), pas son résultat du moment
+    if(!silent)toast('Thème — '+(choix==='auto'?'Auto ('+THEME_LABELS[t].toLowerCase()+')':THEME_LABELS[t]));
   }
-  function toggleTheme(){applyTheme(normTheme(DB.get('theme','dark'))==='dark'?'light':'dark');renderThemePicker()}
+  function toggleTheme(){applyTheme(themeEffectif(DB.get('theme','dark'))==='dark'?'light':'dark');renderThemePicker()}
   function renderThemePicker(){
     const host=$('#segTheme');if(!host)return;const cur=normTheme(DB.get('theme','dark'));
-    host.innerHTML=[['light','Clair'],['dark','Sombre']].map(([k,n])=>`<button class="sg${k===cur?' on':''}" data-c="${k}" aria-label="Thème ${n}">${n}</button>`).join('');
+    host.innerHTML=[['light','Clair'],['dark','Sombre'],['auto','Auto']].map(([k,n])=>`<button class="sg${k===cur?' on':''}" data-c="${k}" aria-label="Thème ${n}">${n}</button>`).join('');
     $$('#segTheme .sg').forEach(b=>b.onclick=()=>{$$('#segTheme .sg').forEach(x=>x.classList.remove('on'));b.classList.add('on');applyTheme(b.dataset.c)});
   }
+  /* En auto, on revérifie régulièrement ET au retour sur l'onglet : une bascule
+     qui n'arrive qu'au rechargement ne se produirait jamais, on laisse l'app
+     ouverte toute la journée. `silent` : personne ne veut d'un toast à 19 h. */
+  (function(){
+    let dernier=themeEffectif(DB.get('theme','dark'));
+    const verifier=()=>{
+      if(normTheme(DB.get('theme','dark'))!=='auto')return;
+      const v=themeDeLHeure();if(v===dernier)return;
+      dernier=v;applyTheme('auto',true);renderThemePicker();
+    };
+    setInterval(verifier,10*60*1000);
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)verifier()});
+  })();
 
   /* modèle par défaut (select) */
   $('#setModelBtn').addEventListener('click',()=>{const b=$('#setModelBtn');openPop===$('#popModel')?closePop():showPop($('#popModel'),b,'left',b)});
@@ -4612,6 +4649,14 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(!r.ok)throw Object.assign(new Error((d&&(d.message||d.error))||('erreur '+r.status)),{statut:r.status,corps:d});
       return d;
     }
+    /* La lumière se resserre le temps d'un passage. Compté, pas booléen : deux
+       opérations lancées coup sur coup ne doivent pas s'éteindre l'une l'autre. */
+    let enCours=0;
+    function travail(on){
+      enCours=Math.max(0,enCours+(on?1:-1));
+      const a=document.getElementById('app');if(!a)return;
+      if(enCours)a.dataset.travail='1';else delete a.dataset.travail;
+    }
     const eur=c=>(c/100).toFixed(c<10?3:2).replace('.',',')+' €';
     const hhmm=ms=>new Date(ms).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
     const esc2=s=>esc(String(s==null?'':s));
@@ -4825,14 +4870,14 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       $$('#atBody .at-go').forEach(g=>g.addEventListener('click',async e=>{
         e.preventDefault();e.stopPropagation();
         const p=etat.postes.find(x=>x.id===g.dataset.lancer);if(!p)return;
-        g.disabled=true;toast('Passage lancé — '+p.nom);
+        g.disabled=true;travail(true);toast('Passage lancé — '+p.nom);
         try{
           const r=await api('/postes/'+p.id+'/lancer',{method:'POST',body:JSON.stringify({mode:'reel'})});
           await rafraichir();
           if(r.statut==='attente'){showView('controle');peindreControle()}
           else toast(r.statut==='fini'?'Passage terminé':'Passage '+r.statut);
         }catch(err){toast(friendlyErr(err))}
-        finally{g.disabled=false}
+        finally{g.disabled=false;travail(false)}
       }));
       const f=$('#atForger');f&&f.addEventListener('click',forger);
       const ta=$('#atForge');ta&&ta.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();forger()}});
@@ -4859,7 +4904,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const ta=$('#atForge'),et=$('#atForgeEtat'),bt=$('#atForger');
       const phrase=(ta&&ta.value||'').trim();
       if(phrase.length<12){et.textContent='Encore une phrase, un peu plus précise.';ta&&ta.focus();return}
-      bt.disabled=true;et.textContent='La forge écrit la fiche…';
+      bt.disabled=true;travail(true);et.textContent='La forge écrit la fiche…';
       try{
         const spec=await api('/forge',{method:'POST',body:JSON.stringify({phrase})});
         const ouv=await assurerOuvrier(spec);
@@ -4871,7 +4916,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         await rafraichir();ouvrirPoste(p.id);
         toast('Poste forgé — relis la consigne avant de le lancer');
       }catch(e){et.textContent=friendlyErr(e)}
-      finally{bt.disabled=false}
+      finally{bt.disabled=false;travail(false)}
     }
     /* Le routeur explique déjà pourquoi il a choisi ce modèle — on garde sa
        raison dans la version de consigne. Une boîte noire qui choisit juste
@@ -5119,7 +5164,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     async function depuisEchange(){
       const c=convoById(activeId);
       if(!c||!c.msgs||c.msgs.length<2){toast('Ouvre une conversation qui a produit quelque chose');return}
-      const bt=$('#atPontBtn');bt.disabled=true;
+      const bt=$('#atPontBtn');bt.disabled=true;travail(true);
       const lbl=bt.innerHTML;bt.innerHTML='La forge lit l\'échange…';
       try{
         const echange=c.msgs.filter(m=>m&&typeof m.text==='string'&&m.text.trim())
@@ -5135,7 +5180,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         await rafraichir();ouvrirPoste(p.id);
         toast('Poste tiré de la conversation — relis la consigne');
       }catch(e){toast(friendlyErr(e))}
-      finally{bt.disabled=false;bt.innerHTML=lbl}
+      finally{bt.disabled=false;bt.innerHTML=lbl;travail(false)}
     }
     /* Le pont n'apparaît que quand il y a matière : au moins une vraie réponse. */
     function syncPont(){
@@ -5147,7 +5192,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     }
     async function lancer(p,mode){
       const et=$('#atRunEtat'),bs=[$('#atLancer'),$('#atRepet')].filter(Boolean);
-      bs.forEach(b=>b.disabled=true);
+      bs.forEach(b=>b.disabled=true);travail(true);
       et.textContent=mode==='repetition'?'Répétition en cours — aucune écriture ne partira…':'Passage en cours…';
       try{
         const ent=($('#atEntree')&&$('#atEntree').value.trim())||null;
@@ -5155,7 +5200,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         if(r.statut==='attente'){et.textContent='Arrêté au contrôle — ta signature est demandée.';await rafraichir();showView('controle');peindreControle()}
         else{et.textContent=r.statut==='fini'?'Passage terminé.':'Passage '+r.statut+(r.erreur?' — '+r.erreur:'');await rafraichir();ouvrirPoste(p.id)}
       }catch(e){et.textContent=friendlyErr(e)}
-      finally{bs.forEach(b=>b.disabled=false)}
+      finally{bs.forEach(b=>b.disabled=false);travail(false)}
     }
     async function journal(pid){
       const c=$('#atJournal');if(!c)return;
@@ -5270,12 +5315,13 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     }
     async function decider(el,d){
       const et=$('[data-etat]',el),bs=$$('[data-d]',el);
-      bs.forEach(b=>b.disabled=true);et.textContent=d==='valider'?'Exécution de ce qui a été signé…':'Refus transmis…';
+      bs.forEach(b=>b.disabled=true);travail(true);et.textContent=d==='valider'?'Exécution de ce qui a été signé…':'Refus transmis…';
       try{
         await api('/controle/'+el.dataset.ctrl,{method:'POST',body:JSON.stringify({decision:d})});
         await rafraichir();peindreControle();
         toast(d==='valider'?'Signé — le livrable est déposé':'Refusé');
       }catch(e){et.textContent=friendlyErr(e);bs.forEach(b=>b.disabled=false)}
+      finally{travail(false)}
     }
 
     return{rafraichir,peindre,peindreControle,ouvrirPoste,depuisEchange,syncPont,etat:()=>etat};
