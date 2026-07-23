@@ -187,6 +187,13 @@ document.documentElement.dataset.theme=d?'dark':'light'}catch(e){document.docume
 /* Le compteur se pose SUR le khatam de la nav, coin haut-droit : le sceau
    compte ce qui attend une signature, là où l'œil passe déjà. */
 .nav-ic{position:relative;display:grid;place-items:center;flex-shrink:0}
+/* Un poste qui casse fait clignoter le sceau UNE fois, en brique. La seule
+   alerte qui a le droit d'attirer l'œil : elle appelle une action, pas un
+   statut. Itération unique — jamais un pulse. */
+@keyframes at-sceau-flash{0%{color:inherit}28%{color:var(--danger)}100%{color:inherit}}
+.nav-item.at-flash .nav-ic svg{animation:at-sceau-flash .72s var(--ease) 1}
+@media (prefers-reduced-motion:reduce){.nav-item.at-flash .nav-ic svg{animation:none}}
+
 .at-nav-n{position:absolute;top:-6px;right:-7px;min-width:15px;height:15px;padding:0 3px;border-radius:var(--r-pill);
   background:var(--accent);color:var(--ink-on-accent);font-family:var(--font-mono);font-size:9px;line-height:1;
   font-weight:var(--fw-semi);display:inline-flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums;
@@ -733,7 +740,7 @@ button{font-family:inherit}
    « statut IA » — on le retire. Pendant une réponse, le point devient un arc
    qui tourne : même geste que l'avatar-khatam, un seul langage de mouvement. */
 .model-pill .live{width:7px;height:7px;border-radius:50%;background:var(--success);flex-shrink:0;box-sizing:border-box;transition:background .2s var(--ease)}
-#app[data-gen="1"] .model-pill .live{background:transparent;border:1.5px solid var(--accent-tint-2);border-top-color:var(--accent);animation:pill-spin .9s linear infinite}
+#app[data-gen="1"] .model-pill .live{background:transparent;border:1.5px solid var(--accent-tint-2);border-top-color:var(--gen-hue,var(--accent));animation:pill-spin .9s linear infinite}
 @keyframes pill-spin{to{transform:rotate(360deg)}}
 @keyframes ring{0%{box-shadow:0 0 0 0 rgba(63,125,90,.4)}   /* legacy — plus référencé */70%{box-shadow:0 0 0 6px rgba(63,125,90,0)}100%{box-shadow:0 0 0 0 rgba(63,125,90,0)}}
 .model-pill .lbl{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -3417,6 +3424,22 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   let curStop=null;
   function paintSendBtn(g){const b=$('#sendBtn');if(!b)return;if(g){b.classList.remove('idle');b.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>';b.setAttribute('title','Arrêter');b.setAttribute('aria-label','Arrêter la génération')}else{b.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>';b.setAttribute('title','Envoyer');b.setAttribute('aria-label','Envoyer');typeof updateCount==='function'&&updateCount()}}
   let _genStart=0;
+  /* Teinte de l'arc de la pill selon le modèle réellement routé — le mouvement
+     dit QUOI travaille. Gamme resserrée dans le spectre de Damas (émeraude →
+     jade → lime pour le code → ambre pour la vision) : aucune couleur de marque
+     brute, elles vireraient au bleu. */
+  function genHue(id){
+    const s=String(id||'');
+    if(/vision|Qwen3-VL|VL\b/i.test(s))      return '#D9A23C';   // vision → ambre chaud
+    if(/Kimi/i.test(s))                       return '#86C842';   // code → vert-lime
+    if(/DeepSeek.*Flash/i.test(s))            return '#3ED28C';   // rapide → vert clair vif
+    if(/DeepSeek.*Pro/i.test(s))              return '#10A06A';   // raisonnement → émeraude profond
+    if(/GLM|Zhipu/i.test(s))                  return '#22C08A';   // jade
+    if(/MiniMax/i.test(s))                    return '#5FC98C';   // sauge
+    return '#16B87A';                                             // MAZ Auto & défaut → émeraude
+  }
+  function setGenHue(id){const a=document.getElementById('app');if(a)a.style.setProperty('--gen-hue',genHue(id));}
+
   function setGenerating(g){generating=g;genCid=g?activeId:null;if(g)_genStart=performance.now();const _a=document.getElementById('app');if(_a){if(g)_a.dataset.gen='1';else delete _a.dataset.gen;}refreshSendBtn();if(!g)try{syncModel()}catch(e){}}   // fin de génération : la pill retrouve « MAZ Auto »
   function refreshSendBtn(){const mine=(genCid!==null&&genCid===activeId);paintSendBtn(mine);const _ch=$('#chat');if(_ch)_ch.setAttribute('aria-busy',mine?'true':'false');}  // le bouton reflète la conversation AFFICHÉE : Stop si elle génère, Envoyer sinon (même si une autre convo génère en fond)
   const MEMORY_KEY='mzai:memory';
@@ -3555,7 +3578,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       bubble.innerHTML=qcMode?'<div class="gen-loading"><div class="gl-ring"></div>Traduction + contrôle qualité…</div>':'<span class="caret"></span>';
       let modelId = mData.api||opts.model;
       if(opts.search && isOR) modelId += ':online';  // plugin web réel d'OpenRouter
-      if(needsVision && isOR){ modelId = VISION_DOC; const _vm=MODELS.find(m=>m.api===VISION_DOC); resolvedModel=_vm?_vm.id:'Qwen3-VL'; }   // doc scanné / photo → modèle vision OCR : le badge reflète le modèle réellement appelé
+      if(needsVision && isOR){ modelId = VISION_DOC; const _vm=MODELS.find(m=>m.api===VISION_DOC); resolvedModel=_vm?_vm.id:'Qwen3-VL'; }   // doc scanné / photo → modèle vision OCR : le badge reflète
+      setGenHue(resolvedModel);   // l'arc de la pill prend la couleur du modèle routé le modèle réellement appelé
       const _ctx=(modelById(opts.model).ctx||'').toLowerCase();const maxTok=(/m|auto/.test(_ctx)||parseInt(_ctx)>=128)?8192:4096;   // moins de troncature pour les gros contextes
       const body = {model:modelId, messages, stream:SETTINGS.stream, max_tokens:maxTok};
       if(opts.reason && isOR) body.reasoning={enabled:true};  // chaîne de raisonnement réelle
@@ -4936,9 +4960,22 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const f=$('#atForger');f&&f.addEventListener('click',forger);
       const ta=$('#atForge');ta&&ta.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();forger()}});
       const n=$('#atNavN');if(n){n.textContent=etat.controles.length||'';n.hidden=!etat.controles.length}
+      // bascule en échec : on compte les passages cassés du jour, un flash si le compte monte
+      const _ko=etat.journee.filter(x=>x.statut==='echec'||x.statut==='coupe').length;
+      if(window.__echecs!=null && _ko>window.__echecs)flashEchec();
+      window.__echecs=_ko;
       window.__parc={actifs:etat.postes.filter(p=>p.etat==='actif').length,signer:etat.controles.length};
       if(typeof majHomeEtat==='function')majHomeEtat();
       const s=$('#atSub');if(s)s.textContent=etat.postes.length?`${etat.postes.length} poste${etat.postes.length>1?'s':''} · ${eur(etat.mois_cents)} ce mois`:'Les travaux qui tournent pour toi';
+    }
+
+    /* Retire puis rejoue la classe : sans le reflow, un second échec d'affilée
+       ne rejouerait pas l'animation (même classe déjà posée). */
+    function flashEchec(){
+      const el=document.querySelector('.nav-item[data-view="atelier"]');if(!el)return;
+      el.classList.remove('at-flash');void el.offsetWidth;el.classList.add('at-flash');
+      const svg=el.querySelector('.nav-ic svg');
+      svg&&svg.addEventListener('animationend',()=>el.classList.remove('at-flash'),{once:true});
     }
 
     async function rafraichir(){
