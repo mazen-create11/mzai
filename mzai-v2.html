@@ -643,6 +643,7 @@ button{font-family:inherit}
 .nav-item,.profile{display:flex;align-items:center;gap:12px;min-width:0;width:100%;border:0;background:transparent;color:var(--ink-soft);font:inherit;font-size:var(--fs-sm);font-weight:450;text-align:left;cursor:pointer;padding:9px 12px;border-radius:var(--r-sm);position:relative;transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease)}
 .nav-item svg{flex-shrink:0;width:18px;height:18px;opacity:.85;transition:.16s}
 .nav-item .lbl,.profile .name,.chat-pill .t,.who{min-width:0;flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav-item .lbl{font-weight:var(--fw-med)}   /* 500 : détache la nav du corps (400) — hiérarchie par la graisse, une seule fonte */
 .nav-item kbd{flex-shrink:0;font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);opacity:0;transition:.16s}
 .nav-item:hover{background:var(--surface-2);color:var(--ink)}
 .nav-item:hover svg{opacity:1}.nav-item:hover kbd{opacity:1}
@@ -672,7 +673,27 @@ button{font-family:inherit}
 .profile{padding:8px 10px;border-radius:var(--r-md)}
 .profile:hover{background:var(--surface-2)}
 .profile.pop-on{background:var(--surface-2)}
-.avatar{width:34px;height:34px;border-radius:var(--r-sm);flex-shrink:0;background:var(--accent);display:grid;place-items:center;font-weight:var(--fw-bold);font-size:14px;color:var(--ink-on-accent);font-family:var(--font-sans)}
+.avatar{position:relative;width:34px;height:34px;border-radius:var(--r-sm);flex-shrink:0;background:var(--accent);display:grid;place-items:center;font-weight:var(--fw-bold);font-size:14px;color:var(--ink-on-accent);font-family:var(--font-sans);overflow:hidden}
+/* Deux couches superposées : la lettre au repos, le khatam quand un travail tourne.
+   Crossfade + léger scale — jamais de pulse (le cliché IA n°1). Le mouvement ne
+   signale QUE de l'activité réelle : rotation lente d'un instrument, pas un throb. */
+.avatar .av-m,.avatar .av-k{grid-area:1/1;display:grid;place-items:center;
+  transition:opacity .32s var(--ease),transform .32s var(--ease)}
+.avatar .av-k{opacity:0;transform:scale(.72)}
+.avatar .av-k svg{width:21px;height:21px;color:var(--ink-on-accent)}
+#app[data-travail="1"] .avatar .av-m{opacity:0;transform:scale(.72)}
+#app[data-travail="1"] .avatar .av-k{opacity:1;transform:scale(1)}
+/* 360° pleins, très lents : la symétrie d'ordre 4 du khatam rend la boucle
+   parfaitement continue, on sent que ça tourne sans jamais voir un saut. */
+#app[data-travail="1"] .avatar .av-k svg{animation:av-tourne 8s linear infinite}
+@keyframes av-tourne{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){
+  .avatar .av-m,.avatar .av-k{transition:opacity .12s linear}
+  .avatar .av-m,.avatar .av-k{transform:none}
+  #app[data-travail="1"] .avatar .av-m{transform:none}
+  #app[data-travail="1"] .avatar .av-k{transform:none}
+  #app[data-travail="1"] .avatar .av-k svg{animation:none}   /* apparaît, ne tourne pas */
+}
 .who{display:flex;flex-direction:column;line-height:1.25;flex:1;min-width:0}
 .who .name,.profile .name{font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .who .sub,.profile .sub{font-size:11px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1827,7 +1848,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 
     <footer class="sb-foot">
       <button class="profile" id="profileBtn">
-        <span class="avatar" id="navAv">M</span>
+        <span class="avatar" id="navAv"><span class="av-m">M</span><span class="av-k" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="1" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="5" y="5" width="14" height="14" rx="1" fill="none" stroke="currentColor" stroke-width="1.7" transform="rotate(45 12 12)"/><circle cx="12" cy="12" r="1.9" fill="currentColor"/></svg></span></span>
         <span class="who"><span class="name" id="navName">Mazen</span><span class="sub" id="navSub">Premium · local</span></span>
         <svg class="chev" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
       </button>
@@ -2942,7 +2963,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   /* ===== utilisateur ===== */
   function applyUser(){
     const ini=((USER.name||'').trim()[0]||'M').toUpperCase();
-    const av=$('.profile .avatar');if(av){av.textContent=ini;av.style.background=USER.avColor}
+    const av=$('.profile .avatar');if(av){const _m=av.querySelector('.av-m');if(_m)_m.textContent=ini;else av.textContent=ini;av.style.background=USER.avColor}
     const nm=$('.profile .name');if(nm)nm.textContent=USER.name;
     const sb=$('.profile .sub');if(sb)sb.textContent=USER.role;
     const h=new Date().getHours();$('#greet').innerHTML=(h<6?'Bonne nuit':h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir')+', <b>'+esc(firstName())+'</b><svg class="greet-mark" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.2" y="3.2" width="9.6" height="9.6" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3.2" y="3.2" width="9.6" height="9.6" fill="none" stroke="currentColor" stroke-width="1.6" transform="rotate(45 8 8)"/></svg>';
