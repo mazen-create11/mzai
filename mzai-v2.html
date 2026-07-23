@@ -893,8 +893,8 @@ body.dense .msg .col{gap:3px}
 body.dense .msg .av{width:28px;height:28px;font-size:12px}
 body.dense .bubble{line-height:1.55}
 body.dense .msg.user .bubble{padding:8px 13px}
-.act{width:29px;height:29px;border-radius:var(--r-xs);border:1px solid var(--line);background:var(--surface);color:var(--ink-faint);display:grid;place-items:center;cursor:pointer;transition:.16s}
-.act:hover{color:var(--accent-strong);border-color:var(--accent)}
+.act{width:29px;height:29px;border-radius:var(--r-xs);border:1px solid transparent;background:transparent;color:var(--ink-faint);display:grid;place-items:center;cursor:pointer;transition:.16s}   /* transparent au repos : discret, révélé au survol — fini l'effet tuile */
+.act:hover{color:var(--accent-strong);background:var(--surface-2);border-color:var(--line)}
 .act.on{color:var(--accent-strong);border-color:var(--accent)}
 /* lecture vocale en cours : bouton haut-parleur pulsé (état « ça parle » lisible) */
 .act.speaking{color:var(--ink-on-accent);background:var(--accent);border-color:transparent;animation:ttsPulse 1.4s ease-in-out infinite}
@@ -1404,7 +1404,13 @@ textarea.inp{resize:vertical;line-height:1.55;min-height:84px}
   .vbody{padding-inline:16px}
   .composer{padding:10px 12px max(10px,env(safe-area-inset-bottom))}
   #prompt,input,textarea,select,.inp,.api-in,.vsearch input,.pal-search input,.edit-ta,.pp-ctx,.ch-in{font-size:16px}
-  .icon-btn,.menu-btn,.send,.clip,.m-x,.act,.la,.chat-pill .pa{min-width:44px;min-height:44px}
+  .icon-btn,.menu-btn,.send,.clip,.m-x,.chat-pill .pa{min-width:44px;min-height:44px}
+  /* Actions sous un message (.act/.pa) : le visuel reste petit et discret —
+     la cible tactile de 44px passe par un pseudo étendu, invisible. Fini les
+     grosses tuiles. */
+  .act,.la{width:32px;height:32px;min-width:0;min-height:0;background:transparent;border:0;position:relative}
+  .act::after,.la::after{content:"";position:absolute;inset:-6px}   /* 44px de zone de contact, 0px de visuel en plus */
+  .act:active,.la:active{background:var(--surface-2)}
   .att-chip .ax,.mc-x{min-width:26px;min-height:26px;padding:4px}   /* croix de chips : zone de contact élargie sans casser le chip */
   .send{border-radius:var(--r-md)}
   .hint{display:none}
@@ -1871,6 +1877,10 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     </footer>
   </aside>
 
+  <!-- SCRIM : voile du tiroir mobile. Enfant DIRECT de #app (jamais de .shell,
+       dont isolation:isolate + overflow:hidden réduisaient le fixed à 0×0). -->
+  <div class="scrim" id="scrim"></div>
+
   <!-- ================= COLONNE CONTENU ================= -->
   <div class="shell">
 
@@ -2076,9 +2086,6 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 
     <!-- COMPOSER ANCRÉ : dock chat/outils, vide à l'accueil (replié) -->
     <footer class="composer-dock" id="dockChat" aria-label="Saisie"></footer>
-
-    <!-- SCRIM : frère de la sidebar, même stacking-context, z(scrim) < z(sidebar) -->
-    <div class="scrim" id="scrim"></div>
 
   </div><!-- /.shell -->
 </div><!-- /#app -->
