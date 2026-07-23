@@ -184,9 +184,13 @@ document.documentElement.dataset.theme=d?'dark':'light'}catch(e){document.docume
 .at-livr-c th{white-space:nowrap}
 
 /* compteur de signatures en attente, dans la navigation */
-.at-nav-n{margin-left:auto;min-width:18px;height:18px;padding:0 5px;border-radius:var(--r-pill);
-  background:var(--accent);color:var(--ink-on-accent);font-family:var(--font-mono);font-size:10px;
-  font-weight:var(--fw-semi);display:inline-flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums}
+/* Le compteur se pose SUR le khatam de la nav, coin haut-droit : le sceau
+   compte ce qui attend une signature, là où l'œil passe déjà. */
+.nav-ic{position:relative;display:grid;place-items:center;flex-shrink:0}
+.at-nav-n{position:absolute;top:-6px;right:-7px;min-width:15px;height:15px;padding:0 3px;border-radius:var(--r-pill);
+  background:var(--accent);color:var(--ink-on-accent);font-family:var(--font-mono);font-size:9px;line-height:1;
+  font-weight:var(--fw-semi);display:inline-flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums;
+  box-shadow:0 0 0 1.5px var(--surface)}   /* liseré : détache le badge des branches du sceau */
 
 /* ── surtitre ── */
 .at-lbl{font-family:var(--font-mono);font-size:var(--fs-xs);letter-spacing:var(--tr-wide);
@@ -725,8 +729,13 @@ button{font-family:inherit}
 .model-pill{display:flex;align-items:center;gap:8px;font-size:var(--fs-sm);font-weight:var(--fw-med);color:var(--ink-soft);padding:7px 12px;border:1px solid var(--line-strong);border-radius:var(--r-pill);background:var(--surface);cursor:pointer;transition:.2s var(--ease);flex-shrink:0}
 .model-pill:hover{border-color:var(--accent);color:var(--ink)}
 .model-pill.pop-on{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-strong)}
-.model-pill .live{width:7px;height:7px;border-radius:50%;background:var(--success);flex-shrink:0;box-shadow:0 0 0 0 var(--accent-ring);animation:ring 2.4s infinite}
-@keyframes ring{0%{box-shadow:0 0 0 0 rgba(63,125,90,.4)}70%{box-shadow:0 0 0 6px rgba(63,125,90,0)}100%{box-shadow:0 0 0 0 rgba(63,125,90,0)}}
+/* Repos : point FIXE. Le pulse qui bat en permanence était le cliché du
+   « statut IA » — on le retire. Pendant une réponse, le point devient un arc
+   qui tourne : même geste que l'avatar-khatam, un seul langage de mouvement. */
+.model-pill .live{width:7px;height:7px;border-radius:50%;background:var(--success);flex-shrink:0;box-sizing:border-box;transition:background .2s var(--ease)}
+#app[data-gen="1"] .model-pill .live{background:transparent;border:1.5px solid var(--accent-tint-2);border-top-color:var(--accent);animation:pill-spin .9s linear infinite}
+@keyframes pill-spin{to{transform:rotate(360deg)}}
+@keyframes ring{0%{box-shadow:0 0 0 0 rgba(63,125,90,.4)}   /* legacy — plus référencé */70%{box-shadow:0 0 0 6px rgba(63,125,90,0)}100%{box-shadow:0 0 0 0 rgba(63,125,90,0)}}
 .model-pill .lbl{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .model-pill .chev{opacity:.7;transition:.2s;flex-shrink:0}
 .model-pill.pop-on .chev{transform:rotate(180deg)}
@@ -1834,7 +1843,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       </button>
 
       <nav class="nav" aria-label="Espaces">
-        <button class="nav-item" data-view="atelier" data-tip="Atelier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M12 2.6 15.1 8.9 21.4 12 15.1 15.1 12 21.4 8.9 15.1 2.6 12 8.9 8.9Z"/><circle cx="12" cy="12" r="2.1" fill="currentColor" stroke="none"/></svg><span class="lbl">Atelier</span><span class="at-nav-n" id="atNavN" hidden></span></button>
+        <button class="nav-item" data-view="atelier" data-tip="Atelier"><span class="nav-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M12 2.6 15.1 8.9 21.4 12 15.1 15.1 12 21.4 8.9 15.1 2.6 12 8.9 8.9Z"/><circle cx="12" cy="12" r="2.1" fill="currentColor" stroke="none"/></svg><span class="at-nav-n" id="atNavN" hidden></span></span><span class="lbl">Atelier</span></button>
         <button class="nav-item" data-view="library" data-tip="Discussions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/></svg><span class="lbl">Discussions</span></button>
         <button class="nav-item" data-view="projects" data-tip="Projets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4.5 16.5 12 21l7.5-4.5M4.5 12 12 16.5 19.5 12M12 3 4.5 7.5 12 12l7.5-4.5L12 3z"/></svg><span class="lbl">Projets</span></button>
         <button class="nav-item" data-view="integrations" data-tip="Intégrations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></svg><span class="lbl">Intégrations</span></button>
@@ -2912,7 +2921,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     $('#popPersona').addEventListener('click',()=>{closePop();openPersona()});
   }
   renderModelPicker();
-  function syncModel(){const m=modelById(currentModel);$$('#popModel .pi').forEach(p=>p.classList.toggle('sel',p.dataset.model===currentModel));$('.model-pill .lbl').textContent=currentModel;$('#toolModelLbl').textContent=currentModel;const hs=$('#homeStatus');if(hs)hs.textContent=currentModel==='MAZ Auto'?'MAZ Auto prêt':currentModel+' prêt';const live=$('.model-pill .live');if(live){live.style.background='var(--accent)';live.style.boxShadow=''}const sm=$('#setModelLbl');if(sm)sm.textContent=currentModel;const sd=$('#setModelDot');if(sd){sd.style.background='var(--accent)';sd.style.boxShadow=''}DB.set('model',currentModel)}
+  function syncModel(){const m=modelById(currentModel);$$('#popModel .pi').forEach(p=>p.classList.toggle('sel',p.dataset.model===currentModel));$('.model-pill .lbl').textContent=currentModel;$('#toolModelLbl').textContent=currentModel;const hs=$('#homeStatus');if(hs)hs.textContent=currentModel==='MAZ Auto'?'MAZ Auto prêt':currentModel+' prêt';const live=$('.model-pill .live');if(live){live.style.background='';live.style.boxShadow='';live.style.border=''}/* le CSS pilote le point : aucun style inline n'écrase la règle [data-gen] */const sm=$('#setModelLbl');if(sm)sm.textContent=currentModel;const sd=$('#setModelDot');if(sd){sd.style.background='var(--accent)';sd.style.boxShadow=''}DB.set('model',currentModel)}
   syncModel();
   const openModel=a=>showPop($('#popModel'),a,'right',$('#modelPill'));
   $('#modelPill').setAttribute('data-popanchor','');$('#modelPill').addEventListener('click',()=>openPop===$('#popModel')?closePop():openModel($('#modelPill')));
@@ -3408,7 +3417,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   let curStop=null;
   function paintSendBtn(g){const b=$('#sendBtn');if(!b)return;if(g){b.classList.remove('idle');b.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>';b.setAttribute('title','Arrêter');b.setAttribute('aria-label','Arrêter la génération')}else{b.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>';b.setAttribute('title','Envoyer');b.setAttribute('aria-label','Envoyer');typeof updateCount==='function'&&updateCount()}}
   let _genStart=0;
-  function setGenerating(g){generating=g;genCid=g?activeId:null;if(g)_genStart=performance.now();refreshSendBtn();if(!g)try{syncModel()}catch(e){}}   // fin de génération : la pill retrouve « MAZ Auto »
+  function setGenerating(g){generating=g;genCid=g?activeId:null;if(g)_genStart=performance.now();const _a=document.getElementById('app');if(_a){if(g)_a.dataset.gen='1';else delete _a.dataset.gen;}refreshSendBtn();if(!g)try{syncModel()}catch(e){}}   // fin de génération : la pill retrouve « MAZ Auto »
   function refreshSendBtn(){const mine=(genCid!==null&&genCid===activeId);paintSendBtn(mine);const _ch=$('#chat');if(_ch)_ch.setAttribute('aria-busy',mine?'true':'false');}  // le bouton reflète la conversation AFFICHÉE : Stop si elle génère, Envoyer sinon (même si une autre convo génère en fond)
   const MEMORY_KEY='mzai:memory';
   function getMemory(){try{return localStorage.getItem(MEMORY_KEY)||''}catch(e){return''}}
