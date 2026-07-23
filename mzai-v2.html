@@ -582,9 +582,14 @@ button{font-family:inherit}
 /* ── Tooltips (puce encre, contraste fort, les 2 thèmes) ── */
 [data-tip]{position:relative}
 [data-tip]::after{content:attr(data-tip);position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%) translateY(4px);background:var(--ink);color:var(--bg);font-size:11.5px;font-weight:500;letter-spacing:0;padding:5px 9px;border-radius:var(--r-xs);white-space:nowrap;opacity:0;pointer-events:none;transition:.16s var(--ease);z-index:var(--z-toast);box-shadow:var(--shadow-md)}
-[data-tip]:hover::after{opacity:1;transform:translateX(-50%) translateY(0);transition-delay:.35s}
 .topbar [data-tip]::after,.composer [data-tip]::after{top:auto;bottom:calc(100% + 8px);transform:translateX(-50%) translateY(-4px)}
-.topbar [data-tip]:hover::after,.composer [data-tip]:hover::after{transform:translateX(-50%) translateY(0)}
+/* Révélation SEULEMENT sur un vrai pointeur qui survole. Sur tactile (pur OU hybride
+   type iPad+trackpad), un tap déclenchait un :hover collant qui laissait le tooltip
+   « Accueil » figé sous le logo — un tooltip au survol n'a aucun sens au doigt. */
+@media (hover:hover){
+  [data-tip]:hover::after{opacity:1;transform:translateX(-50%) translateY(0);transition-delay:.35s}
+  .topbar [data-tip]:hover::after,.composer [data-tip]:hover::after{transform:translateX(-50%) translateY(0)}
+}
 
 /* ── Ripple (interaction discrète) ── */
 .rip{position:relative;overflow:hidden}
@@ -900,6 +905,10 @@ body.dense .msg.user .bubble{padding:8px 13px}
 .act.speaking{color:var(--ink-on-accent);background:var(--accent);border-color:transparent;animation:ttsPulse 1.4s ease-in-out infinite}
 @keyframes ttsPulse{0%,100%{box-shadow:0 0 0 0 rgba(22,184,122,.30)}50%{box-shadow:0 0 0 5px rgba(22,184,122,0)}}
 .act[data-a=del]:hover{color:var(--danger-strong);border-color:var(--danger)}
+/* copié : l'icône vire à la coche émeraude, entrée nette avec un léger settle (transform/opacity seuls) */
+.act--ok{color:var(--accent-strong)!important;background:transparent!important;border-color:transparent!important}
+.act--ok svg{animation:copieOk .26s var(--ease) both}
+@keyframes copieOk{0%{opacity:0;transform:scale(.55)}58%{transform:scale(1.08)}100%{opacity:1;transform:scale(1)}}
 .edit-box{display:flex;flex-direction:column;gap:9px;width:min(560px,72vw)}
 .edit-ta{width:100%;background:var(--surface-2);border:1px solid var(--accent);border-radius:var(--r-md);padding:12px 14px;color:var(--ink);font-family:inherit;font-size:var(--fs-base);line-height:1.6;resize:none;outline:none}
 .edit-acts{display:flex;gap:9px;justify-content:flex-end;align-items:center}
@@ -2265,6 +2274,11 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   const ICON='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg>';
   const toast=m=>{const t=$('#toast');t.querySelector('.ti').innerHTML=ICON;t.querySelector('.tm').textContent=m;t.classList.remove('with-undo');t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),1700)};
   function toastUndo(m,fn){const t=$('#toast');t.querySelector('.ti').innerHTML=ICON;t.querySelector('.tm').textContent=m;t.classList.add('with-undo','show');const u=$('#toastUndo');u.onclick=()=>{t.classList.remove('show');fn&&fn()};clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),4200)}
+  // Retour en place : l'icône devient une coche verte ~1,1 s puis revient. Copier est
+  // l'action la plus fréquente — la confirmation doit être immédiate et sous le pouce, pas
+  // un toast qui apparaît ailleurs. Le retour EST la coche : on ne double pas avec un toast.
+  const _copyOkSVG='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+  function flashCopie(btn){if(!btn)return;if(btn._flash)clearTimeout(btn._flash);else btn._orig=btn.innerHTML;btn.classList.add('act--ok');btn.innerHTML=_copyOkSVG;btn._flash=setTimeout(()=>{btn.innerHTML=btn._orig;btn.classList.remove('act--ok');btn._flash=null},1150)}
   let _drawerPrevFocus=null;
   function toggleSidebar(){const sb=$('#sidebar'),open=sb.classList.toggle('open');$('#scrim').classList.toggle('show');const mb=$('#menuBtn');mb&&mb.setAttribute('aria-expanded',open?'true':'false');
     if(open && window.innerWidth<=1024){_drawerPrevFocus=document.activeElement;const f=sb.querySelector('a,button,[role=button],[tabindex]:not([tabindex="-1"])');f&&f.focus();}
@@ -3332,7 +3346,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const a=document.createElement('div');a.className='actions';
     a.innerHTML='<div class="act" data-a="edit" data-tip="Modifier"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg></div><div class="act" data-a="copy" data-tip="Copier"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></div>';
     col.appendChild(a);
-    a.querySelector('[data-a=copy]').addEventListener('click',()=>{navigator.clipboard?.writeText(m.querySelector('.bubble').textContent);toast('Copié')});
+    a.querySelector('[data-a=copy]').addEventListener('click',e=>{navigator.clipboard?.writeText(m.querySelector('.bubble').textContent);flashCopie(e.currentTarget)});
     a.querySelector('[data-a=edit]').addEventListener('click',()=>editUser(m));
     chat.appendChild(m);stickBottom=true;scrollDown(true)}
   function editUser(node){
@@ -3917,7 +3931,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     }
     a.innerHTML='<div class="act" data-a="copy" data-tip="Copier"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></div><div class="act" data-a="speak" data-tip="Lecture"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg></div><div class="act" data-a="redo" data-tip="Régénérer ('+currentModel+')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v4h-4"/></svg></div><div class="act" data-a="like" data-tip="J\'aime"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 11v9M2 13v6a2 2 0 0 0 2 2h13.3a2 2 0 0 0 2-1.6l1.4-7A2 2 0 0 0 19.7 10H14V5a2 2 0 0 0-3.7-1L7 11"/></svg></div>';
     col.appendChild(a);
-    a.querySelector('[data-a=copy]').addEventListener('click',()=>{navigator.clipboard?.writeText(text);toast('Copié')});
+    a.querySelector('[data-a=copy]').addEventListener('click',e=>{navigator.clipboard?.writeText(text);flashCopie(e.currentTarget)});
     a.querySelector('[data-a=speak]').addEventListener('click',(e)=>playTTS(text, e.currentTarget));
     a.querySelector('[data-a=redo]').addEventListener('click',()=>{
       if(generating||!node)return;const c=convoById(activeId);if(!c)return;
