@@ -1875,6 +1875,26 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 .jump-down.show{opacity:1;visibility:visible;transform:translateX(-50%);transition:opacity .18s var(--ease),transform .18s var(--ease)}
 .jump-down:hover{color:var(--accent-strong);border-color:var(--accent)}
 .jump-down:focus-visible{outline:1px solid var(--line-strong);outline-offset:2px}
+
+/* ═══ Gestes 23/07 — le tiroir suit le doigt · appui long sur une conversation ═══ */
+.edge-zone{display:none}
+@media (hover:none) and (max-width:1024px){
+  .edge-zone{display:block;position:fixed;top:0;left:0;bottom:0;width:16px;z-index:30;touch-action:pan-y}   /* pan-y : le navigateur garde le scroll vertical, nous prenons l'horizontal */
+  .sidebar{touch-action:pan-y}
+  .chat-pill{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}   /* l'appui long est à nous, pas au menu natif iOS */
+}
+.sidebar.dragging,.scrim.dragging{transition:none!important}   /* pendant le drag, le tiroir est sous le doigt — aucune interpolation */
+/* feuille d'actions — appui long sur une conversation */
+.sheet-veil{position:fixed;inset:0;background:rgba(5,8,7,.52);z-index:60;opacity:0;transition:opacity .22s var(--ease)}
+.sheet-veil.show{opacity:1}
+.sheet{position:fixed;inset-inline:0;bottom:0;z-index:61;background:var(--surface);border:1px solid var(--line-strong);border-bottom:0;border-radius:16px 16px 0 0;padding:8px 10px calc(10px + env(safe-area-inset-bottom));transform:translateY(102%);transition:transform .28s var(--ease);box-shadow:var(--shadow-lg)}
+.sheet.show{transform:none}
+.sheet-grip{width:36px;height:4px;border-radius:2px;background:var(--line-strong);margin:2px auto 10px}
+.sheet-t{font-size:12px;font-weight:var(--fw-semi);color:var(--ink-soft);padding:0 12px 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sheet-i{display:flex;align-items:center;gap:12px;width:100%;padding:13px 12px;border:0;background:transparent;color:var(--ink);font:inherit;font-size:15px;border-radius:var(--r-sm);cursor:pointer;text-align:left}
+.sheet-i:active{background:var(--surface-2)}
+.sheet-i svg{flex-shrink:0;color:var(--ink-faint)}
+.sheet-i.danger,.sheet-i.danger svg{color:var(--danger-strong)}
 </style>
 </head>
 <body>
@@ -1932,6 +1952,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   <!-- SCRIM : voile du tiroir mobile. Enfant DIRECT de #app (jamais de .shell,
        dont isolation:isolate + overflow:hidden réduisaient le fixed à 0×0). -->
   <div class="scrim" id="scrim"></div>
+ <div class="edge-zone" id="edgeZone" aria-hidden="true"></div>
+ <div class="sheet-veil" id="sheetVeil" hidden></div>
+ <div class="sheet" id="sheetConvo" hidden><div class="sheet-grip"></div><div class="sheet-t" id="sheetTitle"></div><div id="sheetBody"></div></div>
 
   <!-- ================= COLONNE CONTENU ================= -->
   <div class="shell">
@@ -5030,6 +5053,14 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const f=$('#atForger');f&&f.addEventListener('click',forger);
       const ta=$('#atForge');ta&&ta.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();forger()}});
       const n=$('#atNavN');if(n){n.textContent=etat.controles.length||'';n.hidden=!etat.controles.length}
+      // le khatam de la sidebar devient la jauge ambiante : les 8 derniers passages du jour,
+      // branche sertie = réussi, brique = cassé, craie = attend signature — la marque au premier regard
+      const _ni=document.querySelector('.nav-item[data-view=atelier] .nav-ic');
+      if(_ni){const MAPJ={fini:'O',echec:'X',coupe:'X',attente:'?'};
+        const sj=(etat.journee||[]).slice(-8).map(x=>MAPJ[x.statut]||'.').join('');
+        const _old=_ni.querySelector('svg');
+        if(_old)_old.outerHTML=jauge(sj,18);
+      }
       // bascule en échec : on compte les passages cassés du jour, un flash si le compte monte
       const _ko=etat.journee.filter(x=>x.statut==='echec'||x.statut==='coupe').length;
       if(window.__echecs!=null && _ko>window.__echecs)flashEchec();
@@ -5520,6 +5551,109 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
       else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
     });
+  })();
+
+  /* ═══ Gestes tactiles — le tiroir suit le doigt (bord gauche = ouvrir, balayage gauche = fermer) ═══ */
+  (function(){
+    const sb=$('#sidebar'),scrim=$('#scrim'),edge=$('#edgeZone');
+    if(!sb||!scrim||!edge)return;
+    let x0=0,y0=0,lastX=0,lastT=0,vx=0,mode=null,W=0,engaged=false;
+    function drag(e){
+      if(!mode)return;
+      const dx=e.clientX-x0,dy=e.clientY-y0;
+      if(!engaged){
+        if(Math.abs(dy)>Math.abs(dx)+6){fin(false);return}   /* intention verticale → on rend la main au scroll */
+        if(!((mode==='open'&&dx>8)||(mode==='close'&&dx<-8)))return;
+        engaged=true;W=sb.getBoundingClientRect().width;
+        sb.classList.add('dragging');scrim.classList.add('dragging');
+        scrim.style.visibility='visible';scrim.style.opacity=mode==='close'?'1':'0';
+      }
+      const tx=mode==='open'?Math.min(0,Math.max(-W,dx-W)):Math.min(0,Math.max(-W,dx));
+      sb.style.transform='translateX('+tx+'px)';
+      scrim.style.opacity=String(Math.max(0,Math.min(1,1+tx/W)));
+      if(e.timeStamp>lastT){vx=(e.clientX-lastX)/(e.timeStamp-lastT);lastX=e.clientX;lastT=e.timeStamp}
+    }
+    function fin(release){
+      document.removeEventListener('pointermove',drag);
+      document.removeEventListener('pointerup',up);
+      document.removeEventListener('pointercancel',cancel);
+      if(engaged){
+        const cur=parseFloat((sb.style.transform.match(/-?[\d.]+/)||[0])[0]);   /* tx courant, négatif */
+        const ouverture=1+cur/W;                                               /* 0 fermé → 1 ouvert */
+        const isOpen=sb.classList.contains('open');
+        const cible=release
+          ? (mode==='open' ? (ouverture>0.35||vx>0.4) : !(ouverture<0.65||vx<-0.4))
+          : isOpen;                                                            /* annulation : retour à l'état courant */
+        sb.classList.remove('dragging');scrim.classList.remove('dragging');
+        void sb.offsetWidth;                                                   /* transition réactivée AVANT le changement d'état */
+        if(cible!==isOpen)toggleSidebar();
+        sb.style.transform='';scrim.style.opacity='';scrim.style.visibility='';/* la transition part de la position du doigt */
+      }
+      mode=null;engaged=false;
+    }
+    function up(){fin(true)}
+    function cancel(){fin(false)}
+    function arme(m,e){
+      mode=m;engaged=false;x0=lastX=e.clientX;y0=e.clientY;lastT=e.timeStamp;vx=0;
+      document.addEventListener('pointermove',drag);
+      document.addEventListener('pointerup',up);
+      document.addEventListener('pointercancel',cancel);
+    }
+    edge.addEventListener('pointerdown',e=>{
+      if(e.pointerType!=='touch'||window.innerWidth>1024||sb.classList.contains('open'))return;
+      arme('open',e);
+    });
+    sb.addEventListener('pointerdown',e=>{
+      if(e.pointerType!=='touch'||window.innerWidth>1024||!sb.classList.contains('open'))return;
+      arme('close',e);
+    });
+  })();
+
+  /* ═══ Appui long sur une conversation → feuille d'actions (mobile n'avait AUCUN accès à renommer/supprimer) ═══ */
+  function ouvrirSheetConvo(id){
+    const c=convoById(id);if(!c)return;
+    const veil=$('#sheetVeil'),sh=$('#sheetConvo');
+    $('#sheetTitle').textContent=c.title;
+    const IC={
+      open:'<path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/>',
+      pin:'<path d="M12 17v5M9 3h6l-1 7 3 2v2H7v-2l3-2z"/>',
+      rename:'<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+      del:'<path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z"/>'
+    };
+    const rows=[
+      {a:'open',t:'Ouvrir',ic:IC.open},
+      {a:'pin',t:c.pinned?'Désépingler':'Épingler',ic:IC.pin},
+      {a:'rename',t:'Renommer',ic:IC.rename},
+      {a:'del',t:'Mettre à la corbeille',ic:IC.del,danger:true}
+    ];
+    $('#sheetBody').innerHTML=rows.map(r=>'<button type="button" class="sheet-i'+(r.danger?' danger':'')+'" data-a="'+r.a+'"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+r.ic+'</svg>'+r.t+'</button>').join('');
+    veil.hidden=false;sh.hidden=false;
+    requestAnimationFrame(()=>{veil.classList.add('show');sh.classList.add('show')});
+    const ferme=()=>{veil.classList.remove('show');sh.classList.remove('show');setTimeout(()=>{veil.hidden=true;sh.hidden=true},280)};
+    veil.onclick=ferme;
+    $$('#sheetBody .sheet-i').forEach(b=>b.onclick=()=>{ferme();const a=b.dataset.a;
+      if(a==='open')openConvo(id);
+      else if(a==='pin')togglePin(id);
+      else if(a==='rename')renameConvo(id);
+      else if(a==='del')deleteConvo(id);
+    });
+  }
+  (function(){
+    const list=$('#recentList');if(!list)return;
+    let t=null,px=0,py=0,fired=false;
+    const annule=()=>{if(t){clearTimeout(t);t=null}};
+    list.addEventListener('pointerdown',e=>{
+      if(e.pointerType!=='touch')return;
+      const p=e.target.closest('.chat-pill');if(!p)return;
+      px=e.clientX;py=e.clientY;fired=false;
+      const id=p.dataset.id;
+      t=setTimeout(()=>{t=null;fired=true;navigator.vibrate&&navigator.vibrate(10);ouvrirSheetConvo(id)},450);
+    });
+    list.addEventListener('pointermove',e=>{if(t&&(Math.abs(e.clientX-px)>8||Math.abs(e.clientY-py)>8))annule()});
+    list.addEventListener('pointerup',annule);
+    list.addEventListener('pointercancel',annule);
+    list.addEventListener('click',e=>{if(fired){e.stopPropagation();e.preventDefault();fired=false}},true);   /* le tap qui suit l'appui long n'ouvre pas la conversation */
+    list.addEventListener('contextmenu',e=>{if(fired)e.preventDefault()});
   })();
 </script>
 </body>
