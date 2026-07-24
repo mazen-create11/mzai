@@ -1895,6 +1895,18 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 .sheet-i:active{background:var(--surface-2)}
 .sheet-i svg{flex-shrink:0;color:var(--ink-faint)}
 .sheet-i.danger,.sheet-i.danger svg{color:var(--danger-strong)}
+/* ═══ Pickers → bottom sheets ≤640 : le choix de modèle tombait du HAUT de l'écran, hors pouce ═══ */
+@media (max-width:640px){
+  .pop.pop--sheet{top:auto;left:0;right:0;bottom:0;min-width:0;max-width:none;width:100%;max-height:min(70dvh,560px);border-radius:16px 16px 0 0;border-bottom:0;padding:8px 10px calc(12px + env(safe-area-inset-bottom));transform:translateY(102%);transform-origin:bottom;transition:opacity .22s var(--ease),transform .24s var(--ease),visibility .24s var(--ease)}
+  .pop.pop--sheet.show{transform:translateY(0)}
+  .pop.pop--sheet::before{content:"";display:block;width:36px;height:4px;border-radius:2px;background:var(--line-strong);margin:2px auto 10px}
+}
+/* ═══ Échec → aiguillage : réessayer, ou partir sur un autre modèle ═══ */
+.actions.err{max-height:44px;margin-top:0;opacity:1;transform:none}   /* une erreur montre ses issues D'OFFICE, pas au survol */
+.reroute{display:flex;flex-wrap:wrap;gap:8px}
+.rr{font-size:12px;padding:7px 13px;border:1px solid var(--line-strong);border-radius:var(--r-pill);background:var(--surface);color:var(--ink-soft);cursor:pointer;transition:.15s var(--ease);font-family:inherit}
+.rr:hover{color:var(--accent-strong);border-color:var(--accent);background:var(--surface-2)}
+.rr b{font-weight:var(--fw-semi)}
 </style>
 </head>
 <body>
@@ -2995,8 +3007,16 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     left=Math.min(left,innerWidth-pw-12);left=Math.max(12,left);
     pop.style.left=Math.round(left)+'px';pop.style.right='auto';
   }
-  function showPop(pop,anchor,align,markEl){closePop();placePop(pop,anchor,align);pop.classList.add('show');openPop=pop;markEl&&markEl.classList.add('pop-on')}
-  function closePop(){if(openPop){openPop.classList.remove('show');openPop=null}$$('.pop-on').forEach(e=>e.classList.remove('pop-on'));const tb=document.getElementById('toolsBtn');tb&&tb.setAttribute('aria-expanded','false')}
+  let _veilPop=false;   // le voile n'appartient au pop que s'il l'a ouvert (le sheet d'appui long a le sien)
+  function showPop(pop,anchor,align,markEl){closePop();
+    if(window.innerWidth<=640){   // ≤640 : le popover devient une feuille du bas — dans l'arc du pouce, plus jamais ancré au topbar
+      pop.classList.add('pop--sheet');pop.style.top='';pop.style.left='';pop.style.right='';pop.style.transformOrigin='';
+      const v=$('#sheetVeil');if(v){v.hidden=false;requestAnimationFrame(()=>v.classList.add('show'));_veilPop=true}
+    }else{pop.classList.remove('pop--sheet');placePop(pop,anchor,align)}
+    pop.classList.add('show');openPop=pop;markEl&&markEl.classList.add('pop-on')}
+  function closePop(){if(openPop){openPop.classList.remove('show');openPop=null}
+    if(_veilPop){_veilPop=false;const v=$('#sheetVeil');if(v){v.classList.remove('show');setTimeout(()=>{if(!v.classList.contains('show'))v.hidden=true},280)}}
+    $$('.pop-on').forEach(e=>e.classList.remove('pop-on'));const tb=document.getElementById('toolsBtn');tb&&tb.setAttribute('aria-expanded','false')}
   document.addEventListener('click',e=>{if(openPop&&!openPop.contains(e.target)&&!e.target.closest('[data-popanchor]'))closePop()});
 
   /* model popover */
@@ -3592,7 +3612,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       let copyText=text,qcDone=false;
       if(currentMode==='translate'&&toolCfg.trCheck){const j=renderTransQC(bubble,text);if(j!=null){copyText=j;qcDone=true;}}  // côte-à-côte + contrôle qualité
       if(!qcDone){bubble.classList.add('md');bubble.innerHTML=(meta.demo?'<div class="demo-tag">Mode démonstration — aucune clé API active, réponse simulée</div>':'')+renderMD(text)+sourcesBlock(opts.model,meta.sources);}
-      wireBubble(bubble);addActions(col,copyText,node,meta.error);
+      wireBubble(bubble);addActions(col,copyText,node,meta.error,resolvedModel);
       if(injTotal>0){const b=injBadge(injUsed,injTotal);if(b)col.appendChild(b);}                          // transparence : X / Y caractères de document injectés
       if(currentMode==='doc'&&toolCfg.docAction==='Extraction')addJsonDownload(col,text);                  // export .json structuré
       if(meta.usage||meta.ms){const s=statsEl(wasAuto?'MAZ Auto → '+resolvedModel:resolvedModel,meta.ms,meta.usage,true);if(s)col.appendChild(s);}
@@ -3987,17 +4007,23 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       col.appendChild(wrap);
     }catch(e){}
   }
-  function addActions(col,text,node,isError){
+  // l'aiguillage de secours : quand un modèle casse, en proposer un d'une AUTRE famille (une panne fournisseur ne se répare pas en réessayant pareil)
+  const ALT_MODELE=m=>({'DeepSeek V4 Flash':'MiniMax M3','DeepSeek V4 Pro':'GLM-5.2','Qwen3 Max Thinking':'DeepSeek V4 Pro','Qwen3 Coder Plus':'Kimi K2.7 Code','Kimi K2.7 Code':'Qwen3 Coder Plus','GLM-5.2':'DeepSeek V4 Pro','MiniMax M3':'DeepSeek V4 Flash'}[m]||'MiniMax M3');
+  function addActions(col,text,node,isError,failedModel){
     const a=document.createElement('div');a.className='actions';
-    // Une bulle d'erreur n'est pas une vraie réponse : on n'y met que « Réessayer » (pas de copier/lecture/j'aime sur un message d'erreur).
+    // Une bulle d'erreur n'est pas une vraie réponse : ses seules actions sont ses issues — et elles s'affichent d'office.
     if(isError){
-      a.innerHTML='<div class="act" data-a="retry" data-tip="Réessayer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v4h-4"/></svg></div>';
+      const alt=ALT_MODELE(failedModel||currentModel);
+      a.className='actions err';
+      a.innerHTML='<div class="reroute"><button type="button" class="rr" data-a="retry">Réessayer</button><button type="button" class="rr" data-a="reroute">Essayer avec <b>'+esc(alt)+'</b></button></div>';
       col.appendChild(a);
-      a.querySelector('[data-a=retry]').addEventListener('click',()=>{
+      const relance=model=>{
         if(generating||!node)return;const c=convoById(activeId);if(!c)return;
-        node.remove();const model=currentModel,reason=isOn('Réflexion'),search=isOn('Recherche'),nn=addAINode(model);   // l'erreur n'est pas dans c.msgs → on ne supprime aucune réponse existante
+        node.remove();const reason=isOn('Réflexion'),search=isOn('Recherche'),nn=addAINode(model);   // l'erreur n'est pas dans c.msgs → on ne supprime aucune réponse existante
         runGen(nn,REPLIES[ri++%REPLIES.length],{reason,search,model,onDone:(t,meta)=>{if(meta.error)return;c.msgs.push({role:'ai',text:t,model:meta.resolved||model,auto:!!meta.auto,reason,search,reasonText:meta.reasonText||'',sources:meta.sources||[],usage:meta.usage||null,ms:meta.ms||0});c.model=model;c.ts=now();saveConvos();renderRecents()}});
-      });
+      };
+      a.querySelector('[data-a=retry]').addEventListener('click',()=>relance(currentModel));
+      a.querySelector('[data-a=reroute]').addEventListener('click',()=>relance(alt));
       return;
     }
     a.innerHTML='<div class="act" data-a="copy" data-tip="Copier"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></div><div class="act" data-a="speak" data-tip="Lecture"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg></div><div class="act" data-a="redo" data-tip="Régénérer ('+currentModel+')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v4h-4"/></svg></div><div class="act" data-a="like" data-tip="J\'aime"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 11v9M2 13v6a2 2 0 0 0 2 2h13.3a2 2 0 0 0 2-1.6l1.4-7A2 2 0 0 0 19.7 10H14V5a2 2 0 0 0-3.7-1L7 11"/></svg></div>';
