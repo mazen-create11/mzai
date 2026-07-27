@@ -155,6 +155,11 @@ document.documentElement.dataset.theme=d?'dark':'light'}catch(e){document.docume
   color:var(--ink);margin:0;max-width:56ch;font-weight:700;letter-spacing:-.01em;text-wrap:pretty}
 .at-narr .at-em{color:var(--accent);font-style:normal}   /* pas d'italique chargée : l'oblique synthétique est un défaut, pas un style */
 .at-narr .at-mute{color:var(--ink-soft)}
+/* La chasse fixe est faite pour aligner des colonnes, pas pour porter un
+   montant en corps 30 : chaque virgule y prend une cellule entière et « 6,86 € »
+   se lit « 6 , 86  € ». Dans le bandeau, le chiffre reprend la police du texte
+   et garde seulement ses chiffres tabulaires. */
+.at-narr .at-num{font-family:inherit;letter-spacing:inherit}
 @media (min-width:761px){.at-narr{font-size:var(--fs-lg)}}
 
 /* ── chiffres : toujours alignés, jamais en corps de texte ── */
@@ -313,6 +318,48 @@ document.documentElement.dataset.theme=d?'dark':'light'}catch(e){document.docume
   .at-ligne:hover .at-go,.at-ligne:focus-within .at-go,.at-go:focus-visible{opacity:1}
 }
 
+/* ── le second bouton de ligne : les gestes qui ne sont pas « lancer ».
+      Même dessin que .at-go, même révélation au survol — un registre n'affiche
+      pas six boutons en permanence. ── */
+.at-c-act{gap:2px}
+.at-go.at-plus svg{transform:none}
+
+/* ── la barre de contrôle : elle n'apparaît qu'à partir de 4 postes, sinon
+      elle pèse plus que ce qu'elle trie. Champ nu, filtres en texte : aucun
+      composant décoratif, on reste sur l'instrument. ── */
+.at-bar{display:flex;align-items:center;gap:var(--s-4);flex-wrap:wrap;
+  padding-bottom:var(--s-3);border-bottom:1px solid var(--line-faint)}
+.at-find{flex:1;min-width:180px;display:flex;align-items:center;gap:var(--s-2);color:var(--ink-faint)}
+.at-find input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);
+  font-family:var(--font-sans);font-size:var(--fs-sm);padding:6px 0}
+.at-find input:focus{outline:0}
+.at-find input::placeholder{color:var(--ink-faint)}
+.at-find:focus-within{color:var(--accent)}
+.at-filtres{display:flex;align-items:center;gap:var(--s-1,4px);flex-wrap:wrap}
+.at-fl{border:0;background:transparent;cursor:pointer;font-family:var(--font-sans);
+  font-size:var(--fs-xs);font-weight:var(--fw-med);letter-spacing:.04em;color:var(--ink-faint);
+  padding:5px var(--s-3);border-radius:var(--r-pill);transition:color var(--dur-1) var(--ease),background var(--dur-1) var(--ease)}
+.at-fl:hover{color:var(--ink-soft);background:var(--surface-2)}
+.at-fl[aria-pressed="true"]{color:var(--ink);background:var(--surface-2)}
+.at-fl b{font-family:var(--font-mono);font-weight:var(--fw-med);font-variant-numeric:tabular-nums;
+  color:var(--ink-faint);margin-left:5px}
+.at-fl:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.at-rien{padding:var(--s-6) var(--s-3);font-size:var(--fs-sm);color:var(--ink-soft)}
+
+/* ── le menu de ligne ── */
+.at-menu{position:fixed;z-index:var(--z-pop,90);min-width:194px;padding:var(--s-2);
+  border:1px solid var(--line-strong);border-radius:var(--r-sm);background:var(--panel-solid,var(--surface));
+  box-shadow:var(--shadow-pop);display:flex;flex-direction:column;gap:1px}
+.at-mi{display:flex;align-items:center;gap:var(--s-3);width:100%;border:0;background:transparent;
+  text-align:left;font-family:var(--font-sans);font-size:var(--fs-sm);color:var(--ink);
+  padding:8px var(--s-3);border-radius:var(--r-xs);cursor:pointer;white-space:nowrap}
+.at-mi:hover{background:var(--surface-2)}
+.at-mi:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.at-mi[disabled]{opacity:.4;cursor:not-allowed}
+.at-mi.danger{color:var(--danger-strong)}
+.at-mi svg{flex:none;opacity:.7}
+.at-msep{height:1px;background:var(--line-faint);margin:var(--s-2) 0}
+
 /* ── états : on éteint, on n'allume pas ── */
 .at-ligne[data-etat="actif"] .at-poincon{color:var(--accent)}
 .at-ligne[data-etat="pause"] .at-poincon{color:var(--ink-soft)}
@@ -333,8 +380,13 @@ document.documentElement.dataset.theme=d?'dark':'light'}catch(e){document.docume
 .at-repli>summary:hover{color:var(--ink-soft)}
 .at-repli>summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:var(--r-xs)}
 
-/* ── replis de gabarit : sur la largeur du REGISTRE, pas de la fenêtre ── */
-@container (max-width:1023px){
+/* ── replis de gabarit : sur la largeur du REGISTRE, pas de la fenêtre ──
+   Seuil ramené de 1023 à 880 px (27/07) : les colonnes fixes pèsent 624 px +
+   112 px de gouttières = 736 px, il reste donc ~145 px pour le nom dès 880 —
+   assez, le nom s'ellipse. À 1023, l'écran de Mazen (registre ≈ 900 px) tombait
+   TOUJOURS dans la version repliée : une ligne de poste y prenait quatre lignes
+   de hauteur, et la version pleine n'était jamais vue. */
+@container (max-width:879px){
   .at-ligne{grid-template-columns:var(--at-c1) minmax(0,1fr) var(--at-c5) var(--at-c6) var(--at-c7) var(--at-c8);
     row-gap:5px}
   .at-attrib{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:var(--s-2);row-gap:2px;
@@ -347,17 +399,37 @@ document.documentElement.dataset.theme=d?'dark':'light'}catch(e){document.docume
   .at-c-env{grid-column:5;grid-row:1/span 2}
   .at-c-act{grid-column:6;grid-row:1/span 2}
 }
-@container (max-width:719px){
-  .at-ligne{grid-template-columns:var(--at-c1) minmax(0,1fr) auto;row-gap:6px;
-    padding:var(--s-4) var(--s-3);--at-lignes-obj:2}
-  .at-poincon{grid-column:1;grid-row:1;margin-top:4px}
+/* Sous 780 px, empiler CINQ rangées faisait une ligne de poste haute de 156 px :
+   six postes ne tenaient plus sur un écran, et l'atelier cessait de se lire d'un
+   coup d'œil. On resserre à TROIS rangées — identité · attribution+cadence ·
+   mesures — en gardant l'ordre de lecture. (27/07) */
+@container (max-width:779px){
+  .at-ligne{grid-template-columns:var(--at-c1) minmax(0,1fr) auto auto;row-gap:3px;
+    padding:var(--s-3);--at-lignes-obj:1}
+  .at-poincon{grid-column:1;grid-row:1;margin-top:2px}
+  .at-ident{grid-column:2/4;grid-row:1}
+  .at-c-act{grid-column:4;grid-row:1/span 3;align-self:start}
+  .at-attrib{grid-column:2;grid-row:2;display:flex;flex-wrap:wrap;align-items:baseline;
+    column-gap:var(--s-2);row-gap:0;min-width:0}
+  .at-c-ouv{grid-auto-flow:column;column-gap:var(--s-2);align-items:baseline;min-width:0}
+  /* la cadence rejoint l'attribution : même registre d'information, même rangée,
+     mais sa PROPRE colonne — superposées dans la même cellule, les deux textes
+     se chevauchaient dès que le nom du modèle était long. */
+  .at-c-cad{grid-column:3;grid-row:2;display:flex;align-items:baseline;
+    justify-content:flex-end;gap:var(--s-2);white-space:nowrap}
+  .at-c-sante{grid-column:2;grid-row:3;align-self:center}
+  .at-c-env{grid-column:3;grid-row:3;justify-self:end;align-self:center;width:min(150px,40vw)}
+}
+/* Au pouce : chaque mesure reprend sa rangée, les boutons deviennent des cibles
+   de 44 px, et le peigne cède la place — il se lit mal à cette largeur. */
+@container (max-width:559px){
+  .at-ligne{row-gap:5px;padding:var(--s-4) var(--s-3);grid-template-columns:var(--at-c1) minmax(0,1fr) auto}
   .at-ident{grid-column:2;grid-row:1}
-  .at-c-act{grid-column:3;grid-row:1;align-self:start}
+  .at-c-act{grid-column:3;grid-row:1/span 4}
   .at-attrib{grid-column:2/-1;grid-row:2}
-  .at-c-cad{grid-column:2/-1;grid-row:3;grid-auto-flow:column;justify-content:start;column-gap:var(--s-2)}
-  .at-c-sante{grid-column:2;grid-row:4}
-  .at-c-env{grid-column:3;grid-row:4;align-self:end}
-  .at-nm{flex-wrap:wrap}
+  .at-c-cad{grid-column:2/-1;grid-row:3;justify-content:flex-start;white-space:normal}
+  .at-c-sante{display:none}
+  .at-c-env{grid-column:2/-1;grid-row:4;justify-self:start;width:100%}
   .at-go{opacity:1;border-color:var(--line);width:44px;height:44px}
 }
 .at-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
@@ -1955,7 +2027,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     <footer class="sb-foot">
       <button class="profile" id="profileBtn">
         <span class="avatar" id="navAv"><span class="av-m">M</span><span class="av-k" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="1" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="5" y="5" width="14" height="14" rx="1" fill="none" stroke="currentColor" stroke-width="1.7" transform="rotate(45 12 12)"/><circle cx="12" cy="12" r="1.9" fill="currentColor"/></svg></span></span>
-        <span class="who"><span class="name" id="navName">Mazen</span><span class="sub" id="navSub">Premium · local</span></span>
+        <span class="who"><span class="name" id="navName">Mon espace</span><span class="sub" id="navSub">Premium · local</span></span>
         <svg class="chev" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
       </button>
     </footer>
@@ -1998,7 +2070,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         <div class="home-wrap">
           <div class="home-center">
             <p class="home-status" id="homeEtat" aria-live="polite"></p>
-            <h2 class="home-greet" id="greet">Bonjour, <b>Mazen</b><svg class="greet-mark" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.2" y="3.2" width="9.6" height="9.6" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3.2" y="3.2" width="9.6" height="9.6" fill="none" stroke="currentColor" stroke-width="1.6" transform="rotate(45 8 8)"/></svg></h2>
+            <h2 class="home-greet" id="greet">Bonjour<svg class="greet-mark" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.2" y="3.2" width="9.6" height="9.6" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3.2" y="3.2" width="9.6" height="9.6" fill="none" stroke="currentColor" stroke-width="1.6" transform="rotate(45 8 8)"/></svg></h2>
             <!-- #dockHome reçoit le composer unique à l'accueil -->
             <div class="home-dock" id="dockHome">
 
@@ -2231,7 +2303,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     <div class="row"><div><div class="rl">Animations</div><div class="rd">Effets et transitions</div></div><div class="toggle on" data-set="anim"></div></div>
     <div class="row"><div><div class="rl">Densité</div><div class="rd">Espacement de l'interface</div></div><div class="seg" id="segDensity"><div class="sg" data-d="cozy">Cozy</div><div class="sg" data-d="dense">Dense</div></div></div>
     <div class="row"><div><div class="rl">Exporter mes données</div><div class="rd">Conversations &amp; réglages (JSON)</div></div><div class="mini-btn" id="setExport">Exporter</div></div>
-    <div class="row"><div><div class="rl">Effacer tout</div><div class="rd">Supprime conversations &amp; mémoire</div></div><div class="mini-btn danger" id="setClear">Effacer</div></div>
+    <div class="row"><div><div class="rl">Nettoyer les récentes</div><div class="rd">Envoie à la corbeille tout sauf les épinglées</div></div><div class="mini-btn" id="setTidy">Nettoyer</div></div>
+    <div class="row"><div><div class="rl">Effacer tout</div><div class="rd">Supprime conversations &amp; mémoire, ici et sur le serveur</div></div><div class="mini-btn danger" id="setClear">Effacer</div></div>
   </div>
   <div class="m-foot"><div class="btn primary" id="setUpgrade">Terminé</div></div>
 </div></div>
@@ -2251,7 +2324,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 <div class="ov" id="profileModal"><div class="modal sm" role="dialog" aria-modal="true" aria-label="Profil">
   <div class="m-head"><div class="m-ic" id="pfAv">M</div><div class="m-tt"><div class="m-t">Profil</div><div class="m-s">Ton identité dans MAZ</div></div><div class="m-x" id="pfClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
   <div class="m-body">
-    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:18px;gap:2px"><div class="m-t" id="pfNameP">Mazen</div><div class="m-s" id="pfEmailP"></div></div>
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:18px;gap:2px"><div class="m-t" id="pfNameP"></div><div class="m-s" id="pfEmailP"></div></div>
     <div class="field"><label for="pfName">Nom</label><input class="inp" id="pfName" placeholder="Ton nom"></div>
     <div class="field"><label for="pfRole">Rôle</label><input class="inp" id="pfRole" placeholder="Ex : Entrepreneur"></div>
     <div class="field"><label for="pfEmail">Email</label><input class="inp" id="pfEmail" placeholder="toi@exemple.com"></div>
@@ -2397,9 +2470,21 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(p.signer)t+=' · '+p.signer+' à signer';}
     el.textContent=t;
   }
-  const h=new Date().getHours();
-  $('#greet').innerHTML=(h<6?'Bonne nuit':h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir')+', <b>Mazen</b><svg class="greet-mark" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.2" y="3.2" width="9.6" height="9.6" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3.2" y="3.2" width="9.6" height="9.6" fill="none" stroke="currentColor" stroke-width="1.6" transform="rotate(45 8 8)"/></svg>';
-  majHomeEtat();
+  /* Le prénom n'est PAS écrit en dur : un invité qui entre son code lisait
+     « Bonjour, Mazen ». applyUser() repeint dès que le compte est connu. */
+  const GREET_MARK='<svg class="greet-mark" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.2" y="3.2" width="9.6" height="9.6" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3.2" y="3.2" width="9.6" height="9.6" fill="none" stroke="currentColor" stroke-width="1.6" transform="rotate(45 8 8)"/></svg>';
+  const salut=()=>{const h=new Date().getHours();return h<6?'Bonne nuit':h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir'};
+  function majGreet(){const g=$('#greet');if(!g)return;
+    /* USER est déclaré plus bas : au tout premier appel il est encore dans sa
+       zone morte, et `typeof` lève sur un const. D'où le try — on salue sans
+       prénom pendant les quelques ms qui précèdent applyUser(). */
+    let nom='';try{nom=(USER&&USER.name)?String(USER.name).trim().split(' ')[0]:''}catch(e){}
+    g.innerHTML=salut()+(nom?', <b>'+esc(nom)+'</b>':'')+GREET_MARK;}
+  majGreet();majHomeEtat();
+  /* Un onglet reste ouvert des jours : sans ce battement, la date du 27 juillet
+     restait affichée le 29, et « Bonsoir » persistait jusqu'au lendemain midi. */
+  setInterval(()=>{majGreet();majHomeEtat()},60000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){majGreet();majHomeEtat()}});
 
   /* ═══ La lumière ═════════════════════════════════════════════════════════
      Deux mouvements, tous deux volontairement à la limite du perceptible :
@@ -2688,7 +2773,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       }
       if(d.uid)localStorage.setItem('mzai:cloud_uid',d.uid);
     }catch(e){}
-    try{if(localStorage.getItem('mzai:user')===null&&d.name){USER.name=d.name;USER.role='Espace privé';USER.email='';DB.set('user',USER);applyUser&&applyUser()}}catch(e){}
+    /* On pose le nom du compte tant que l'utilisateur n'a pas édité son profil
+       (profil vierge OU nom vide) — sans jamais écraser une personnalisation. */
+    try{if(d.name&&(localStorage.getItem('mzai:user')===null||!String(USER.name||'').trim())){USER.name=d.name;USER.role='Espace privé';DB.set('user',USER);applyUser&&applyUser()}}catch(e){}
     toast&&toast('Bienvenue, '+(d.name||'')+' ✦');
     cloudPull();
     const pv=document.getElementById('privacyNote');if(pv)pv.innerHTML='<b>Ton espace privé.</b> Tes conversations sont chiffrées en transit et synchronisées sur ton espace privé — elles te suivent sur tous tes appareils. Personne d’autre n’y a accès.';
@@ -2704,12 +2791,22 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const sec=document.createElement('div');sec.className='field';sec.id='set-admin';
     sec.innerHTML='<label>Comptes (admin)</label>'
       +'<div id="admList" style="border:1px solid var(--line);border-radius:12px;overflow:hidden"></div>'
+      +'<p style="margin:8px 2px 0;font-size:12px;line-height:1.5;color:var(--ink-faint)">Chaque code ouvre un espace séparé : la personne ne voit ni tes conversations, ni tes projets, ni tes postes d’atelier — et toi non plus les siens. Un seul code par personne : deux appareils avec le même code partagent le même historique.</p>'
       +'<div style="display:flex;gap:8px;margin-top:10px"><input class="inp" id="admName" placeholder="Prénom du nouveau collègue / client" aria-label="Nom du nouvel accès" style="flex:1"><button class="btn primary" id="admCreate" style="white-space:nowrap">Créer un accès</button></div>'
-      +'<div id="admNew" style="display:none;margin-top:10px;padding:14px;border:1.5px dashed var(--accent);border-radius:12px;background:var(--accent-tint)"><div style="font-size:12px;font-weight:700;color:var(--accent-strong);margin-bottom:6px">CODE D’ACCÈS — montré une seule fois, envoie-le maintenant</div><div style="display:flex;gap:8px;align-items:center"><code id="admCode" style="flex:1;font-size:14px;letter-spacing:.05em;user-select:all"></code><button class="btn" id="admCopy">Copier</button></div></div>';
+      +'<div id="admNew" style="display:none;margin-top:10px;padding:14px;border:1.5px dashed var(--accent);border-radius:12px;background:var(--accent-tint)"><div style="font-size:12px;font-weight:700;color:var(--accent-strong);margin-bottom:6px">CODE D’ACCÈS — montré une seule fois, envoie-le maintenant</div><div style="display:flex;gap:8px;align-items:center"><code id="admCode" style="flex:1;font-size:14px;letter-spacing:.05em;user-select:all"></code><button class="btn" id="admCopy">Copier</button><button class="btn primary" id="admInvite">Copier l’invitation</button></div><p style="margin:8px 0 0;font-size:11.5px;color:var(--ink-faint)">« Copier l’invitation » met le lien, le code et le mode d’emploi dans ton presse-papier — il n’y a plus qu’à coller dans un message.</p></div>';
     anchor.parentNode.insertBefore(sec,anchor);
     sec.querySelector('#admCreate').addEventListener('click',admCreate);
     sec.querySelector('#admName').addEventListener('keydown',e=>{if(e.key==='Enter')admCreate()});
     sec.querySelector('#admCopy').addEventListener('click',()=>{try{navigator.clipboard.writeText(document.getElementById('admCode').textContent);toast('Code copié — envoie-le à la personne')}catch(e){}});
+    /* Donner un accès tenait en un code brut collé dans un SMS, sans le lien ni
+       le mode d'emploi : la personne d'en face ne savait pas quoi en faire. */
+    sec.querySelector('#admInvite').addEventListener('click',()=>{
+      const code=document.getElementById('admCode').textContent,nom=sec.dataset.dernier||'';
+      const t=(nom?nom+', ':'')+'voici ton accès à MAZ.\n\n'
+        +location.origin+location.pathname+'\n'
+        +'Code : '+code+'\n\n'
+        +'Ouvre le lien, colle le code, c’est tout. Ton espace est privé : tes conversations n’apparaissent chez personne d’autre.';
+      try{navigator.clipboard.writeText(t);toast('Invitation copiée — colle-la dans un message')}catch(e){toast('Copie impossible')}});
     admRefresh();
   }
   async function admRefresh(){
@@ -2753,6 +2850,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(!r.ok)throw 0;
       const d=await r.json();
       inp.value='';
+      const sec=document.getElementById('set-admin');if(sec)sec.dataset.dernier=name;
       const nb=document.getElementById('admNew');nb.style.display='block';
       document.getElementById('admCode').textContent=d.code;
       toast('Accès créé pour '+name);
@@ -2769,9 +2867,13 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     }
     _gateEl();
   })();
-  const USER=DB.get('user',{name:'Mazen',email:'mazenchaban09@gmail.com',role:'Compte développeur',avColor:ARGILE_AV});
+  /* Le profil par défaut ne porte plus l'identité de Mazen : sur un navigateur
+     neuf, un invité qui entrait son code voyait « Mazen » et l'adresse mail de
+     Mazen dans SON profil tant que le serveur n'avait pas répondu. Le vrai nom
+     arrive de /auth/verify (onAuthed), le reste se règle dans Profil. */
+  const USER=DB.get('user',{name:'',email:'',role:'Espace privé',avColor:ARGILE_AV});
   if(/#7fa9dc|#5e86c9|#6ba3ff|#b6c4d8|#6b7e97|#2c4a8f|#d08b5c|#a85e2e|#b85335|#9e4a2b|#a4472b|#c76b4a/i.test(USER.avColor||'')){USER.avColor=ARGILE_AV;DB.set('user',USER)}   /* migration : avatars bleus ET argile hérités → émeraude Damas */
-  const firstName=()=>(USER.name||'Mazen').trim().split(' ')[0];
+  const firstName=()=>(USER.name||'').trim().split(' ')[0];
   const modelById=id=>MODELS.find(m=>m.id===id)||MODELS[0];
   {const _bm=modelById(currentModel);if(_bm&&/image|video|audio/.test(_bm.kind||''))currentModel='MAZ Auto';}  // au boot on démarre en conversation texte : un modèle média persisté (FLUX/Wan/voix) retombe sur l'assistant, sinon le 1er message texte partirait en réponse simulée
   const VISION_DOC='qwen/qwen3-vl-8b-instruct';  // modèle vision OpenRouter (OCR docs scannés / photos en mode Documents)
@@ -3059,7 +3161,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       ['help','Aide',GLYPH.help]
     ];
     $('#popProfile').innerHTML=
-      `<div class="pi sel"><div class="pi-i" style="background:var(--accent);color:var(--ink-on-accent);border-color:transparent;font-family:var(--font-display);font-weight:600">${esc(ini)}</div><div class="pi-main"><div class="pi-t">${esc(USER.name||'Mazen')}</div><div class="pi-d">${esc(email)}</div></div></div><div class="sep"></div>`
+      `<div class="pi sel"><div class="pi-i" style="background:var(--accent);color:var(--ink-on-accent);border-color:transparent;font-family:var(--font-display);font-weight:600">${esc(ini)}</div><div class="pi-main"><div class="pi-t">${esc(USER.name||'Mon espace')}</div><div class="pi-d">${esc(email)}</div></div></div><div class="sep"></div>`
       +items.map(([pf,t,svg])=>`<div class="pi" data-pf="${pf}">${pfIco(svg)}<div class="pi-main"><div class="pi-t">${t}</div></div>${pf==='theme'?`<span class="pi-tail">${themeLabel()}</span>`:''}</div>`).join('')
       +'<div class="sep"></div>'
       +(VIA_PROXY?`<div class="pi" data-pf="logout">${pfIco('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>')}<div class="pi-main"><div class="pi-t">Se déconnecter</div></div></div>`:'')
@@ -3090,8 +3192,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const av=$('.profile .avatar');if(av){const _m=av.querySelector('.av-m');if(_m)_m.textContent=ini;else av.textContent=ini;av.style.background=USER.avColor}
     const nm=$('.profile .name');if(nm)nm.textContent=USER.name;
     const sb=$('.profile .sub');if(sb)sb.textContent=USER.role;
-    const h=new Date().getHours();$('#greet').innerHTML=(h<6?'Bonne nuit':h<12?'Bonjour':h<18?'Bon après-midi':'Bonsoir')+', <b>'+esc(firstName())+'</b><svg class="greet-mark" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.2" y="3.2" width="9.6" height="9.6" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3.2" y="3.2" width="9.6" height="9.6" fill="none" stroke="currentColor" stroke-width="1.6" transform="rotate(45 8 8)"/></svg>';
-    majHomeEtat();
+    majGreet();majHomeEtat();
     const hp=$('#popProfile .pi.sel');if(hp){const i=hp.querySelector('.pi-i');i.textContent=ini;i.style.background=USER.avColor;hp.querySelector('.pi-t').textContent=USER.name;hp.querySelector('.pi-d').textContent=USER.email}
   }
   /* profil */
@@ -3109,7 +3210,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   $('#pfClose').addEventListener('click',()=>$('#profileModal').classList.remove('show'));
   $('#pfCancel').addEventListener('click',()=>$('#profileModal').classList.remove('show'));
   $('#profileModal').addEventListener('click',e=>{if(e.target.id==='profileModal')$('#profileModal').classList.remove('show')});
-  $('#pfSave').addEventListener('click',()=>{USER.name=$('#pfName').value.trim()||'Mazen';USER.email=$('#pfEmail').value.trim();USER.role=$('#pfRole').value.trim()||'Compte';USER.avColor=pfColor;DB.set('user',USER);applyUser();$('#profileModal').classList.remove('show');toast('Profil enregistré')});
+  $('#pfSave').addEventListener('click',()=>{USER.name=$('#pfName').value.trim();USER.email=$('#pfEmail').value.trim();USER.role=$('#pfRole').value.trim()||'Compte';USER.avColor=pfColor;DB.set('user',USER);applyUser();$('#profileModal').classList.remove('show');toast('Profil enregistré')});
   /* activité — données réelles locales (pas de quota/facture fictifs) */
   function openBilling(){
     let msgTotal=0; CONVOS.forEach(c=>msgTotal+=(c.msgs?c.msgs.length:0));
@@ -3275,7 +3376,27 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   }
   renderApiList();
   $('#setExport').addEventListener('click',()=>{buildExport().then(data=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='mzai-export.json';a.click();URL.revokeObjectURL(u);toast('Données exportées')}).catch(()=>toast('Export impossible — réessaie'))});
-  $('#setClear').addEventListener('click',()=>{const keep=SHOW_API_SETTINGS?'Tes clés API et réglages sont conservés.':'Tes préférences d’affichage sont conservées.';if(!window.confirm('Effacer TOUTES les conversations, la corbeille et la mémoire de l\'IA ? ('+keep+') Action irréversible.'))return;CONVOS=[];activeId=null;TRASH=[];saveTrash();setMemory('');MEDIA.clear&&MEDIA.clear();SESSION_TOKENS=0;SESSION_COST=0;try{localStorage.removeItem('mzai:stok');localStorage.removeItem('mzai:scost')}catch(e){}_renderTok(false);saveConvos();renderRecents();renderLibrary('');typeof renderTrash==='function'&&renderTrash();chat.innerHTML='';goHome();toast('Conversations, corbeille et mémoire effacées')});
+  /* Effacer n'effaçait QUE le local : le premier cloudPull() rapatriait tout
+     depuis le serveur et les conversations « supprimées » réapparaissaient.
+     On prévient donc le serveur, conversation par conversation, avant de vider. */
+  $('#setClear').addEventListener('click',()=>{const keep=SHOW_API_SETTINGS?'Tes clés API et réglages sont conservés.':'Tes préférences d’affichage sont conservées.';if(!window.confirm('Effacer TOUTES les conversations, la corbeille et la mémoire de l\'IA — ici ET sur le serveur ? ('+keep+') Action irréversible.'))return;
+    const ids=[...CONVOS,...TRASH].map(c=>c.id);
+    CONVOS=[];activeId=null;TRASH=[];saveTrash();setMemory('');MEDIA.clear&&MEDIA.clear();SESSION_TOKENS=0;SESSION_COST=0;try{localStorage.removeItem('mzai:stok');localStorage.removeItem('mzai:scost')}catch(e){}_renderTok(false);saveConvos();renderRecents();renderLibrary('');typeof renderTrash==='function'&&renderTrash();chat.innerHTML='';goHome();
+    ids.forEach(id=>{try{cloudDelete(id)}catch(e){}});
+    toast('Conversations, corbeille et mémoire effacées')});
+  /* Nettoyer : le geste courant. On ne détruit rien — tout part à la corbeille,
+     les épinglées restent. C'est réversible, donc pas de confirmation anxiogène. */
+  $('#setTidy')&&$('#setTidy').addEventListener('click',()=>{
+    const bouge=CONVOS.filter(c=>!c.pinned);
+    if(!bouge.length){toast('Rien à nettoyer — tes récentes sont déjà propres');return}
+    if(!window.confirm(bouge.length+' conversation'+(bouge.length>1?'s':'')+' vers la corbeille ? Les épinglées restent, et tu peux tout restaurer pendant 30 jours.'))return;
+    const t=now();
+    bouge.forEach(c=>{c._del=t;TRASH.unshift(c);try{cloudDelete(c.id)}catch(e){}});
+    CONVOS=CONVOS.filter(c=>c.pinned);
+    if(!CONVOS.some(c=>c.id===activeId)){activeId=null;chat.innerHTML='';goHome()}
+    if(TRASH.length>50){const _drop=TRASH.slice(50);TRASH=TRASH.slice(0,50);_mediaPurge(_drop)}
+    saveTrash();saveConvos();renderRecents();renderLibrary($('#libSearch')?.value||'');typeof renderTrash==='function'&&renderTrash();
+    toast(bouge.length+' conversation'+(bouge.length>1?'s':'')+' dans la corbeille')});
 
   /* ===== persona studio ("Mon IA") ===== */
   const PRESETS=[
@@ -4610,7 +4731,25 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   $('#prBack').addEventListener('click',()=>showView(activeId?'chat':'home'));
 
   /* misc */
-  $('#collapseBtn').addEventListener('click',()=>{$('#sidebar').classList.toggle('collapsed')});
+  /* Le tiroir garde son état d'une session à l'autre : le replier est un choix,
+     pas un accident, et le retrouver ouvert à chaque rechargement l'annulait. */
+  function replier(v,memoriser){const sb=$('#sidebar');if(!sb)return;sb.classList.toggle('collapsed',v);
+    if(memoriser!==false)DB.set('sbcol',v);
+    const b=$('#collapseBtn');b&&b.setAttribute('aria-expanded',v?'false':'true')}
+  $('#collapseBtn').addEventListener('click',()=>replier(!$('#sidebar').classList.contains('collapsed')));
+  if(DB.get('sbcol',false))replier(true);
+  /* Cliquer À CÔTÉ referme le tiroir (demande Mazen 27/07) — sur mobile le voile
+     le faisait déjà, sur grand écran il fallait viser le petit bouton. On ignore
+     les clics qui VEULENT quelque chose (champ, bouton, lien, sélection en cours)
+     pour ne pas replier le tiroir sous les doigts de quelqu'un qui écrit. */
+  document.addEventListener('pointerdown',e=>{
+    if(window.innerWidth<=1024)return;                       // ≤1024 : le scrim s'en charge
+    const sb=$('#sidebar');if(!sb||sb.classList.contains('collapsed'))return;
+    if(e.target.closest('#sidebar,.ov.show,.pop.show,#toast'))return;
+    if(e.target.closest('input,textarea,select,button,a,[contenteditable=""],[contenteditable="true"],[role=button],.chat-pill,.pi,.at-lien,.at-ligne'))return;
+    const sel=window.getSelection&&window.getSelection();if(sel&&String(sel).trim())return;
+    replier(true,false);   // un clic de passage ne DÉCIDE rien : seul le bouton mémorise l'état
+  },true);
   $('#navSearch')&&$('#navSearch').addEventListener('click',openPalette);
   let ATTACH=[],importMode=false,prjFileMode=false;
   const fileIcon=n=>{const x=(n.split('.').pop()||'').toLowerCase();const map={png:'img',jpg:'img',jpeg:'img',webp:'img',gif:'img',svg:'img',pdf:'doc',doc:'doc',docx:'doc',txt:'doc',md:'doc',js:'code',ts:'code',jsx:'code',css:'code',html:'code',json:'code',py:'code'};return LIC[map[x]||'doc']};
@@ -4975,6 +5114,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         + [...S].map((c,i)=>`<i class="at-pas ${cl[c]||'v'}${i===7?' der':''}"></i>`).join('')+'</span>';
     }
 
+    const PLUS='<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg>';
     function lignePoste(p){
       const att=etat.controles.filter(c=>c.poste_id===p.id).length;
       const der=etat.journee.filter(x=>x.poste_id===p.id)[0];
@@ -4996,7 +5136,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         </div>
         <div class="at-attrib">
           <div class="at-c at-c-ouv"><span class="at-ouv">${esc2(p.ouvrier_nom||'—')}</span><span class="at-mod">${esc2((p.modele||'').replace('-latest',''))}</span></div>
-          <div class="at-c"><span class="at-chant">${esc2(p.chantier_nom||'—')}</span></div>
+          <div class="at-c"><span class="at-chant">${p.chantier_nom?esc2(p.chantier_nom):''}</span></div>
         </div>
         <div class="at-c at-c-cad"><span class="at-proch">${esc2(proch)}</span><span class="at-cad">${ETATS[et]||et} · ${cad}</span></div>
         <div class="at-c at-c-sante">${peigne(p.sante)}</div>
@@ -5004,17 +5144,151 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           <span class="at-mnt">${((p.depense_cents||0)/100).toFixed(2).replace('.',',')}<em> / ${((p.budget_cents||0)/100).toFixed(2).replace('.',',')} €</em></span>
           <span class="at-env" style="--at-part:${part.toFixed(1)}%"></span>
         </div>
-        <div class="at-c at-c-act"><button class="at-go" data-lancer="${esc2(p.id)}" aria-label="Lancer ${esc2(p.nom)} maintenant" title="Lancer maintenant">${FLECHE}</button></div>
+        <div class="at-c at-c-act"><button class="at-go" data-lancer="${esc2(p.id)}" aria-label="Lancer ${esc2(p.nom)} maintenant" title="Lancer maintenant">${FLECHE}</button>
+          <button class="at-go at-plus" data-menu="${esc2(p.id)}" aria-label="Actions sur ${esc2(p.nom)}" aria-haspopup="menu" title="Actions">${PLUS}</button></div>
       </li>`;
+    }
+
+    /* ═══ Le menu de ligne ══════════════════════════════════════════════════
+       Le registre n'avait qu'un geste : lancer. Renommer, dupliquer, mettre en
+       service, supprimer existaient côté serveur sans jamais atteindre l'écran —
+       il fallait ouvrir la fiche, ou rien du tout pour la suppression. */
+    let menuOuvert=null;
+    function fermerMenu(){if(menuOuvert){menuOuvert.remove();menuOuvert=null;
+      document.removeEventListener('pointerdown',horsMenu,true);document.removeEventListener('keydown',clavMenu,true)}}
+    const horsMenu=e=>{if(menuOuvert&&!menuOuvert.contains(e.target))fermerMenu()};
+    const clavMenu=e=>{if(e.key==='Escape'){e.preventDefault();fermerMenu()}};
+    const IC_M={
+      ouvrir:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M10 14 21 3M18 13v7H4V6h7"/></svg>',
+      blanc:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5.5 18 12 8 18.5z"/></svg>',
+      nom:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+      copie:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>',
+      service:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg>',
+      pause:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M9 5v14M15 5v14"/></svg>',
+      sup:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14"/></svg>',
+    };
+    function ouvrirMenu(p,ancre){
+      fermerMenu();
+      const actif=p.etat==='actif';
+      const items=[
+        ['ouvrir','Ouvrir la fiche',IC_M.ouvrir],
+        ['lancer','Lancer maintenant',IC_M.blanc],
+        ['blanc','Répéter à blanc',IC_M.blanc],
+        ['sep'],
+        ['nom','Renommer',IC_M.nom],
+        ['copie','Dupliquer',IC_M.copie],
+        [actif?'pause':'service',actif?'Mettre en pause':'Mettre en service',actif?IC_M.pause:IC_M.service],
+        ['sep'],
+        ['sup','Supprimer le poste',IC_M.sup],
+      ];
+      const m=document.createElement('div');m.className='at-menu';m.setAttribute('role','menu');
+      m.innerHTML=items.map(([a,l,ic])=>a==='sep'?'<span class="at-msep"></span>'
+        :`<button class="at-mi${a==='sup'?' danger':''}" role="menuitem" data-a="${a}">${ic}<span>${l}</span></button>`).join('');
+      document.body.appendChild(m);
+      const r=ancre.getBoundingClientRect(),h=m.offsetHeight,w=m.offsetWidth;
+      m.style.left=Math.max(8,Math.min(window.innerWidth-w-8,r.right-w))+'px';
+      m.style.top=(r.bottom+6+h>window.innerHeight?Math.max(8,r.top-h-6):r.bottom+6)+'px';
+      menuOuvert=m;
+      setTimeout(()=>{document.addEventListener('pointerdown',horsMenu,true);document.addEventListener('keydown',clavMenu,true)},0);
+      m.querySelector('.at-mi').focus();
+      m.addEventListener('click',async e=>{
+        const b=e.target.closest('.at-mi');if(!b)return;
+        const a=b.dataset.a;fermerMenu();
+        if(a==='ouvrir')return ouvrirPoste(p.id);
+        if(a==='lancer'||a==='blanc')return lancerVite(p,a==='blanc'?'repetition':'reel');
+        if(a==='nom')return renommer(p);
+        if(a==='copie')return dupliquer(p);
+        if(a==='pause'||a==='service')return basculer(p,a==='pause'?'pause':'actif');
+        if(a==='sup')return supprimer(p);
+      });
+    }
+    /* Lancer depuis le registre : la fiche n'est pas ouverte, donc pas de
+       #atRunEtat à nourrir — le retour passe par le toast et le repeint. */
+    async function lancerVite(p,mode){
+      travail(true);toast(mode==='repetition'?'Répétition — rien ne sera écrit':'Passage lancé — '+p.nom);
+      try{
+        const r=await api('/postes/'+p.id+'/lancer',{method:'POST',body:JSON.stringify({mode})});
+        await rafraichir();
+        if(r.statut==='attente'){showView('controle');peindreControle()}
+        else toast(r.statut==='fini'?'Passage terminé — ouvre la fiche pour lire le livrable':'Passage '+r.statut);
+      }catch(e){toast(friendlyErr(e))}
+      finally{travail(false)}
+    }
+    async function renommer(p){
+      const v=window.prompt('Nouveau nom du poste',p.nom);
+      if(v===null)return;const nom=v.trim();if(!nom||nom===p.nom)return;
+      try{await api('/postes/'+p.id,{method:'PATCH',body:JSON.stringify({nom:nom.slice(0,120)})});await rafraichir();toast('Poste renommé')}
+      catch(e){toast(friendlyErr(e))}
+    }
+    /* Dupliquer copie la consigne COURANTE, pas l'historique : le clone repart
+       en v1 et en brouillon — on ne planifie jamais un poste jamais vu tourner. */
+    async function dupliquer(p){
+      travail(true);
+      try{
+        const cons=await api('/postes/'+p.id+'/consignes');
+        const cv=(cons||[])[0]||{};let blocs={};try{blocs=JSON.parse(cv.blocs||'{}')}catch(e){}
+        let outillage=[];try{outillage=JSON.parse(cv.outillage||'[]')}catch(e){}
+        const q=await api('/postes',{method:'POST',body:JSON.stringify({
+          nom:(p.nom+' (copie)').slice(0,120),objectif:p.objectif,ouvrier_id:p.ouvrier_id,
+          chantier_id:p.chantier_id||null,cadence:'demande',blocs,outillage,modele:cv.modele||p.modele,
+          budget_cents:p.budget_cents||300,motif:'copie de « '+String(p.nom).slice(0,60)+' »'})});
+        await rafraichir();ouvrirPoste(q.id);toast('Poste dupliqué — il repart en brouillon');
+      }catch(e){toast(friendlyErr(e))}
+      finally{travail(false)}
+    }
+    async function basculer(p,v){
+      try{await api('/postes/'+p.id,{method:'PATCH',body:JSON.stringify({etat:v})});
+        await rafraichir();toast(v==='actif'?'Poste en service':'Poste en pause')}
+      catch(e){
+        if(e.corps&&e.corps.error==='jamais_repete'){toast('Fais-le tourner à blanc d\'abord — ouvre la fiche');return}
+        toast(friendlyErr(e));
+      }
+    }
+    /* Le serveur marque supprime=1 : les passages et les livrables déjà produits
+       restent, seule la ligne quitte le registre. On le dit, plutôt que de faire
+       peur avec un « définitivement » qui serait faux. */
+    async function supprimer(p){
+      if(!window.confirm('Supprimer le poste « '+p.nom+' » ?\n\nIl quitte le registre et cesse de tourner. Les livrables déjà produits sont conservés.'))return;
+      try{await api('/postes/'+p.id,{method:'DELETE'});await rafraichir();toast('Poste supprimé')}
+      catch(e){toast(friendlyErr(e))}
     }
 
     /* Le tri est structurel, pas décoratif : ce qui réclame un geste est en
        haut, ce qui tourne bien s'efface, les brouillons se replient. */
+    /* Le tri par strates reste le même ; le filtre décide seulement QUI entre.
+       Un registre de trois lignes n'a pas besoin d'être trié, un de trente si. */
+    let filtre='tous',quete='';
+    const aSigner=id=>etat.controles.some(c=>c.poste_id===id);
+    const estCasse=p=>p.etat==='disjoncte'||etat.journee.some(x=>x.poste_id===p.id&&(x.statut==='echec'||x.statut==='coupe'));
+    function retenus(){
+      const q=quete.trim().toLowerCase();
+      return etat.postes.filter(p=>{
+        if(filtre==='signer'&&!aSigner(p.id))return false;
+        if(filtre==='casse'&&!estCasse(p))return false;
+        if(filtre==='service'&&p.etat!=='actif')return false;
+        if(filtre==='brouillon'&&p.etat!=='brouillon')return false;
+        if(!q)return true;
+        return [p.nom,p.objectif,p.ouvrier_nom,p.chantier_nom,p.modele].some(v=>String(v||'').toLowerCase().includes(q));
+      });
+    }
+    function barre(){
+      if(etat.postes.length<4)return '';
+      const n=f=>etat.postes.filter(p=>f==='tous'?1:f==='signer'?aSigner(p.id):f==='casse'?estCasse(p):f==='service'?p.etat==='actif':p.etat==='brouillon').length;
+      const F=[['tous','Tous'],['service','En service'],['signer','À signer'],['casse','À reprendre'],['brouillon','Brouillons']];
+      return `<div class="at-bar">
+        <label class="at-find"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="atFind" type="search" placeholder="Chercher un poste" aria-label="Chercher un poste" value="${esc2(quete)}"></label>
+        <div class="at-filtres" role="group" aria-label="Filtrer le registre">
+          ${F.filter(([k])=>k==='tous'||n(k)).map(([k,l])=>`<button class="at-fl" data-f="${k}" aria-pressed="${filtre===k?'true':'false'}">${l}<b>${n(k)}</b></button>`).join('')}
+        </div></div>`;
+    }
     function strates(){
-      const att=id=>etat.controles.some(c=>c.poste_id===id);
-      const casse=p=>p.etat==='disjoncte'||etat.journee.some(x=>x.poste_id===p.id&&(x.statut==='echec'||x.statut==='coupe'));
+      const att=id=>aSigner(id);
+      const casse=p=>estCasse(p);
+      const liste=retenus();
+      if(!liste.length)return `<div class="at-reg"><p class="at-rien">Aucun poste ne correspond${quete?' à « '+esc2(quete)+' »':''}.</p></div>`;
       const g={signer:[],casse:[],service:[],brouillon:[]};
-      etat.postes.forEach(p=>{
+      liste.forEach(p=>{
         if(att(p.id))g.signer.push(p);
         else if(casse(p))g.casse.push(p);
         else if(p.etat==='brouillon')g.brouillon.push(p);
@@ -5046,7 +5320,23 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       </div>`;
     }
 
+    /* Le registre est repeint seul quand on filtre ou qu'on cherche : ses
+       écouteurs vivent donc ici, pas noyés dans peindre(). */
+    function brancherRegistre(){
+      $$('#atBody .at-lien').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();ouvrirPoste(a.dataset.poste)}));
+      $$('#atBody .at-go[data-lancer]').forEach(g=>g.addEventListener('click',async e=>{
+        e.preventDefault();e.stopPropagation();
+        const p=etat.postes.find(x=>x.id===g.dataset.lancer);if(!p)return;
+        g.disabled=true;
+        try{await lancerVite(p,'reel')}finally{g.disabled=false}
+      }));
+      $$('#atBody .at-go[data-menu]').forEach(g=>g.addEventListener('click',e=>{
+        e.preventDefault();e.stopPropagation();
+        const p=etat.postes.find(x=>x.id===g.dataset.menu);if(p)ouvrirMenu(p,g);
+      }));
+    }
     function peindre(){
+      fermerMenu();
       const b=$('#atBody');if(!b)return;
       if(!charge){b.innerHTML=`<div class="at-list">${'<div class="at-sk"></div>'.repeat(3)}</div>`;return}
       if(sansAcces){
@@ -5059,23 +5349,25 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       }
       const hors=perime?`<div class="at-off"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6M12 16v6" stroke-linecap="round"/><circle cx="12" cy="12" r="2"/></svg>Connexion perdue — voici le dernier état connu.</div>`:'';
       const liste=etat.postes.length
-        ? `<div${perime?' class="at-stale"':''}>${strates()}</div>`
+        ? `<div${perime?' class="at-stale"':''}>${barre()}<div id="atReg">${strates()}</div></div>`
         : `<div class="at-empty"><p class="at-et">Un poste, c'est un travail qui revient.</p>
              <p class="at-es">Ou qui part sur commande. Décris-le en une phrase : le modèle, l'outillage et la consigne en découlent — tu relis avant de valider.</p></div>`;
-      b.innerHTML=hors+recit()+ligneJour()+liste+forge();
-      $$('#atBody .at-lien').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();ouvrirPoste(a.dataset.poste)}));
-      $$('#atBody .at-go').forEach(g=>g.addEventListener('click',async e=>{
-        e.preventDefault();e.stopPropagation();
-        const p=etat.postes.find(x=>x.id===g.dataset.lancer);if(!p)return;
-        g.disabled=true;travail(true);toast('Passage lancé — '+p.nom);
-        try{
-          const r=await api('/postes/'+p.id+'/lancer',{method:'POST',body:JSON.stringify({mode:'reel'})});
-          await rafraichir();
-          if(r.statut==='attente'){showView('controle');peindreControle()}
-          else toast(r.statut==='fini'?'Passage terminé':'Passage '+r.statut);
-        }catch(err){toast(friendlyErr(err))}
-        finally{g.disabled=false;travail(false)}
-      }));
+      /* La ligne des 24 h ne s'affiche que s'il s'est passé quelque chose :
+         une règle graduée vide occupe 60 px pour dire « rien ». */
+      const d0=new Date();d0.setHours(0,0,0,0);
+      const duJour=etat.journee.some(p=>p.debut_at>=d0.getTime());
+      b.innerHTML=hors+recit()+(duJour?ligneJour():'')+liste+forge();
+      brancherRegistre();
+      /* Le champ ne repeint QUE le registre : repeindre tout l'écran lui volerait
+         le focus à chaque lettre tapée. */
+      const fd=$('#atFind');
+      if(fd){let t=0;fd.addEventListener('input',()=>{quete=fd.value;clearTimeout(t);t=setTimeout(()=>{
+        const z=$('#atReg');if(z){z.innerHTML=strates();brancherRegistre()}
+        $$('#atBody .at-fl').forEach(x=>x.setAttribute('aria-pressed',x.dataset.f===filtre?'true':'false'));},120)})}
+      $$('#atBody .at-fl').forEach(x=>x.addEventListener('click',()=>{
+        filtre=x.dataset.f;
+        $$('#atBody .at-fl').forEach(y=>y.setAttribute('aria-pressed',y===x?'true':'false'));
+        const z=$('#atReg');if(z){z.innerHTML=strates();brancherRegistre()}}));
       const f=$('#atForger');f&&f.addEventListener('click',forger);
       const ta=$('#atForge');ta&&ta.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){e.preventDefault();forger()}});
       const n=$('#atNavN');if(n){n.textContent=etat.controles.length||'';n.hidden=!etat.controles.length}
@@ -5277,6 +5569,12 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
                 <button class="at-btn plein" id="atLancer">Lancer maintenant</button>
                 ${p.etat==='actif'?'<button class="at-btn" id="atPause">Mettre en pause</button>':'<button class="at-btn" id="atActiver">Mettre en service</button>'}
               </div>
+              <div class="at-frow" style="border-top:1px solid var(--line-faint);padding-top:var(--s-3)">
+                <button class="at-btn" id="atDup">Dupliquer</button>
+                <button class="at-btn" id="atRenom">Renommer</button>
+                <span style="flex:1"></span>
+                <button class="at-btn danger" id="atSup">Supprimer</button>
+              </div>
               <p class="at-td" id="atRunEtat">${p.cadence==='cron'&&p.prochain_at?'Prochain passage '+new Date(p.prochain_at).toLocaleString('fr-FR',{weekday:'short',hour:'2-digit',minute:'2-digit'}):''}</p>
             </div>
 
@@ -5338,6 +5636,13 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const pa=$('#atPause'),ac=$('#atActiver');
       pa&&pa.addEventListener('click',()=>etatPoste(p,'pause'));
       ac&&ac.addEventListener('click',()=>etatPoste(p,'actif'));
+      $('#atDup')&&$('#atDup').addEventListener('click',()=>dupliquer(p));
+      $('#atRenom')&&$('#atRenom').addEventListener('click',async()=>{await renommer(p);ouvrirPoste(p.id)});
+      /* Supprimer depuis la fiche renvoie au registre : rester sur la fiche d'un
+         poste qui n'existe plus n'a pas de sens. */
+      $('#atSup')&&$('#atSup').addEventListener('click',async()=>{
+        const av=etat.postes.length;await supprimer(p);
+        if(etat.postes.length<av)showView('atelier');});
       $$('#atPosteBody [data-passage]').forEach(x=>x.addEventListener('click',()=>journal(x.dataset.passage)));
       if(der)journal(der.id);
     }
