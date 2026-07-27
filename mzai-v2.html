@@ -2012,7 +2012,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       </button>
 
       <nav class="nav" aria-label="Espaces">
-        <button class="nav-item" data-view="atelier" data-tip="Atelier"><span class="nav-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M12 2.6 15.1 8.9 21.4 12 15.1 15.1 12 21.4 8.9 15.1 2.6 12 8.9 8.9Z"/><circle cx="12" cy="12" r="2.1" fill="currentColor" stroke="none"/></svg><span class="at-nav-n" id="atNavN" hidden></span></span><span class="lbl">Atelier</span></button>
+        <button class="nav-item" data-view="atelier" data-tip="Agents IA"><span class="nav-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M12 2.6 15.1 8.9 21.4 12 15.1 15.1 12 21.4 8.9 15.1 2.6 12 8.9 8.9Z"/><circle cx="12" cy="12" r="2.1" fill="currentColor" stroke="none"/></svg><span class="at-nav-n" id="atNavN" hidden></span></span><span class="lbl">Agents IA</span></button>
         <button class="nav-item" data-view="library" data-tip="Discussions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/></svg><span class="lbl">Discussions</span></button>
         <button class="nav-item" data-view="projects" data-tip="Projets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4.5 16.5 12 21l7.5-4.5M4.5 12 12 16.5 19.5 12M12 3 4.5 7.5 12 12l7.5-4.5L12 3z"/></svg><span class="lbl">Projets</span></button>
         <button class="nav-item" data-view="integrations" data-tip="Intégrations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></svg><span class="lbl">Intégrations</span></button>
@@ -2132,30 +2132,30 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           <span class="at-pont-t">Cet échange a marché&nbsp;?</span>
           <button class="at-btn" id="atPontBtn">
             <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.6 15.1 8.9 21.4 12 15.1 15.1 12 21.4 8.9 15.1 2.6 12 8.9 8.9Z"/></svg>
-            Mettre en poste
+            En faire un agent
           </button>
         </div>
       </section>
 
       <!-- BIBLIOTHÈQUE -->
       <!-- ================= L'ATELIER ================= -->
-      <section class="view" id="view-atelier" aria-label="Atelier">
-        <header class="vhead"><div class="min0"><div class="vt">Atelier</div><div class="vs" id="atSub">Les travaux qui tournent pour toi</div></div><span class="tb-spacer"></span><button class="vbtn" id="atRefresh" aria-label="Actualiser"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>Actualiser</button></header>
+      <section class="view" id="view-atelier" aria-label="Agents IA">
+        <header class="vhead"><div class="min0"><div class="vt">Agents IA</div><div class="vs" id="atSub">Tes agents qui travaillent sans toi</div></div><span class="tb-spacer"></span><button class="vbtn" id="atRefresh" aria-label="Actualiser"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>Actualiser</button></header>
         <div class="vbody"><div class="at-wrap" id="atBody"></div></div>
       </section>
 
       <!-- ================= FICHE DE POSTE ================= -->
-      <section class="view" id="view-poste" aria-label="Poste">
+      <section class="view" id="view-poste" aria-label="Agent">
         <header class="vhead">
-          <button class="back-btn" id="atBack" aria-label="Retour à l'atelier" data-tip="Retour"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-          <div class="min0"><div class="vt" id="atPosteNom">Poste</div><div class="vs" id="atPosteSub"></div></div>
+          <button class="back-btn" id="atBack" aria-label="Retour aux agents" data-tip="Retour"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="min0"><div class="vt" id="atPosteNom">Agent</div><div class="vs" id="atPosteSub"></div></div>
         </header>
         <div class="vbody"><div class="at-wrap" id="atPosteBody"></div></div>
       </section>
 
       <!-- ================= LE CONTRÔLE ================= -->
       <section class="view" id="view-controle" aria-label="Contrôle">
-        <header class="vhead"><div class="min0"><div class="vt">Contrôle</div><div class="vs">Rien ne part sans ta signature</div></div></header>
+        <header class="vhead"><div class="min0"><div class="vt">À valider</div><div class="vs">Rien ne part sans ton accord</div></div></header>
         <div class="vbody"><div class="at-wrap" id="atCtrlBody"></div></div>
       </section>
 
@@ -2303,6 +2303,14 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     <div class="row"><div><div class="rl">Animations</div><div class="rd">Effets et transitions</div></div><div class="toggle on" data-set="anim"></div></div>
     <div class="row"><div><div class="rl">Densité</div><div class="rd">Espacement de l'interface</div></div><div class="seg" id="segDensity"><div class="sg" data-d="cozy">Cozy</div><div class="sg" data-d="dense">Dense</div></div></div>
     <div class="row"><div><div class="rl">Exporter mes données</div><div class="rd">Conversations &amp; réglages (JSON)</div></div><div class="mini-btn" id="setExport">Exporter</div></div>
+    <div class="field" id="set-alertes"><label>Me prévenir quand un agent casse</label>
+      <div class="privacy-card">
+        <p>Tes agents tournent sans onglet ouvert. Sans ça, un arrêt à 9 h du matin attend que tu ouvres MAZ. Renseigne un canal, les deux, ou aucun.</p>
+      </div>
+      <div class="field" style="margin-top:10px"><label for="alEmail">Adresse mail</label><input class="inp" id="alEmail" type="email" autocomplete="email" placeholder="toi@exemple.com" aria-label="Adresse mail d’alerte"><div class="rd" id="alMailEtat" style="margin-top:6px"></div></div>
+      <div class="field"><label for="alHook">Ou une URL de notification (Discord, Slack, Make…)</label><input class="inp" id="alHook" type="url" spellcheck="false" placeholder="https://…" aria-label="URL de notification"></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn primary" id="alSave">Enregistrer</button><button class="btn" id="alTest">Envoyer un test</button><span class="rd" id="alEtat"></span></div>
+    </div>
     <div class="row"><div><div class="rl">Nettoyer les récentes</div><div class="rd">Envoie à la corbeille tout sauf les épinglées</div></div><div class="mini-btn" id="setTidy">Nettoyer</div></div>
     <div class="row"><div><div class="rl">Effacer tout</div><div class="rd">Supprime conversations &amp; mémoire, ici et sur le serveur</div></div><div class="mini-btn danger" id="setClear">Effacer</div></div>
   </div>
@@ -2466,8 +2474,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const d=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
     let t=d;
     if(window.__parc){const p=window.__parc;
-      if(p.actifs)t+=' · '+p.actifs+' poste'+(p.actifs>1?'s':'')+' actif'+(p.actifs>1?'s':'');
-      if(p.signer)t+=' · '+p.signer+' à signer';}
+      if(p.actifs)t+=' · '+p.actifs+' agent'+(p.actifs>1?'s':'')+' actif'+(p.actifs>1?'s':'');
+      if(p.signer)t+=' · '+p.signer+' à valider';}
     el.textContent=t;
   }
   /* Le prénom n'est PAS écrit en dur : un invité qui entre son code lisait
@@ -2782,7 +2790,49 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const pp=document.getElementById('privacyProviders');if(pp)pp.style.display='none';
     const sa=document.getElementById('set-api');if(sa)sa.style.display='none';
     if(d.admin)setupAdmin();
+    brancherAlertes();chargerAlertes();
     if(!DB.get('onboarded',false))setTimeout(startOnboarding,600);   // 1re visite : prise en main après l'écran de code
+  }
+  /* ── Alertes : où être prévenu quand un agent s'arrête ─────────────────────
+     Réglage strictement personnel (chacun son adresse), stocké côté serveur —
+     c'est le serveur qui envoie, à une heure où le navigateur est fermé. */
+  async function chargerAlertes(){
+    const e=document.getElementById('alEmail'),h=document.getElementById('alHook');
+    if(!e||!VIA_PROXY)return;
+    try{const r=await fetch(_PB+'/alertes');if(!r.ok)return;const d=await r.json();
+      e.value=d.email||'';h.value=d.webhook||'';
+      const m=document.getElementById('alMailEtat');
+      if(m)m.textContent=d.mail_pret?'':'L’envoi de mails n’est pas encore branché côté serveur — l’URL de notification, elle, marche tout de suite.';
+    }catch(err){}
+  }
+  function brancherAlertes(){
+    const bs=document.getElementById('alSave'),bt=document.getElementById('alTest'),et=document.getElementById('alEtat');
+    if(!bs||bs._on)return;bs._on=true;
+    const lire=()=>({email:(document.getElementById('alEmail').value||'').trim(),webhook:(document.getElementById('alHook').value||'').trim()});
+    const dire=(t,ko)=>{if(!et)return;et.textContent=t;et.style.color=ko?'#E8686D':'';};
+    const HINTS={email_invalide:'Cette adresse mail n’a pas l’air valide.',webhook_https:'L’URL doit commencer par https://',webhook_invalide:'Cette URL n’est pas valide.'};
+    bs.addEventListener('click',async()=>{
+      bs.disabled=true;dire('Enregistrement…');
+      try{const r=await fetch(_PB+'/alertes',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(lire())});
+        const d=await r.json().catch(()=>({}));
+        if(r.ok){dire('Enregistré.');toast('Alertes enregistrées')}
+        else dire(HINTS[d.error]||'Refusé — vérifie les champs.',true);
+      }catch(e){dire('Serveur injoignable — réessaie.',true)}
+      finally{bs.disabled=false}
+    });
+    /* Un canal jamais essayé n'est pas un canal : on l'éprouve avant d'en dépendre. */
+    bt.addEventListener('click',async()=>{
+      const v=lire();if(!v.email&&!v.webhook){dire('Renseigne d’abord une adresse ou une URL.',true);return}
+      bt.disabled=true;dire('Envoi…');
+      try{
+        await fetch(_PB+'/alertes',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(v)});
+        const r=await fetch(_PB+'/alertes/test',{method:'POST'});const d=await r.json().catch(()=>({}));
+        if(!r.ok){dire('Test impossible pour l’instant.',true)}
+        else{const p=[];if(d.email)p.push('mail');if(d.webhook)p.push('notification');
+          dire(p.length?'Envoyé par '+p.join(' et ')+' — regarde d’ici une minute.':'Rien n’est parti : aucun canal actif côté serveur.',!p.length)}
+      }catch(e){dire('Serveur injoignable — réessaie.',true)}
+      finally{bt.disabled=false}
+    });
   }
   /* ── Vue admin (comptes) — visible uniquement pour un compte admin ; le serveur re-vérifie chaque action ── */
   function setupAdmin(){
@@ -2791,7 +2841,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const sec=document.createElement('div');sec.className='field';sec.id='set-admin';
     sec.innerHTML='<label>Comptes (admin)</label>'
       +'<div id="admList" style="border:1px solid var(--line);border-radius:12px;overflow:hidden"></div>'
-      +'<p style="margin:8px 2px 0;font-size:12px;line-height:1.5;color:var(--ink-faint)">Chaque code ouvre un espace séparé : la personne ne voit ni tes conversations, ni tes projets, ni tes postes d’atelier — et toi non plus les siens. Un seul code par personne : deux appareils avec le même code partagent le même historique.</p>'
+      +'<p style="margin:8px 2px 0;font-size:12px;line-height:1.5;color:var(--ink-faint)">Chaque code ouvre un espace séparé : la personne ne voit ni tes conversations, ni tes projets, ni ses agents IA — et toi non plus les siens. Un seul code par personne : deux appareils avec le même code partagent le même historique.</p>'
       +'<div style="display:flex;gap:8px;margin-top:10px"><input class="inp" id="admName" placeholder="Prénom du nouveau collègue / client" aria-label="Nom du nouvel accès" style="flex:1"><button class="btn primary" id="admCreate" style="white-space:nowrap">Créer un accès</button></div>'
       +'<div id="admNew" style="display:none;margin-top:10px;padding:14px;border:1.5px dashed var(--accent);border-radius:12px;background:var(--accent-tint)"><div style="font-size:12px;font-weight:700;color:var(--accent-strong);margin-bottom:6px">CODE D’ACCÈS — montré une seule fois, envoie-le maintenant</div><div style="display:flex;gap:8px;align-items:center"><code id="admCode" style="flex:1;font-size:14px;letter-spacing:.05em;user-select:all"></code><button class="btn" id="admCopy">Copier</button><button class="btn primary" id="admInvite">Copier l’invitation</button></div><p style="margin:8px 0 0;font-size:11.5px;color:var(--ink-faint)">« Copier l’invitation » met le lien, le code et le mode d’emploi dans ton presse-papier — il n’y a plus qu’à coller dans un message.</p></div>';
     anchor.parentNode.insertBefore(sec,anchor);
@@ -2821,8 +2871,10 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           +'<span style="flex:1;font-weight:600;'+(u.disabled?'opacity:.45;text-decoration:line-through':'')+'">'+esc(u.name)+(u.is_admin?' <span style="font-size:10px;color:var(--accent-strong);border:1px solid var(--accent-ring);border-radius:5px;padding:1px 5px">ADMIN</span>':'')+'</span>'
           +'<span style="color:var(--ink-faint);font-size:11.5px">vu : '+seen+'</span>'
           +'<span style="color:var(--ink-soft);font-size:11.5px" title="requêtes · tokens · coût">'+(u.req||0)+' req · '+Math.round((u.tok||0)/1000)+'k tok · $'+(+u.cost||0).toFixed(2)+'</span>'
+          +'<button class="mini-btn" data-adm-nom="'+esc(u.id)+'" data-nm="'+esc(u.name)+'">Renommer</button>'
           +'<button class="mini-btn" data-adm-code="'+esc(u.id)+'" data-nm="'+esc(u.name)+'">Code perso</button>'
           +(u.is_admin?'':'<button class="mini-btn" data-adm-toggle="'+esc(u.id)+'" data-en="'+(u.disabled?1:0)+'">'+(u.disabled?'Réactiver':'Révoquer')+'</button>')
+          +(u.is_admin||u.last_seen?'':'<button class="mini-btn danger" data-adm-sup="'+esc(u.id)+'" data-nm="'+esc(u.name)+'" title="Jamais utilisé — suppression définitive">Supprimer</button>')
           +'</div>';
       }).join('')||'<div style="padding:12px;font-size:13px;color:var(--ink-soft)">Aucun compte</div>';
       box.querySelectorAll('[data-adm-code]').forEach(b=>b.addEventListener('click',async()=>{
@@ -2833,6 +2885,25 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           if(r.ok){toast('Code de '+b.dataset.nm+' remplacé');if(b.dataset.admCode===localStorage.getItem('mzai:cloud_uid')){localStorage.setItem('mzai:acode',code.trim())}}   // si on change SON propre code, la session suit
           else{const d=await r.json().catch(()=>({}));toast(d.error==='code_taken'?'Ce code est déjà pris — choisis-en un autre':'Code refusé : '+(d.hint||'12+ caractères, lettres et chiffres'))}
         }catch(e){toast('Impossible pour l\'instant — réessaie')}
+      }));
+      /* « Invité 2 · 4,80 $ » ne dit pas qui consomme. Le nom est la seule chose
+         qui rend la colonne coût lisible dès que plusieurs personnes s'en servent. */
+      box.querySelectorAll('[data-adm-nom]').forEach(b=>b.addEventListener('click',async()=>{
+        const v=window.prompt('Nom de cette personne — c’est ce que tu liras à côté de ce qu’elle consomme.',b.dataset.nm);
+        if(v===null)return;const name=v.trim();if(!name||name===b.dataset.nm)return;
+        try{const r=await fetch(_PB+'/admin/rename',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.dataset.admNom,name})});
+          if(r.ok){toast('Renommé : '+name);admRefresh()}else toast('Renommage refusé')}
+        catch(e){toast('Impossible pour l\'instant — réessaie')}
+      }));
+      /* Seuls les comptes JAMAIS utilisés proposent ce bouton (le serveur revérifie) :
+         un accès qui a servi se révoque, il ne s'efface pas avec son historique. */
+      box.querySelectorAll('[data-adm-sup]').forEach(b=>b.addEventListener('click',async()=>{
+        if(!window.confirm('Supprimer définitivement l’accès de « '+b.dataset.nm+' » ?\n\nIl n’a jamais servi, rien ne sera perdu. Son code cessera de fonctionner.'))return;
+        try{const r=await fetch(_PB+'/admin/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.dataset.admSup})});
+          const d=await r.json().catch(()=>({}));
+          if(r.ok){toast('Accès supprimé');admRefresh()}
+          else toast(d.hint||'Suppression refusée')}
+        catch(e){toast('Impossible pour l\'instant — réessaie')}
       }));
       box.querySelectorAll('[data-adm-toggle]').forEach(b=>b.addEventListener('click',async()=>{
         const en=b.dataset.en==='1';
@@ -5029,11 +5100,11 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
             ko=j.filter(p=>p.statut==='echec'||p.statut==='coupe').length,
             att=etat.controles.length,
             jour=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
-      if(!etat.postes.length)return `<p class="at-narr">${esc2(jour[0].toUpperCase()+jour.slice(1))}. <span class="at-mute">L'atelier est vide — décris en une phrase un travail qui revient, et il tournera sans toi.</span></p>`;
+      if(!etat.postes.length)return `<p class="at-narr">${esc2(jour[0].toUpperCase()+jour.slice(1))}. <span class="at-mute">Aucun agent pour l'instant — décris en une phrase un travail qui revient, et il le fera sans toi.</span></p>`;
       const bouts=[];
-      if(finis)bouts.push(`<span class="at-em">${finis} passage${finis>1?'s':''}</span> ${finis>1?'ont abouti':'a abouti'}`);
+      if(finis)bouts.push(`<span class="at-em">${finis} tâche${finis>1?'s':''}</span> ${finis>1?'ont réussi':'a réussi'}`);
       if(ko)bouts.push(`${ko} ${ko>1?'ont cassé':'a cassé'}`);
-      if(att)bouts.push(`<span class="at-em">${att}</span> ${att>1?'attendent':'attend'} ta signature`);
+      if(att)bouts.push(`<span class="at-em">${att}</span> ${att>1?'attendent':'attend'} ton accord`);
       const corps=bouts.length?bouts.join(', ')+'.':'Rien n\'a encore tourné aujourd\'hui.';
       return `<p class="at-narr">${esc2(jour[0].toUpperCase()+jour.slice(1))}. ${corps}
         <span class="at-mute">Ce mois : <span class="at-num">${eur(etat.mois_cents)}</span>.</span></p>`;
@@ -5091,6 +5162,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       return c;
     }
 
+    /* Les états en français courant. « disjoncté » et « sommeil » disaient la
+       mécanique interne, pas ce que la personne doit comprendre. */
+    const ETIQ_ETAT={actif:'en marche',pause:'en pause',disjoncte:'budget atteint',sommeil:'en veille',brouillon:'brouillon'};
     /* Le poinçon d'état : un cercle plus ou moins rempli. L'état est TOUJOURS
        écrit en toutes lettres à côté — jamais porté par la seule couleur. */
     const POINCON={
@@ -5109,7 +5183,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const S=(sante||'').padStart(8,'.').slice(-8);
       const cl={O:'o',X:'x','?':'q','.':'v'};
       const n={O:0,X:0,'?':0};for(const c of S)if(n[c]!==undefined)n[c]++;
-      const dit=`Huit derniers passages : ${n.O} réussi${n.O>1?'s':''}, ${n.X} échec${n.X>1?'s':''}, ${n['?']} en attente de signature.`;
+      const dit=`Huit dernières tâches : ${n.O} réussie${n.O>1?'s':''}, ${n.X} en échec, ${n['?']} en attente de ton accord.`;
       return `<span class="at-sr">${dit}</span><span class="at-peigne" aria-hidden="true">`
         + [...S].map((c,i)=>`<i class="at-pas ${cl[c]||'v'}${i===7?' der':''}"></i>`).join('')+'</span>';
     }
@@ -5119,19 +5193,19 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const att=etat.controles.filter(c=>c.poste_id===p.id).length;
       const der=etat.journee.filter(x=>x.poste_id===p.id)[0];
       const et=p.etat||'brouillon';
-      const cad=p.cadence==='cron'?cronFr(p.cron):'à la demande';
-      const ETATS={actif:'actif',pause:'en pause',disjoncte:'enveloppe atteinte',sommeil:'en sommeil',brouillon:'brouillon'};
-      const proch=et==='disjoncte'?'coupé ce mois'
+      const cad=p.cadence==='cron'?cronFr(p.cron):'quand tu appuies';
+      const ETATS=ETIQ_ETAT;
+      const proch=et==='disjoncte'?'budget du mois atteint'
         :(der&&(der.statut==='echec'||der.statut==='coupe'))?'échec '+depuis(der.debut_at)
         :(et==='actif'&&p.prochain_at)?bientot(p.prochain_at)
         :der?depuis(der.debut_at):'jamais lancé';
       const part=p.budget_cents?Math.min(100,(p.depense_cents/p.budget_cents)*100):0;
       const seuil=part>=100?'depasse':part>=70?'proche':'';
       return `<li class="at-ligne" data-etat="${esc2(et)}"${att?' data-signature="1"':''}>
-        <a class="at-lien" href="#" data-poste="${esc2(p.id)}" aria-label="Ouvrir le poste ${esc2(p.nom)}"></a>
+        <a class="at-lien" href="#" data-poste="${esc2(p.id)}" aria-label="Ouvrir l'agent ${esc2(p.nom)}"></a>
         <span class="at-c at-poincon"><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">${POINCON[et]||POINCON.brouillon}</svg></span>
         <div class="at-c at-ident">
-          <h3 class="at-nm"><span>${esc2(p.nom)}</span>${att?`<span class="at-sceau">${SCEAU}${att} à signer</span>`:''}</h3>
+          <h3 class="at-nm"><span>${esc2(p.nom)}</span>${att?`<span class="at-sceau">${SCEAU}${att} à valider</span>`:''}</h3>
           <p class="at-obj">${esc2(p.objectif||'—')}</p>
         </div>
         <div class="at-attrib">
@@ -5171,15 +5245,15 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       fermerMenu();
       const actif=p.etat==='actif';
       const items=[
-        ['ouvrir','Ouvrir la fiche',IC_M.ouvrir],
+        ['ouvrir','Ouvrir l\'agent',IC_M.ouvrir],
         ['lancer','Lancer maintenant',IC_M.blanc],
-        ['blanc','Répéter à blanc',IC_M.blanc],
+        ['blanc','Essai à blanc (sans risque)',IC_M.blanc],
         ['sep'],
         ['nom','Renommer',IC_M.nom],
         ['copie','Dupliquer',IC_M.copie],
-        [actif?'pause':'service',actif?'Mettre en pause':'Mettre en service',actif?IC_M.pause:IC_M.service],
+        [actif?'pause':'service',actif?'Mettre en pause':'Mettre en marche',actif?IC_M.pause:IC_M.service],
         ['sep'],
-        ['sup','Supprimer le poste',IC_M.sup],
+        ['sup','Supprimer l\'agent',IC_M.sup],
       ];
       const m=document.createElement('div');m.className='at-menu';m.setAttribute('role','menu');
       m.innerHTML=items.map(([a,l,ic])=>a==='sep'?'<span class="at-msep"></span>'
@@ -5205,19 +5279,19 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     /* Lancer depuis le registre : la fiche n'est pas ouverte, donc pas de
        #atRunEtat à nourrir — le retour passe par le toast et le repeint. */
     async function lancerVite(p,mode){
-      travail(true);toast(mode==='repetition'?'Répétition — rien ne sera écrit':'Passage lancé — '+p.nom);
+      travail(true);toast(mode==='repetition'?'Essai à blanc — rien ne sera envoyé':'C\'est parti — '+p.nom);
       try{
         const r=await api('/postes/'+p.id+'/lancer',{method:'POST',body:JSON.stringify({mode})});
         await rafraichir();
         if(r.statut==='attente'){showView('controle');peindreControle()}
-        else toast(r.statut==='fini'?'Passage terminé — ouvre la fiche pour lire le livrable':'Passage '+r.statut);
+        else toast(r.statut==='fini'?'Terminé — ouvre l\'agent pour lire le résultat':'Arrêté : '+r.statut);
       }catch(e){toast(friendlyErr(e))}
       finally{travail(false)}
     }
     async function renommer(p){
-      const v=window.prompt('Nouveau nom du poste',p.nom);
+      const v=window.prompt('Nouveau nom de l\'agent',p.nom);
       if(v===null)return;const nom=v.trim();if(!nom||nom===p.nom)return;
-      try{await api('/postes/'+p.id,{method:'PATCH',body:JSON.stringify({nom:nom.slice(0,120)})});await rafraichir();toast('Poste renommé')}
+      try{await api('/postes/'+p.id,{method:'PATCH',body:JSON.stringify({nom:nom.slice(0,120)})});await rafraichir();toast('Agent renommé')}
       catch(e){toast(friendlyErr(e))}
     }
     /* Dupliquer copie la consigne COURANTE, pas l'historique : le clone repart
@@ -5232,15 +5306,15 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           nom:(p.nom+' (copie)').slice(0,120),objectif:p.objectif,ouvrier_id:p.ouvrier_id,
           chantier_id:p.chantier_id||null,cadence:'demande',blocs,outillage,modele:cv.modele||p.modele,
           budget_cents:p.budget_cents||300,motif:'copie de « '+String(p.nom).slice(0,60)+' »'})});
-        await rafraichir();ouvrirPoste(q.id);toast('Poste dupliqué — il repart en brouillon');
+        await rafraichir();ouvrirPoste(q.id);toast('Agent dupliqué — la copie repart en brouillon');
       }catch(e){toast(friendlyErr(e))}
       finally{travail(false)}
     }
     async function basculer(p,v){
       try{await api('/postes/'+p.id,{method:'PATCH',body:JSON.stringify({etat:v})});
-        await rafraichir();toast(v==='actif'?'Poste en service':'Poste en pause')}
+        await rafraichir();toast(v==='actif'?'Agent en marche':'Agent en pause')}
       catch(e){
-        if(e.corps&&e.corps.error==='jamais_repete'){toast('Fais-le tourner à blanc d\'abord — ouvre la fiche');return}
+        if(e.corps&&e.corps.error==='jamais_repete'){toast('Fais un essai à blanc d\'abord — ouvre l\'agent');return}
         toast(friendlyErr(e));
       }
     }
@@ -5248,8 +5322,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
        restent, seule la ligne quitte le registre. On le dit, plutôt que de faire
        peur avec un « définitivement » qui serait faux. */
     async function supprimer(p){
-      if(!window.confirm('Supprimer le poste « '+p.nom+' » ?\n\nIl quitte le registre et cesse de tourner. Les livrables déjà produits sont conservés.'))return;
-      try{await api('/postes/'+p.id,{method:'DELETE'});await rafraichir();toast('Poste supprimé')}
+      if(!window.confirm('Supprimer l\'agent « '+p.nom+' » ?\n\nIl disparaît de la liste et cesse de travailler. Les résultats déjà produits sont conservés.'))return;
+      try{await api('/postes/'+p.id,{method:'DELETE'});await rafraichir();toast('Agent supprimé')}
       catch(e){toast(friendlyErr(e))}
     }
 
@@ -5274,11 +5348,11 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     function barre(){
       if(etat.postes.length<4)return '';
       const n=f=>etat.postes.filter(p=>f==='tous'?1:f==='signer'?aSigner(p.id):f==='casse'?estCasse(p):f==='service'?p.etat==='actif':p.etat==='brouillon').length;
-      const F=[['tous','Tous'],['service','En service'],['signer','À signer'],['casse','À reprendre'],['brouillon','Brouillons']];
+      const F=[['tous','Tous'],['service','En marche'],['signer','À valider'],['casse','À reprendre'],['brouillon','Brouillons']];
       return `<div class="at-bar">
         <label class="at-find"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-          <input id="atFind" type="search" placeholder="Chercher un poste" aria-label="Chercher un poste" value="${esc2(quete)}"></label>
-        <div class="at-filtres" role="group" aria-label="Filtrer le registre">
+          <input id="atFind" type="search" placeholder="Chercher un agent" aria-label="Chercher un agent" value="${esc2(quete)}"></label>
+        <div class="at-filtres" role="group" aria-label="Filtrer la liste">
           ${F.filter(([k])=>k==='tous'||n(k)).map(([k,l])=>`<button class="at-fl" data-f="${k}" aria-pressed="${filtre===k?'true':'false'}">${l}<b>${n(k)}</b></button>`).join('')}
         </div></div>`;
     }
@@ -5286,7 +5360,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const att=id=>aSigner(id);
       const casse=p=>estCasse(p);
       const liste=retenus();
-      if(!liste.length)return `<div class="at-reg"><p class="at-rien">Aucun poste ne correspond${quete?' à « '+esc2(quete)+' »':''}.</p></div>`;
+      if(!liste.length)return `<div class="at-reg"><p class="at-rien">Aucun agent ne correspond${quete?' à « '+esc2(quete)+' »':''}.</p></div>`;
       const g={signer:[],casse:[],service:[],brouillon:[]};
       liste.forEach(p=>{
         if(att(p.id))g.signer.push(p);
@@ -5298,9 +5372,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         <span class="at-strate-n">${l.length}</span><span class="at-strate-f"></span></div>
         <ul class="at-lignes">${l.map(lignePoste).join('')}</ul>`:'';
       let h='';
-      h+=bloc('urgent','À signer',g.signer);
+      h+=bloc('urgent','À valider',g.signer);
       h+=bloc('casse','À reprendre',g.casse);
-      h+=bloc('','En service',g.service);
+      h+=bloc('','En marche',g.service);
       if(g.brouillon.length)h+=`<details class="at-repli"${g.signer.length+g.casse.length+g.service.length?'':' open'}>
         <summary>Brouillons · ${g.brouillon.length}</summary>
         <ul class="at-lignes">${g.brouillon.map(lignePoste).join('')}</ul></details>`;
@@ -5310,11 +5384,11 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     /* ── La forge : une phrase suffit, le reste est déduit puis relu ── */
     function forge(){
       return `<div class="at-forge">
-        <span class="at-lbl">Nouveau poste</span>
+        <span class="at-lbl">Nouvel agent</span>
         <textarea class="at-ta" id="atForge" rows="2" aria-label="Décris le travail à confier"
           placeholder="Décris un travail en une phrase — « relire mes emails de prospection et me dire s'ils sonnent IA »"></textarea>
         <div class="at-frow">
-          <button class="at-btn plein" id="atForger">Forger le poste</button>
+          <button class="at-btn plein" id="atForger">Créer l'agent</button>
           <span class="at-td" id="atForgeEtat"></span>
         </div>
       </div>`;
@@ -5341,8 +5415,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(!charge){b.innerHTML=`<div class="at-list">${'<div class="at-sk"></div>'.repeat(3)}</div>`;return}
       if(sansAcces){
         b.innerHTML=`<div class="at-empty">
-          <p class="at-et">L'atelier demande ton code d'accès.</p>
-          <p class="at-es">Tes postes vivent sur le serveur pour tourner sans onglet ouvert — il faut donc savoir à qui ils appartiennent. Recharge la page&nbsp;: MAZ te demandera ton code, et l'atelier s'ouvrira.</p>
+          <p class="at-et">Tes agents demandent ton code d'accès.</p>
+          <p class="at-es">Tes agents vivent sur le serveur pour travailler sans onglet ouvert — il faut donc savoir à qui ils appartiennent. Recharge la page&nbsp;: MAZ te demandera ton code.</p>
           <button class="at-btn plein" id="atRecharge">Recharger</button></div>`;
         const r=$('#atRecharge');r&&r.addEventListener('click',()=>{try{localStorage.removeItem('mzai:acode')}catch(e){}location.reload()});
         return;
@@ -5350,8 +5424,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const hors=perime?`<div class="at-off"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v6M12 16v6" stroke-linecap="round"/><circle cx="12" cy="12" r="2"/></svg>Connexion perdue — voici le dernier état connu.</div>`:'';
       const liste=etat.postes.length
         ? `<div${perime?' class="at-stale"':''}>${barre()}<div id="atReg">${strates()}</div></div>`
-        : `<div class="at-empty"><p class="at-et">Un poste, c'est un travail qui revient.</p>
-             <p class="at-es">Ou qui part sur commande. Décris-le en une phrase : le modèle, l'outillage et la consigne en découlent — tu relis avant de valider.</p></div>`;
+        : `<div class="at-empty"><p class="at-et">Un agent, c'est un travail qui se refait tout seul.</p>
+             <p class="at-es">Ou qui part quand tu appuies. Décris-le en une phrase : MAZ écrit ses instructions, choisit le modèle et les outils — tu relis avant de lancer.</p></div>`;
       /* La ligne des 24 h ne s'affiche que s'il s'est passé quelque chose :
          une règle graduée vide occupe 60 px pour dire « rien ». */
       const d0=new Date();d0.setHours(0,0,0,0);
@@ -5385,7 +5459,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       window.__echecs=_ko;
       window.__parc={actifs:etat.postes.filter(p=>p.etat==='actif').length,signer:etat.controles.length};
       if(typeof majHomeEtat==='function')majHomeEtat();
-      const s=$('#atSub');if(s)s.textContent=etat.postes.length?`${etat.postes.length} poste${etat.postes.length>1?'s':''} · ${eur(etat.mois_cents)} ce mois`:'Les travaux qui tournent pour toi';
+      const s=$('#atSub');if(s)s.textContent=etat.postes.length?`${etat.postes.length} agent${etat.postes.length>1?'s':''} · ${eur(etat.mois_cents)} ce mois`:'Tes agents qui travaillent sans toi';
     }
 
     /* Retire puis rejoue la classe : sans le reflow, un second échec d'affilée
@@ -5415,8 +5489,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     async function forger(){
       const ta=$('#atForge'),et=$('#atForgeEtat'),bt=$('#atForger');
       const phrase=(ta&&ta.value||'').trim();
-      if(phrase.length<12){et.textContent='Encore une phrase, un peu plus précise.';ta&&ta.focus();return}
-      bt.disabled=true;travail(true);et.textContent='La forge écrit la fiche…';
+      if(phrase.length<12){et.textContent='Une phrase un peu plus précise, et c\'est parti.';ta&&ta.focus();return}
+      bt.disabled=true;travail(true);et.textContent='MAZ écrit les instructions…';
       try{
         const spec=await api('/forge',{method:'POST',body:JSON.stringify({phrase})});
         const ouv=await assurerOuvrier(spec);
@@ -5426,7 +5500,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           motif:motifForge(spec)})});
         ta.value='';et.textContent='';
         await rafraichir();ouvrirPoste(p.id);
-        toast('Poste forgé — relis la consigne avant de le lancer');
+        toast('Agent créé — relis ses instructions avant de le lancer');
       }catch(e){et.textContent=friendlyErr(e)}
       finally{bt.disabled=false;travail(false)}
     }
@@ -5484,7 +5558,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     ];
     const NOMS={role:'Rôle',methode:'Méthode',interdits:'Interdits',format:'Format de sortie'};
     const AIDE={role:'Qui il est, et pour qui il travaille.',methode:'Les étapes, dans l\'ordre.',
-      interdits:'Ce qu\'il ne doit jamais faire. C\'est le bloc qui sauve.',format:'La forme exacte du livrable.'};
+      interdits:'Ce qu\'il ne doit jamais faire. C\'est le bloc qui sauve.',format:'La forme exacte du résultat.'};
 
     async function ouvrirPoste(id){
       showView('poste');
@@ -5499,7 +5573,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         const c=(corrs||[]).find(x=>x.poste_id===id);
         if(c){const z=$('#atCorrEnAttente');if(z)montrerCorrectif(
           {...c,n:(()=>{try{return JSON.parse(c.preuves||'[]').length}catch(e){return 0}})()},z)}
-      }catch(e){b.innerHTML=`<div class="at-empty"><p class="at-et">Poste illisible</p><p class="at-es">${esc2(friendlyErr(e))}</p></div>`}
+      }catch(e){b.innerHTML=`<div class="at-empty"><p class="at-et">Agent illisible</p><p class="at-es">${esc2(friendlyErr(e))}</p></div>`}
     }
 
     function peindrePoste(p,cons,passages){
@@ -5507,7 +5581,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const outil=(()=>{try{return JSON.parse(cv.outillage||'[]')}catch(e){return[]}})();
       const ouv=ouvriers.find(o=>o.id===p.ouvrier_id)||{};
       $('#atPosteNom').textContent=p.nom;
-      $('#atPosteSub').textContent=`consigne v${p.consigne_ver} · ${ouv.modele||'—'} · ${p.etat}`;
+      $('#atPosteSub').textContent=`instructions v${p.consigne_ver} · ${(ouv.modele||'—').replace('-latest','')} · ${ETIQ_ETAT[p.etat]||p.etat}`;
       const pct=p.budget_cents?Math.min(100,(p.depense_cents/p.budget_cents)*100):0;
       const cl=pct>=100?' plein':(pct>=70?' chaud':'');
       const der=(passages||[])[0];
@@ -5516,7 +5590,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         <div class="at-fiche">
           <div class="at-card">
             <div class="at-ct-row">
-              <p class="at-ct">Consigne <span class="at-bc" style="margin-left:6px">v${p.consigne_ver}</span></p>
+              <p class="at-ct">Instructions <span class="at-bc" style="margin-left:6px">v${p.consigne_ver}</span></p>
               ${(cons||[]).length>1?`<label class="at-cmp"><span>comparer à</span>
                 <select class="at-sel at-sel-mini" id="atCmp" aria-label="Comparer à une version précédente">
                   <option value="">—</option>
@@ -5528,7 +5602,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
                 <div class="at-bh"><span class="at-bn">${NOMS[k]}</span><span class="at-bc" data-cnt="${k}">${(blocs[k]||'').length}</span></div>
                 <textarea class="at-bt" data-bloc="${k}" rows="2" aria-label="${NOMS[k]}" placeholder="${esc2(AIDE[k])}">${esc2(blocs[k]||'')}</textarea>
               </div>`).join('')}</div>
-            <div class="at-f"><span class="at-lbl">Objectif du passage</span>
+            <div class="at-f"><span class="at-lbl">Ce qu'il doit produire</span>
               <textarea class="at-bt" id="atObj" rows="2" style="border:1px solid var(--line);border-radius:var(--r-sm)" aria-label="Objectif">${esc2(p.objectif||'')}</textarea></div>
             <div id="atCorrEnAttente"></div>
             <div class="at-frow"><button class="at-btn" id="atSave">Enregistrer en v${p.consigne_ver+1}</button>
@@ -5541,33 +5615,33 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
               <div class="at-grid2">
                 <div class="at-f"><span class="at-lbl">Modèle</span>
                   <select class="at-sel" id="atModele">${['mistral-large-latest','magistral-medium-latest','mistral-medium-latest','ministral-8b-latest','ministral-3b-latest','devstral-medium-latest','codestral-latest'].map(m=>`<option value="${m}"${ouv.modele===m?' selected':''}>${m.replace('-latest','')}</option>`).join('')}</select></div>
-                <div class="at-f"><span class="at-lbl">Enveloppe / mois</span>
-                  <input class="at-in at-num" id="atBudget" type="number" min="0" step="0.5" value="${((p.budget_cents||0)/100).toFixed(2)}" aria-label="Enveloppe mensuelle en euros"></div>
+                <div class="at-f"><span class="at-lbl">Budget / mois</span>
+                  <input class="at-in at-num" id="atBudget" type="number" min="0" step="0.5" value="${((p.budget_cents||0)/100).toFixed(2)}" aria-label="Budget mensuel en euros"></div>
               </div>
               ${cv.motif?`<p class="at-td" style="margin:calc(-1 * var(--s-2)) 0 0">${esc2(cv.motif)}</p>`:''}
-              <div class="at-f"><span class="at-lbl">Outillage</span>
+              <div class="at-f"><span class="at-lbl">Ce qu'il a le droit d'utiliser</span>
                 ${OUTILLAGE.map(o=>`<label class="at-tool${outil.includes(o.cle)?' on':''}" data-tool="${o.cle}">
                   <input type="checkbox" ${outil.includes(o.cle)?'checked':''} aria-label="${esc2(o.nom)}">
                   <span><span class="at-tn">${o.nom}</span><span class="at-td${o.cher?' cher':''}">${o.note}</span></span></label>`).join('')}</div>
               <div class="at-grid2">
-                <div class="at-f"><span class="at-lbl">Cadence</span>
+                <div class="at-f"><span class="at-lbl">Quand il travaille</span>
                   <select class="at-sel" id="atCad">
-                    <option value="demande"${p.cadence==='demande'?' selected':''}>À la demande</option>
-                    <option value="cron"${p.cadence==='cron'?' selected':''}>Planifiée</option></select></div>
-                <div class="at-f" id="atCronF" ${p.cadence==='cron'?'':'hidden'}><span class="at-lbl">Quand</span>
+                    <option value="demande"${p.cadence==='demande'?' selected':''}>Quand j'appuie</option>
+                    <option value="cron"${p.cadence==='cron'?' selected':''}>Tout seul, à heure fixe</option></select></div>
+                <div class="at-f" id="atCronF" ${p.cadence==='cron'?'':'hidden'}><span class="at-lbl">À quelle heure</span>
                   <select class="at-sel" id="atCron">
                     ${[['0 8 * * *','Chaque jour à 8h'],['0 20 * * *','Chaque jour à 20h'],['0 9 * * 1','Chaque lundi à 9h'],['0 * * * *','Toutes les heures'],['*/30 * * * *','Toutes les 30 min']]
                       .map(([v,l])=>`<option value="${v}"${p.cron===v?' selected':''}>${l}</option>`).join('')}</select></div>
               </div>
-              <div class="at-f"><span class="at-lbl">Enveloppe consommée — <span class="at-num">${eur(p.depense_cents||0)}</span> sur <span class="at-num">${eur(p.budget_cents||0)}</span></span>
+              <div class="at-f"><span class="at-lbl">Dépensé ce mois — <span class="at-num">${eur(p.depense_cents||0)}</span> sur <span class="at-num">${eur(p.budget_cents||0)}</span></span>
                 <div class="at-jauge${cl}"><i style="width:${pct.toFixed(1)}%"></i></div></div>
-              <div class="at-f"><span class="at-lbl">Matière du passage <span style="text-transform:none;letter-spacing:0">— colle ici ce sur quoi il doit travailler</span></span>
+              <div class="at-f"><span class="at-lbl">Données à traiter <span style="text-transform:none;letter-spacing:0">— colle ici ce sur quoi il doit travailler</span></span>
                 <textarea class="at-bt" id="atEntree" rows="2" style="border:1px solid var(--line);border-radius:var(--r-sm)"
-                  aria-label="Matière du passage" placeholder="Facultatif si l'ouvrier cherche lui-même sur le web."></textarea></div>
+                  aria-label="Données à traiter" placeholder="Facultatif si l'agent cherche lui-même sur le web."></textarea></div>
               <div class="at-frow">
-                <button class="at-btn" id="atRepet">Répéter à blanc</button>
+                <button class="at-btn" id="atRepet">Essai à blanc</button>
                 <button class="at-btn plein" id="atLancer">Lancer maintenant</button>
-                ${p.etat==='actif'?'<button class="at-btn" id="atPause">Mettre en pause</button>':'<button class="at-btn" id="atActiver">Mettre en service</button>'}
+                ${p.etat==='actif'?'<button class="at-btn" id="atPause">Mettre en pause</button>':'<button class="at-btn" id="atActiver">Mettre en marche</button>'}
               </div>
               <div class="at-frow" style="border-top:1px solid var(--line-faint);padding-top:var(--s-3)">
                 <button class="at-btn" id="atDup">Dupliquer</button>
@@ -5575,12 +5649,12 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
                 <span style="flex:1"></span>
                 <button class="at-btn danger" id="atSup">Supprimer</button>
               </div>
-              <p class="at-td" id="atRunEtat">${p.cadence==='cron'&&p.prochain_at?'Prochain passage '+new Date(p.prochain_at).toLocaleString('fr-FR',{weekday:'short',hour:'2-digit',minute:'2-digit'}):''}</p>
+              <p class="at-td" id="atRunEtat">${p.cadence==='cron'&&p.prochain_at?'Prochaine fois '+new Date(p.prochain_at).toLocaleString('fr-FR',{weekday:'short',hour:'2-digit',minute:'2-digit'}):''}</p>
             </div>
 
             <div class="at-card">
-              <p class="at-ct">${der?'Dernier passage':'Passages'}</p>
-              ${der?`<div class="at-steps" id="atJournal"></div><div id="atLivrable"></div>`:'<p class="at-td">Aucun passage. « Répéter à blanc » n\'écrit rien : c\'est le bon premier geste.</p>'}
+              <p class="at-ct">${der?'Dernière exécution':'Exécutions'}</p>
+              ${der?`<div class="at-steps" id="atJournal"></div><div id="atLivrable"></div>`:'<p class="at-td">Jamais lancé. « Essai à blanc » n\'envoie rien nulle part : c\'est le bon premier geste.</p>'}
               ${(passages||[]).length?`<div class="at-f"><span class="at-lbl">Historique</span>${passages.slice(0,6).map(x=>{
                 const k=x.statut==='fini'?'':(x.statut==='attente'?'att':'ko');
                 return `<button class="at-step" data-passage="${x.id}" style="background:none;border:0;border-top:1px solid var(--line-faint);width:100%;cursor:pointer;text-align:left;font:inherit">
@@ -5663,19 +5737,19 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           blocs,outillage,modele,motif:'modifié depuis la fiche',
           objectif:$('#atObj').value.trim(),cadence:cad,cron:cad==='cron'?$('#atCron').value:null,
           budget_cents:Math.round(parseFloat($('#atBudget').value||'0')*100)})});
-        et.textContent='';toast('Consigne enregistrée en v'+(p.consigne_ver+1));
+        et.textContent='';toast('Instructions enregistrées en v'+(p.consigne_ver+1));
         await rafraichir();ouvrirPoste(p.id);
       }catch(e){et.textContent=friendlyErr(e)}
     }
     async function etatPoste(p,etatV){
       try{await api('/postes/'+p.id,{method:'PATCH',body:JSON.stringify({etat:etatV})});
-        toast(etatV==='actif'?'Poste en service':'Poste en pause');await rafraichir();ouvrirPoste(p.id)}
+        toast(etatV==='actif'?'Agent en marche':'Agent en pause');await rafraichir();ouvrirPoste(p.id)}
       catch(e){
         /* Le serveur refuse de planifier un poste jamais vu tourner. Plutôt que
            d'afficher le refus, on propose le geste qui débloque. */
         if(e.corps&&e.corps.error==='jamais_repete'){
           const et=$('#atRunEtat');if(et)et.textContent=e.corps.hint;
-          toast('Fais-le tourner à blanc d\'abord');
+          toast('Fais un essai à blanc d\'abord');
           const rp=$('#atRepet');if(rp){rp.classList.add('plein');rp.focus()}
           const la=$('#atLancer');if(la)la.classList.remove('plein');
           return;
@@ -5690,7 +5764,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const c=convoById(activeId);
       if(!c||!c.msgs||c.msgs.length<2){toast('Ouvre une conversation qui a produit quelque chose');return}
       const bt=$('#atPontBtn');bt.disabled=true;travail(true);
-      const lbl=bt.innerHTML;bt.innerHTML='La forge lit l\'échange…';
+      const lbl=bt.innerHTML;bt.innerHTML='MAZ lit la conversation…';
       try{
         const echange=c.msgs.filter(m=>m&&typeof m.text==='string'&&m.text.trim())
           .slice(-12)
@@ -5703,7 +5777,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           blocs:spec.blocs,outillage:spec.outillage,modele:spec.modele,budget_cents:300,
           motif:'tiré de la conversation « '+(c.title||'sans titre').slice(0,40)+' » · '+motifForge(spec)})});
         await rafraichir();ouvrirPoste(p.id);
-        toast('Poste tiré de la conversation — relis la consigne');
+        toast('Agent créé depuis la conversation — relis ses instructions');
       }catch(e){toast(friendlyErr(e))}
       finally{bt.disabled=false;bt.innerHTML=lbl;travail(false)}
     }
@@ -5718,12 +5792,12 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     async function lancer(p,mode){
       const et=$('#atRunEtat'),bs=[$('#atLancer'),$('#atRepet')].filter(Boolean);
       bs.forEach(b=>b.disabled=true);travail(true);
-      et.textContent=mode==='repetition'?'Répétition en cours — aucune écriture ne partira…':'Passage en cours…';
+      et.textContent=mode==='repetition'?'Essai à blanc — rien ne partira…':'En cours…';
       try{
         const ent=($('#atEntree')&&$('#atEntree').value.trim())||null;
         const r=await api('/postes/'+p.id+'/lancer',{method:'POST',body:JSON.stringify({mode,entree:ent})});
-        if(r.statut==='attente'){et.textContent='Arrêté au contrôle — ta signature est demandée.';await rafraichir();showView('controle');peindreControle()}
-        else{et.textContent=r.statut==='fini'?'Passage terminé.':'Passage '+r.statut+(r.erreur?' — '+r.erreur:'');await rafraichir();ouvrirPoste(p.id)}
+        if(r.statut==='attente'){et.textContent='Arrêté avant d\'envoyer — ton accord est demandé.';await rafraichir();showView('controle');peindreControle()}
+        else{et.textContent=r.statut==='fini'?'Terminé.':'Arrêté : '+r.statut+(r.erreur?' — '+r.erreur:'');await rafraichir();ouvrirPoste(p.id)}
       }catch(e){et.textContent=friendlyErr(e)}
       finally{bs.forEach(b=>b.disabled=false);travail(false)}
     }
@@ -5742,8 +5816,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         const zone=$('#atLivrable');if(!zone)return;
         const lv=(d.livrables||[])[0];
         if(!lv){zone.innerHTML=d.statut==='attente'
-          ? '<p class="at-td">En attente de ta signature — rien n\'a encore été écrit.</p>'
-          : (d.mode==='repetition'?'<p class="at-td">Répétition : rien n\'a été écrit, seul le plan a été relevé.</p>':'');return}
+          ? '<p class="at-td">En attente de ton accord — rien n\'a encore été envoyé.</p>'
+          : (d.mode==='repetition'?'<p class="at-td">Essai à blanc : rien n\'a été envoyé, seul le plan a été relevé.</p>':'');return}
         const plein=await api('/livrables/'+lv.id);
         const HAUT='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M7 22V10l5-8a2 2 0 0 1 2 2v5h5a2 2 0 0 1 2 2.4l-1.6 8A2 2 0 0 1 17.4 22H7z"/><path d="M7 10H4v12h3"/></svg>';
         const BAS='<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M17 2v12l-5 8a2 2 0 0 1-2-2v-5H5a2 2 0 0 1-2-2.4l1.6-8A2 2 0 0 1 6.6 2H17z"/><path d="M17 14h3V2h-3"/></svg>';
@@ -5753,15 +5827,15 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           <div class="at-livr-c bubble md">${renderMD(String(plein.corps||''))}</div>
           <div class="at-frow">
             <div class="at-pouce">
-              <button class="at-pb" id="atPHaut" aria-label="Ce livrable est bon" title="Ce livrable est bon">${HAUT}</button>
-              <button class="at-pb bas" id="atPBas" aria-label="Ce livrable ne va pas" title="Ce livrable ne va pas">${BAS}</button>
+              <button class="at-pb" id="atPHaut" aria-label="Ce résultat est bon" title="Ce résultat est bon">${HAUT}</button>
+              <button class="at-pb bas" id="atPBas" aria-label="Ce résultat ne va pas" title="Ce résultat ne va pas">${BAS}</button>
             </div>
             <input class="at-motif" id="atMotif" hidden placeholder="En deux mots, qu'est-ce qui ne va pas ? « prix inventé »" aria-label="Motif du recalage">
             <button class="at-btn" id="atCopie">Copier</button>
           </div>
           <div id="atCorrectif"></div></div>`;
         const cp=$('#atCopie');cp&&cp.addEventListener('click',()=>{
-          navigator.clipboard.writeText(plein.corps||'').then(()=>toast('Livrable copié')).catch(()=>toast('Copie impossible'))});
+          navigator.clipboard.writeText(plein.corps||'').then(()=>toast('Résultat copié')).catch(()=>toast('Copie impossible'))});
         brancherPouce(plein.id);
       }catch(e){c.innerHTML='<p class="at-td">'+esc2(friendlyErr(e))+'</p>'}
     }
@@ -5778,7 +5852,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           const r=await api('/livrables/'+livrableId+'/verdict',
             {method:'POST',body:JSON.stringify({pouce,motif:pouce===-1?(m.value||'').trim():''})});
           h.classList.toggle('on',pouce===1);b.classList.toggle('on',pouce===-1);
-          toast(pouce===1?'Noté — c\'est ce qu\'on veut':'Recalé');
+          toast(pouce===1?'Noté — c\'est ce qu\'on veut':'Noté — il fera autrement');
           if(r.correctif)montrerCorrectif(r.correctif,z);
         }catch(e){toast(friendlyErr(e))}
       };
@@ -5796,11 +5870,11 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(!zone)return;
       zone.innerHTML=`<div class="at-corr">
         <div class="at-corr-h"><span class="at-corr-b">${c.action==='remplacer'?'remplacer dans':'ajouter aux'} ${NOMS[c.bloc]||c.bloc}</span>
-          <span class="at-td">fondé sur ${c.n} livrables recalés pour « ${esc2(c.motif)} »</span></div>
+          <span class="at-td">fondé sur ${c.n} résultats recalés pour « ${esc2(c.motif)} »</span></div>
         <textarea class="at-corr-t" id="atCorrTxt" aria-label="Phrase proposée">${esc2(c.texte)}</textarea>
         <div class="at-acts">
           <button class="at-btn" data-c="refuser">Pas celle-là</button>
-          <button class="at-btn plein" data-c="accepter">Ajouter à la consigne</button>
+          <button class="at-btn plein" data-c="accepter">Ajouter aux instructions</button>
         </div></div>`;
       $$('[data-c]',zone).forEach(bt=>bt.addEventListener('click',async()=>{
         $$('[data-c]',zone).forEach(x=>x.disabled=true);
@@ -5809,7 +5883,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
             ? await api('/correctifs/'+c.id,{method:'POST',body:JSON.stringify({decision:'accepter',texte:$('#atCorrTxt').value})})
             : await api('/correctifs/'+c.id,{method:'POST',body:JSON.stringify({decision:'refuser'})});
           zone.innerHTML='';
-          if(bt.dataset.c==='accepter'){toast('Consigne passée en v'+d.version);await rafraichir();ouvrirPoste(c.poste_id||posteOuvert.id)}
+          if(bt.dataset.c==='accepter'){toast('Instructions passées en v'+d.version);await rafraichir();ouvrirPoste(c.poste_id||posteOuvert.id)}
           else toast('Proposition écartée — le reproche reste noté');
         }catch(e){toast(friendlyErr(e));$$('[data-c]',zone).forEach(x=>x.disabled=false)}
       }));
@@ -5819,7 +5893,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     function peindreControle(){
       const b=$('#atCtrlBody');if(!b)return;
       if(!etat.controles.length){
-        b.innerHTML=`<div class="at-empty"><p class="at-et">Rien à signer.</p><p class="at-es">Tes postes tournent seuls.</p></div>`;return}
+        b.innerHTML=`<div class="at-empty"><p class="at-et">Rien à valider.</p><p class="at-es">Tes agents travaillent seuls.</p></div>`;return}
       b.innerHTML=etat.controles.map(c=>{
         let a={};try{a=JSON.parse(c.intention)}catch(e){}
         const reste=Math.max(0,c.perime_at-Date.now()),h=Math.floor(reste/3600000),m=Math.floor(reste%3600000/60000);
@@ -5840,11 +5914,11 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     }
     async function decider(el,d){
       const et=$('[data-etat]',el),bs=$$('[data-d]',el);
-      bs.forEach(b=>b.disabled=true);travail(true);et.textContent=d==='valider'?'Exécution de ce qui a été signé…':'Refus transmis…';
+      bs.forEach(b=>b.disabled=true);travail(true);et.textContent=d==='valider'?'Exécution en cours…':'Refus transmis…';
       try{
         await api('/controle/'+el.dataset.ctrl,{method:'POST',body:JSON.stringify({decision:d})});
         await rafraichir();peindreControle();
-        toast(d==='valider'?'Signé — le livrable est déposé':'Refusé');
+        toast(d==='valider'?'Validé — c\'est parti':'Refusé');
       }catch(e){et.textContent=friendlyErr(e);bs.forEach(b=>b.disabled=false)}
       finally{travail(false)}
     }

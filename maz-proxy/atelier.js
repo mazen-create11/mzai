@@ -298,10 +298,66 @@ async function facturer(env, passageId, posteId, modele, usage) {
   return cents;
 }
 
-/** Met à jour la bande de santé : huit caractères, le plus récent à droite. */
-async function sante(env, poste, c) {
+/** Met à jour la bande de santé : huit caractères, le plus récent à droite.
+    Un « X » est le SEUL endroit par où passe un arrêt anormal : c'est donc ici,
+    et nulle part ailleurs, qu'on déclenche l'alerte. */
+async function sante(env, poste, c, motif) {
   const s = ((poste.sante || '') + c).slice(-8);
   await env.maz_db.prepare('UPDATE postes SET sante=?2,maj_at=?3 WHERE id=?1').bind(poste.id, s, jNow()).run();
+  if (c === 'X') await alerter(env, poste, motif);
+}
+
+/* ═══ L'ALERTE ════════════════════════════════════════════════════════════
+   Un agent planifié tourne pendant que personne ne regarde. Jusqu'ici, un
+   échec à 9 h 02 attendait la prochaine ouverture de l'onglet — parfois trois
+   jours. On sort donc de l'app au moment où ça casse, par le canal que le
+   propriétaire a choisi. Aucun n'est obligatoire : sans réglage, rien ne part.
+
+   Anti-rafale : une alerte par compte et par demi-heure. Cinq agents qui
+   cassent en cascade sur la même panne Mistral ne doivent pas produire cinq
+   messages — le premier dit déjà tout, et un mail qu'on apprend à ignorer ne
+   sert plus à rien.
+
+   L'envoi ne bloque JAMAIS le passage : il est déjà noté en base quand on
+   arrive ici, et toute erreur d'expédition est avalée. */
+const ALERTE_REPOS_MS = 30 * 60 * 1000;
+
+export async function alerter(env, poste, motif) {
+  try {
+    const u = await env.maz_db.prepare(
+      'SELECT id,name,alerte_email,alerte_webhook,alerte_at FROM users WHERE id=?1').bind(poste.user_id).first();
+    if (!u) return;
+    if (!u.alerte_email && !u.alerte_webhook) return;
+    const t = jNow();
+    if (u.alerte_at && t - u.alerte_at < ALERTE_REPOS_MS) return;
+    await env.maz_db.prepare('UPDATE users SET alerte_at=?2 WHERE id=?1').bind(u.id, t).run();
+
+    const quand = new Date(t).toLocaleString('fr-FR', { timeZone: 'Europe/Paris', dateStyle: 'short', timeStyle: 'short' });
+    const titre = `MAZ — l'agent « ${poste.nom} » s'est arrêté`;
+    const texte = `${poste.nom} s'est arrêté le ${quand}.\n\nRaison : ${motif || 'inconnue'}\n\n`
+      + `Ouvre MAZ → Agents IA pour voir le détail et le relancer.\n`
+      + `https://mazen-create11.github.io/mzai/mzai-v2.html`;
+
+    if (u.alerte_webhook) {
+      // `content` sert Discord, `text` sert Slack, le reste sert un Make/Zapier
+      // qui lit du JSON brut. Une seule charge utile couvre les quatre.
+      await fetch(u.alerte_webhook, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: `⚠️ ${titre}\n${motif || ''}`, text: `⚠️ ${titre}\n${motif || ''}`,
+          titre, agent: poste.nom, motif: motif || '', quand }),
+      }).catch(() => {});
+    }
+    if (u.alerte_email && env.RESEND_KEY) {
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + env.RESEND_KEY },
+        body: JSON.stringify({
+          from: env.RESEND_FROM || 'MAZ <onboarding@resend.dev>',
+          to: [u.alerte_email], subject: titre, text: texte,
+        }),
+      }).catch(() => {});
+    }
+  } catch (_) { /* une alerte qui rate ne casse pas un passage */ }
 }
 
 /**
@@ -321,7 +377,7 @@ export async function avancer(env, passage, poste, ouvrier, premierEnvoi) {
     if (bloque) {
       await env.maz_db.prepare('UPDATE passages SET statut=?2,erreur=?3,fin_at=?4 WHERE id=?1')
         .bind(passage.id, 'coupe', bloque, jNow()).run();
-      await sante(env, poste, 'X');
+      await sante(env, poste, 'X', bloque);
       return { statut: 'coupe', erreur: bloque };
     }
 
@@ -341,7 +397,7 @@ export async function avancer(env, passage, poste, ouvrier, premierEnvoi) {
       await noterEtape(env, passage.id, ++etapeSeq, { nom: 'reflechir', statut: 'echec', ms: jNow() - t0, sortie: e.message });
       await env.maz_db.prepare('UPDATE passages SET statut=?2,erreur=?3,fin_at=?4 WHERE id=?1')
         .bind(passage.id, 'echec', e.message.slice(0, 500), jNow()).run();
-      await sante(env, poste, 'X');
+      await sante(env, poste, 'X', e.message);
       return { statut: 'echec', erreur: e.message };
     }
 
@@ -384,7 +440,7 @@ export async function avancer(env, passage, poste, ouvrier, premierEnvoi) {
       if (n >= BOUCLE_MAX) {
         await env.maz_db.prepare('UPDATE passages SET statut=?2,erreur=?3,fin_at=?4 WHERE id=?1')
           .bind(passage.id, 'coupe', 'Boucle détectée : le même appel trois fois de suite.', jNow()).run();
-        await sante(env, poste, 'X');
+        await sante(env, poste, 'X', 'Boucle détectée : le même appel trois fois de suite.');
         return { statut: 'coupe', erreur: 'boucle' };
       }
 
@@ -429,7 +485,7 @@ export async function avancer(env, passage, poste, ouvrier, premierEnvoi) {
 
   await env.maz_db.prepare('UPDATE passages SET statut=?2,erreur=?3,fin_at=?4 WHERE id=?1')
     .bind(passage.id, 'coupe', `Le passage n'a pas conclu en ${TOURS_MAX} tours.`, jNow()).run();
-  await sante(env, poste, 'X');
+  await sante(env, poste, 'X', `L'agent n'a pas conclu en ${TOURS_MAX} tours.`);
   return { statut: 'coupe', erreur: 'tours' };
 }
 

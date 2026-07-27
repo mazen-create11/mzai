@@ -150,6 +150,29 @@ export default {
         await env.maz_db.prepare('UPDATE users SET disabled=?2 WHERE id=?1').bind(String(b.id || ''), b.enable ? 0 : 1).run();
         return J({ ok: true }, 200, cors);
       }
+      /* Renommer : « Invité 2 · 4,80 $ » ne dit pas qui consomme. Le nom est le
+         seul moyen de lire la colonne coût le jour où plusieurs personnes s'en
+         servent. On ne touche ni au code ni à l'historique. */
+      if (path === '/admin/rename' && req.method === 'POST') {
+        const b = await req.json().catch(() => ({}));
+        const id = String(b.id || ''), name = String(b.name || '').slice(0, 60).trim();
+        if (!id || !name) return J({ error: 'name_required' }, 400, cors);
+        await env.maz_db.prepare('UPDATE users SET name=?2 WHERE id=?1').bind(id, name).run();
+        return J({ ok: true, name }, 200, cors);
+      }
+      /* Supprimer un accès jamais utilisé : un compte créé par erreur restait
+         dans la liste à vie, barré, à encombrer la lecture. Refusé dès qu'il
+         a servi — on ne détruit pas un historique par un clic. */
+      if (path === '/admin/delete' && req.method === 'POST') {
+        const b = await req.json().catch(() => ({}));
+        const id = String(b.id || '');
+        const u = id && await env.maz_db.prepare('SELECT id,is_admin,last_seen FROM users WHERE id=?1').bind(id).first();
+        if (!u) return J({ error: 'introuvable' }, 404, cors);
+        if (u.is_admin) return J({ error: 'admin_protege' }, 400, cors);
+        if (u.last_seen) return J({ error: 'deja_utilise', hint: 'Ce compte a servi — révoque-le plutôt.' }, 409, cors);
+        await env.maz_db.prepare('DELETE FROM users WHERE id=?1').bind(id).run();
+        return J({ ok: true }, 200, cors);
+      }
       return J({ error: 'not_found' }, 404, cors);
     }
 
@@ -164,6 +187,45 @@ export default {
 
     /* ══ routes authentifiées par code ══ */
     const user = await userFromCode(env, req.headers.get('X-Maz-Code') || '');
+
+    /* ══ ALERTES — où prévenir quand un agent casse hors de l'app ══
+       Réglage strictement personnel : chacun ses coordonnées, personne ne lit
+       celles d'un autre. Le webhook est restreint à https (un http:// enverrait
+       le contenu en clair, et une URL interne ferait du worker un relais). */
+    if (path === '/alertes') {
+      if (!user) return J({ error: 'code_required' }, 401, cors);
+      if (req.method === 'GET') {
+        const u = await env.maz_db.prepare('SELECT alerte_email,alerte_webhook FROM users WHERE id=?1').bind(user.id).first();
+        return J({ email: (u && u.alerte_email) || '', webhook: (u && u.alerte_webhook) || '', mail_pret: !!env.RESEND_KEY }, 200, cors);
+      }
+      if (req.method === 'PUT') {
+        const b = await req.json().catch(() => ({}));
+        const email = String(b.email || '').trim().slice(0, 160);
+        const webhook = String(b.webhook || '').trim().slice(0, 400);
+        if (email && !/^[^@\s]+@[^@\s.]+\.[^@\s]{2,}$/.test(email)) return J({ error: 'email_invalide' }, 400, cors);
+        if (webhook) {
+          let w; try { w = new URL(webhook); } catch { return J({ error: 'webhook_invalide' }, 400, cors); }
+          if (w.protocol !== 'https:') return J({ error: 'webhook_https', hint: 'https:// uniquement' }, 400, cors);
+        }
+        await env.maz_db.prepare('UPDATE users SET alerte_email=?2,alerte_webhook=?3 WHERE id=?1')
+          .bind(user.id, email || null, webhook || null).run();
+        return J({ ok: true }, 200, cors);
+      }
+      if (req.method === 'DELETE') {   // remise à zéro du compteur anti-rafale, pour tester deux fois de suite
+        await env.maz_db.prepare('UPDATE users SET alerte_at=0 WHERE id=?1').bind(user.id).run();
+        return J({ ok: true }, 200, cors);
+      }
+    }
+    /* Un canal d'alerte qu'on n'a jamais vu fonctionner n'est pas un canal
+       d'alerte : on l'essaie sur commande, avec le même chemin que le vrai. */
+    if (path === '/alertes/test' && req.method === 'POST') {
+      if (!user) return J({ error: 'code_required' }, 401, cors);
+      await env.maz_db.prepare('UPDATE users SET alerte_at=0 WHERE id=?1').bind(user.id).run();
+      const faux = { user_id: user.id, nom: 'Essai — aucun agent n’a cassé' };
+      await A.alerter(env, faux, 'Message de test envoyé depuis Réglages. Si tu lis ceci, le canal fonctionne.');
+      const u = await env.maz_db.prepare('SELECT alerte_email,alerte_webhook FROM users WHERE id=?1').bind(user.id).first();
+      return J({ ok: true, email: !!(u && u.alerte_email && env.RESEND_KEY), webhook: !!(u && u.alerte_webhook) }, 200, cors);
+    }
 
     /* MÉDIAS — GET public par capability-URL (uuid non devinable), écriture authentifiée */
     if (path.startsWith('/media/') && req.method === 'GET') {
