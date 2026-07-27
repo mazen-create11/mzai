@@ -2318,7 +2318,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     <div class="row"><div><div class="rl">Nettoyer les récentes</div><div class="rd">Envoie à la corbeille tout sauf les épinglées</div></div><div class="mini-btn" id="setTidy">Nettoyer</div></div>
     <div class="row"><div><div class="rl">Effacer tout</div><div class="rd">Supprime conversations &amp; mémoire, ici et sur le serveur</div></div><div class="mini-btn danger" id="setClear">Effacer</div></div>
   </div>
-  <div class="m-foot"><div class="btn primary" id="setUpgrade">Terminé</div></div>
+  <div class="m-foot"><span class="rd" id="setVersion" style="margin-right:auto"></span><div class="btn primary" id="setUpgrade">Terminé</div></div>
 </div></div>
 
 <!-- PROMPT — prévisualiser / modifier / copier -->
@@ -3398,6 +3398,14 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   $('#setClose').addEventListener('click',()=>$('#settings').classList.remove('show'));
   $('#settings').addEventListener('click',e=>{if(e.target.id==='settings')$('#settings').classList.remove('show')});
   $('#setUpgrade').addEventListener('click',()=>$('#settings').classList.remove('show'));
+  /* Quelle version tourne ? Sans repère, « ça marche pas » chez un collègue ne
+     dit pas s'il est sur la build du jour ou sur celle d'il y a trois semaines.
+     document.lastModified EST la date du fichier servi : rien à maintenir, et
+     ça ne peut pas mentir puisque la valeur vient du fichier lui-même. */
+  (function(){const el=$('#setVersion');if(!el)return;
+    const d=new Date(document.lastModified);
+    el.textContent=isNaN(d)?'':'Version du '+d.toLocaleDateString('fr-FR',{day:'numeric',month:'long'})+' à '+d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    el.title='Recharge la page pour prendre la dernière version.';})();
   $$('#segDensity .sg').forEach(b=>b.addEventListener('click',()=>{$$('#segDensity .sg').forEach(x=>x.classList.remove('on'));b.classList.add('on');SETTINGS.density=b.dataset.d;DB.set('settings',SETTINGS);applyDensity();toast('Densité : '+b.textContent)}));
   function applyDensity(){document.body.classList.toggle('dense',SETTINGS.density==='dense')}
   function applyAnim(){document.body.classList.toggle('no-anim',!SETTINGS.anim)}
