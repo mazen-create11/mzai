@@ -195,8 +195,13 @@ export default {
     if (path === '/alertes') {
       if (!user) return J({ error: 'code_required' }, 401, cors);
       if (req.method === 'GET') {
-        const u = await env.maz_db.prepare('SELECT alerte_email,alerte_webhook FROM users WHERE id=?1').bind(user.id).first();
-        return J({ email: (u && u.alerte_email) || '', webhook: (u && u.alerte_webhook) || '', mail_pret: !!env.RESEND_KEY }, 200, cors);
+        const u = await env.maz_db.prepare(
+          'SELECT alerte_email,alerte_webhook,alerte_succes,plafond_cents FROM users WHERE id=?1').bind(user.id).first();
+        return J({
+          email: (u && u.alerte_email) || '', webhook: (u && u.alerte_webhook) || '',
+          succes: !!(u && u.alerte_succes), plafond_cents: (u && u.plafond_cents) || 0,
+          depense_cents: await A.depenseDuMois(env, user.id), mail_pret: !!env.RESEND_KEY,
+        }, 200, cors);
       }
       if (req.method === 'PUT') {
         const b = await req.json().catch(() => ({}));
@@ -207,8 +212,19 @@ export default {
           let w; try { w = new URL(webhook); } catch { return J({ error: 'webhook_invalide' }, 400, cors); }
           if (w.protocol !== 'https:') return J({ error: 'webhook_https', hint: 'https:// uniquement' }, 400, cors);
         }
-        await env.maz_db.prepare('UPDATE users SET alerte_email=?2,alerte_webhook=?3 WHERE id=?1')
-          .bind(user.id, email || null, webhook || null).run();
+        // plafond : 0 = illimité ; borné à 200 € pour qu'une faute de frappe ne
+        // transforme pas le garde-fou en autorisation de dépense.
+        let plafond = null;
+        if (b.plafond_cents !== undefined) {
+          plafond = Math.round(Number(b.plafond_cents));
+          if (!Number.isFinite(plafond) || plafond < 0 || plafond > 20000)
+            return J({ error: 'plafond_invalide', hint: '0 (illimité) à 200 €' }, 400, cors);
+        }
+        const succes = b.succes === undefined ? null : (b.succes ? 1 : 0);
+        await env.maz_db.prepare(
+          `UPDATE users SET alerte_email=?2, alerte_webhook=?3,
+             plafond_cents=COALESCE(?4,plafond_cents), alerte_succes=COALESCE(?5,alerte_succes)
+           WHERE id=?1`).bind(user.id, email || null, webhook || null, plafond, succes).run();
         return J({ ok: true }, 200, cors);
       }
       if (req.method === 'DELETE') {   // remise à zéro du compteur anti-rafale, pour tester deux fois de suite

@@ -270,7 +270,21 @@ async function noterEtape(env, passageId, seq, e) {
     e.sortie ? String(e.sortie).slice(0, 8000) : null, e.plan ? String(e.plan).slice(0, 8000) : null).run();
 }
 
-/** Le disjoncteur. Placé AVANT chaque appel coûteux, pas après. */
+/** Dépense du compte sur le mois calendaire en cours, tous agents confondus. */
+export async function depenseDuMois(env, userId) {
+  const d = new Date(jNow());
+  const debut = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1);
+  const r = await env.maz_db.prepare(
+    'SELECT COALESCE(SUM(cout_cents),0) c FROM passages WHERE user_id=?1 AND debut_at>=?2').bind(userId, debut).first();
+  // cout_cents est un REAL (les fractions de centime comptent sur des milliers
+  // d'appels) : on ne renvoie pas « 0.3321 » à un écran qui affiche des euros.
+  return Math.round(((r && r.c) || 0) * 100) / 100;
+}
+
+/** Le disjoncteur. Placé AVANT chaque appel coûteux, pas après.
+    Deux étages : le budget de CET agent, puis le plafond du COMPTE. Le second
+    a été ajouté le 27/07 — sans lui, dix agents à 3 € pouvaient dépenser 30 €
+    sans qu'aucune limite ne soit franchie, puisqu'aucun ne dépassait la sienne. */
 async function garde(env, poste) {
   const m = mois(jNow());
   if (poste.depense_mois !== m) {
@@ -279,7 +293,22 @@ async function garde(env, poste) {
   }
   if (poste.budget_cents > 0 && poste.depense_cents >= poste.budget_cents) {
     await env.maz_db.prepare('UPDATE postes SET etat=?2 WHERE id=?1').bind(poste.id, 'disjoncte').run();
-    return `Enveloppe du mois atteinte (${(poste.depense_cents / 100).toFixed(2)} € sur ${(poste.budget_cents / 100).toFixed(2)} €).`;
+    return `Budget du mois atteint pour cet agent (${(poste.depense_cents / 100).toFixed(2)} € sur ${(poste.budget_cents / 100).toFixed(2)} €).`;
+  }
+  const u = await env.maz_db.prepare('SELECT plafond_cents,plafond_vu_mois FROM users WHERE id=?1').bind(poste.user_id).first();
+  const plafond = (u && u.plafond_cents) || 0;
+  if (plafond > 0) {
+    const total = await depenseDuMois(env, poste.user_id);
+    if (total >= plafond) {
+      await env.maz_db.prepare('UPDATE postes SET etat=?2 WHERE id=?1').bind(poste.id, 'disjoncte').run();
+      return `Plafond du compte atteint (${(total / 100).toFixed(2)} € sur ${(plafond / 100).toFixed(2)} € ce mois) — aucun agent ne repart tant que tu ne l'as pas relevé.`;
+    }
+    /* L'avertissement des 80 % ne part qu'UNE fois par mois : passé le seuil,
+       chaque exécution suivante le redéclencherait, et on n'y ferait plus attention. */
+    if (total >= plafond * 0.8 && u.plafond_vu_mois !== m) {
+      await env.maz_db.prepare('UPDATE users SET plafond_vu_mois=?2 WHERE id=?1').bind(poste.user_id, m).run();
+      await alerter(env, poste, `Tu as dépensé ${(total / 100).toFixed(2)} € sur ${(plafond / 100).toFixed(2)} € ce mois. Au plafond, tous les agents s'arrêtent.`, 'seuil');
+    }
   }
   return null;
 }
@@ -320,22 +349,35 @@ async function sante(env, poste, c, motif) {
 
    L'envoi ne bloque JAMAIS le passage : il est déjà noté en base quand on
    arrive ici, et toute erreur d'expédition est avalée. */
-const ALERTE_REPOS_MS = 30 * 60 * 1000;
+const ALERTE_REPOS_MS = 30 * 60 * 1000;   // échecs et seuils
+const REUSSITE_REPOS_MS = 10 * 60 * 1000; // réussites : deux agents distincts doivent pouvoir se signaler
 
-export async function alerter(env, poste, motif) {
+/** @param genre 'echec' (défaut) · 'seuil' · 'reussite' */
+export async function alerter(env, poste, motif, genre) {
   try {
     const u = await env.maz_db.prepare(
-      'SELECT id,name,alerte_email,alerte_webhook,alerte_at FROM users WHERE id=?1').bind(poste.user_id).first();
+      'SELECT id,name,alerte_email,alerte_webhook,alerte_at,alerte_ok_at,alerte_succes FROM users WHERE id=?1')
+      .bind(poste.user_id).first();
     if (!u) return;
     if (!u.alerte_email && !u.alerte_webhook) return;
+    const reussite = genre === 'reussite';
+    if (reussite && !u.alerte_succes) return;   // opt-in : sans lui, MAZ deviendrait une boîte de réception
     const t = jNow();
-    if (u.alerte_at && t - u.alerte_at < ALERTE_REPOS_MS) return;
-    await env.maz_db.prepare('UPDATE users SET alerte_at=?2 WHERE id=?1').bind(u.id, t).run();
+    const champ = reussite ? 'alerte_ok_at' : 'alerte_at';
+    const repos = reussite ? REUSSITE_REPOS_MS : ALERTE_REPOS_MS;
+    const dernier = reussite ? u.alerte_ok_at : u.alerte_at;
+    if (dernier && t - dernier < repos) return;
+    await env.maz_db.prepare(`UPDATE users SET ${champ}=?2 WHERE id=?1`).bind(u.id, t).run();
 
     const quand = new Date(t).toLocaleString('fr-FR', { timeZone: 'Europe/Paris', dateStyle: 'short', timeStyle: 'short' });
-    const titre = `MAZ — l'agent « ${poste.nom} » s'est arrêté`;
-    const texte = `${poste.nom} s'est arrêté le ${quand}.\n\nRaison : ${motif || 'inconnue'}\n\n`
-      + `Ouvre MAZ → Agents IA pour voir le détail et le relancer.\n`
+    const titre = reussite ? `MAZ — « ${poste.nom} » a fini son travail`
+      : genre === 'seuil' ? `MAZ — tu approches du plafond du mois`
+      : `MAZ — l'agent « ${poste.nom} » s'est arrêté`;
+    const corps = reussite ? `${poste.nom} a produit un résultat le ${quand}.\n\n${motif || ''}`
+      : genre === 'seuil' ? `${motif || ''}`
+      : `${poste.nom} s'est arrêté le ${quand}.\n\nRaison : ${motif || 'inconnue'}`;
+    const texte = `${corps}\n\n`
+      + `Ouvre MAZ → Agents IA pour voir le détail.\n`
       + `https://mazen-create11.github.io/mzai/mzai-v2.html`;
 
     if (u.alerte_webhook) {
@@ -343,8 +385,9 @@ export async function alerter(env, poste, motif) {
       // qui lit du JSON brut. Une seule charge utile couvre les quatre.
       await fetch(u.alerte_webhook, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: `⚠️ ${titre}\n${motif || ''}`, text: `⚠️ ${titre}\n${motif || ''}`,
-          titre, agent: poste.nom, motif: motif || '', quand }),
+        body: JSON.stringify({ content: `${reussite ? '✅' : '⚠️'} ${titre}\n${motif || ''}`,
+          text: `${reussite ? '✅' : '⚠️'} ${titre}\n${motif || ''}`,
+          titre, agent: poste.nom, motif: motif || '', genre: genre || 'echec', quand }),
       }).catch(() => {});
     }
     if (u.alerte_email && env.RESEND_KEY) {
@@ -423,6 +466,12 @@ export async function avancer(env, passage, poste, ouvrier, premierEnvoi) {
       await env.maz_db.prepare('UPDATE passages SET statut=?2,resume=?3,fin_at=?4 WHERE id=?1')
         .bind(passage.id, 'fini', txt.slice(0, 2000), jNow()).run();
       await sante(env, poste, 'O');
+      /* Une réussite ne prévient QUE si on l'a demandé (alerte_succes), et
+         seulement quand personne n'a appuyé sur le bouton : un résultat qu'on
+         vient de déclencher soi-même est déjà sous les yeux. */
+      if (!repetition && passage.declencheur !== 'main') {
+        await alerter(env, poste, txt.slice(0, 400), 'reussite');
+      }
       return { statut: 'fini', texte: txt };
     }
 
@@ -512,8 +561,8 @@ export async function lancer(env, user, poste, { mode = 'reel', declencheur = 'm
 
   const passage = {
     id, user_id: user.id, poste_id: poste.id, consigne_ver: poste.consigne_ver,
-    mode, conversation_id: null, _consigne: monterConsigne(blocs, chantier), _etapeSeq: 0,
-  };
+    mode, declencheur, conversation_id: null, _consigne: monterConsigne(blocs, chantier), _etapeSeq: 0,
+  };   // `declencheur` remonte jusqu'à avancer() : une réussite déclenchée à la main n'a pas à s'annoncer
   const ouverture = entree
     ? `${poste.objectif}\n\n<donnee_externe source="lancement">\n${entree}\n</donnee_externe>`
     : (poste.objectif || 'Fais ton travail.');

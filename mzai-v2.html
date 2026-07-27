@@ -2309,6 +2309,10 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       </div>
       <div class="field" style="margin-top:10px"><label for="alEmail">Adresse mail</label><input class="inp" id="alEmail" type="email" autocomplete="email" placeholder="toi@exemple.com" aria-label="Adresse mail d’alerte"><div class="rd" id="alMailEtat" style="margin-top:6px"></div></div>
       <div class="field"><label for="alHook">Ou une URL de notification (Discord, Slack, Make…)</label><input class="inp" id="alHook" type="url" spellcheck="false" placeholder="https://…" aria-label="URL de notification"></div>
+      <div class="row"><div><div class="rl">Prévenir aussi quand ça marche</div><div class="rd">Chaque résultat produit tout seul t'est signalé. Rien pour ce que tu lances toi-même.</div></div><div class="toggle" id="alSucces" role="switch" tabindex="0" aria-checked="false" aria-label="Prévenir aussi en cas de réussite"></div></div>
+      <div class="field"><label for="alPlafond">Plafond du mois, tous agents confondus</label>
+        <div style="display:flex;gap:8px;align-items:center"><input class="inp at-num" id="alPlafond" type="number" min="0" max="200" step="1" style="max-width:120px" aria-label="Plafond mensuel en euros"><span class="rd" id="alDepense"></span></div>
+        <div class="rd" style="margin-top:6px">Au plafond, tous tes agents s'arrêtent. Tu es prévenu à 80 %. Mets 0 pour ne pas en avoir.</div></div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn primary" id="alSave">Enregistrer</button><button class="btn" id="alTest">Envoyer un test</button><span class="rd" id="alEtat"></span></div>
     </div>
     <div class="row"><div><div class="rl">Nettoyer les récentes</div><div class="rd">Envoie à la corbeille tout sauf les épinglées</div></div><div class="mini-btn" id="setTidy">Nettoyer</div></div>
@@ -2796,11 +2800,17 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   /* ── Alertes : où être prévenu quand un agent s'arrête ─────────────────────
      Réglage strictement personnel (chacun son adresse), stocké côté serveur —
      c'est le serveur qui envoie, à une heure où le navigateur est fermé. */
+  const eur2=c=>(Number(c||0)/100).toFixed(2).replace('.',',')+' €';
   async function chargerAlertes(){
     const e=document.getElementById('alEmail'),h=document.getElementById('alHook');
     if(!e||!VIA_PROXY)return;
     try{const r=await fetch(_PB+'/alertes');if(!r.ok)return;const d=await r.json();
       e.value=d.email||'';h.value=d.webhook||'';
+      const s=document.getElementById('alSucces');
+      if(s){s.classList.toggle('on',!!d.succes);s.setAttribute('aria-checked',d.succes?'true':'false')}
+      const p=document.getElementById('alPlafond');if(p)p.value=((d.plafond_cents||0)/100).toFixed(0);
+      const dp=document.getElementById('alDepense');
+      if(dp)dp.textContent=d.plafond_cents?('dépensé ce mois : '+eur2(d.depense_cents)):'aucun plafond — la dépense n’est pas bornée';
       const m=document.getElementById('alMailEtat');
       if(m)m.textContent=d.mail_pret?'':'L’envoi de mails n’est pas encore branché côté serveur — l’URL de notification, elle, marche tout de suite.';
     }catch(err){}
@@ -2808,14 +2818,21 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function brancherAlertes(){
     const bs=document.getElementById('alSave'),bt=document.getElementById('alTest'),et=document.getElementById('alEtat');
     if(!bs||bs._on)return;bs._on=true;
-    const lire=()=>({email:(document.getElementById('alEmail').value||'').trim(),webhook:(document.getElementById('alHook').value||'').trim()});
+    const lire=()=>({email:(document.getElementById('alEmail').value||'').trim(),
+      webhook:(document.getElementById('alHook').value||'').trim(),
+      succes:document.getElementById('alSucces').classList.contains('on'),
+      plafond_cents:Math.round(parseFloat(document.getElementById('alPlafond').value||'0')*100)});
     const dire=(t,ko)=>{if(!et)return;et.textContent=t;et.style.color=ko?'#E8686D':'';};
-    const HINTS={email_invalide:'Cette adresse mail n’a pas l’air valide.',webhook_https:'L’URL doit commencer par https://',webhook_invalide:'Cette URL n’est pas valide.'};
+    const HINTS={email_invalide:'Cette adresse mail n’a pas l’air valide.',webhook_https:'L’URL doit commencer par https://',webhook_invalide:'Cette URL n’est pas valide.',plafond_invalide:'Le plafond va de 0 (illimité) à 200 €.'};
+    const sw=document.getElementById('alSucces');
+    if(sw){const bascule=()=>{const on=!sw.classList.contains('on');sw.classList.toggle('on',on);sw.setAttribute('aria-checked',on?'true':'false')};
+      sw.addEventListener('click',bascule);
+      sw.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();bascule()}});}
     bs.addEventListener('click',async()=>{
       bs.disabled=true;dire('Enregistrement…');
       try{const r=await fetch(_PB+'/alertes',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(lire())});
         const d=await r.json().catch(()=>({}));
-        if(r.ok){dire('Enregistré.');toast('Alertes enregistrées')}
+        if(r.ok){dire('Enregistré.');toast('Alertes enregistrées');chargerAlertes()}
         else dire(HINTS[d.error]||'Refusé — vérifie les champs.',true);
       }catch(e){dire('Serveur injoignable — réessaie.',true)}
       finally{bs.disabled=false}
@@ -3384,7 +3401,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   $$('#segDensity .sg').forEach(b=>b.addEventListener('click',()=>{$$('#segDensity .sg').forEach(x=>x.classList.remove('on'));b.classList.add('on');SETTINGS.density=b.dataset.d;DB.set('settings',SETTINGS);applyDensity();toast('Densité : '+b.textContent)}));
   function applyDensity(){document.body.classList.toggle('dense',SETTINGS.density==='dense')}
   function applyAnim(){document.body.classList.toggle('no-anim',!SETTINGS.anim)}
-  $$('.set-body .toggle').forEach(t=>t.addEventListener('click',()=>{t.classList.toggle('on');const on=t.classList.contains('on');SETTINGS[t.dataset.set]=on;DB.set('settings',SETTINGS);if(t.dataset.set==='anim')applyAnim();toast(t.dataset.set+' '+(on?'activé':'désactivé'))}));
+  /* [data-set] est indispensable : les Réglages contiennent désormais des
+     interrupteurs qui ne pilotent PAS une préférence locale (alertes serveur). */
+  $$('.set-body .toggle[data-set]').forEach(t=>t.addEventListener('click',()=>{t.classList.toggle('on');const on=t.classList.contains('on');SETTINGS[t.dataset.set]=on;DB.set('settings',SETTINGS);if(t.dataset.set==='anim')applyAnim();toast(t.dataset.set+' '+(on?'activé':'désactivé'))}));
   /* thème : clair par défaut, dark via toggle explicite [data-theme="dark"] (plus de palettes fantaisie) */
   const THEME_LABELS={light:'Clair',dark:'Sombre'};
   function normTheme(t){return t==='dark'?'dark':t==='auto'?'auto':'light'}   /* ignore les valeurs legacy de palette → clair */
