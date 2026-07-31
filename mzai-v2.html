@@ -1170,6 +1170,8 @@ a.src .su{flex-shrink:0;font-size:11px;color:var(--accent-strong);font-weight:va
 .pop.wide{min-width:330px;max-width:360px}
 .pop-h,.pop .ph{font-size:11px;font-weight:var(--fw-semi);letter-spacing:.7px;text-transform:uppercase;color:var(--ink-soft);padding:9px 11px 5px}
 .pop .prov-h{font-size:10.5px;font-weight:var(--fw-semi);letter-spacing:.8px;text-transform:uppercase;color:var(--ink-soft);padding:11px 11px 4px;position:sticky;top:-7px;background:var(--surface);z-index:1}
+.pop .prov-h--libre{color:var(--accent);display:flex;align-items:center;gap:7px}
+.pop .prov-h--libre::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--accent);flex:none}
 .pi,.pop-item{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:var(--r-sm);cursor:pointer;transition:.13s;color:var(--ink-soft)}
 .pi:hover,.pi.k,.pop-item:hover{background:var(--surface-2);color:var(--ink)}
 .pi.sel{background:var(--accent-tint);color:var(--accent-strong)}
@@ -3220,7 +3222,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const cats=[['auto',null,m=>m.provider==='mz'],['text','Texte',m=>m.provider!=='mz'&&!m.kind&&!m.libre],['libre','Non censuré',m=>m.libre],['image','Image',m=>m.kind==='image'],['video','Vidéo',m=>m.kind==='video'&&(m.provider!=='kling'||klingUsable())],['voice','Voix',m=>m.kind==='audio']];
     let html='<div class="ph">Choisir un modèle</div>';
     cats.forEach(([key,label,test])=>{const ms=MODELS.filter(test);if(!ms.length)return;
-      if(label)html+=`<div class="prov-h">${label}</div>`;
+      if(label)html+=`<div class="prov-h${key==='libre'?' prov-h--libre':''}">${label}</div>`;
       ms.forEach(m=>{const pr=PROVIDERS[m.provider];const ok=hasKey(m.provider);html+=`<div class="pi${ok?'':' nokey'}" data-model="${m.id}" style="--ac:${pr.ac}"><div class="pi-i acc">${brandLogo(m)}</div><div class="pi-main"><div class="pi-t">${m.id}${m.tag?` <span class="tagm" style="background:var(--surface-2);color:var(--ink-soft);border:1px solid var(--line)">${m.tag}</span>`:''}${ok?'':'<span class="keyhint">clé requise</span>'}</div><div class="pi-d">${m.d}</div><div class="pi-cap">${spdDots(m.spd)}${m.ctx&&m.ctx!=='-'?`<span class="ctxchip">${m.ctx} ctx</span>`:''}</div></div>${CHK}</div>`})});
     html+=`<div class="pfoot"><button class="pf-btn" id="popPersona"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.sliders}</svg>Personnaliser mon IA</button></div>`;
     $('#popModel').innerHTML=html;
