@@ -40,7 +40,9 @@ const CHEMINS_OK = {
 const MODELES_OK = {
   '/or/': new Set(['deepseek/deepseek-v4-pro', 'deepseek/deepseek-v4-flash', 'qwen/qwen3-max-thinking',
     'qwen/qwen3-coder-plus', 'moonshotai/kimi-k2.7-code', 'z-ai/glm-5.2', 'minimax/minimax-m3',
-    'qwen/qwen3-vl-8b-instruct']),
+    'qwen/qwen3-vl-8b-instruct',
+    // modèles sans filtre (chat libre) — vérifiés sur l'API OpenRouter le 31/07/2026
+    'cognitivecomputations/dolphin-mistral-24b-venice-edition', 'nousresearch/hermes-4-70b', 'thedrummer/cydonia-24b-v4.1']),
   '/sf/': new Set(['black-forest-labs/FLUX.2-pro', 'black-forest-labs/FLUX-1.1-pro-Ultra',
     'black-forest-labs/FLUX.1-Kontext-max', 'black-forest-labs/FLUX.1-schnell', 'Qwen/Qwen-Image',
     'Tongyi-MAI/Z-Image-Turbo', 'Wan-AI/Wan2.2-T2V-A14B', 'Wan-AI/Wan2.2-I2V-A14B',
