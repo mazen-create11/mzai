@@ -3217,7 +3217,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   const spdDots=n=>`<span class="spd" data-tip="Vitesse">${[1,2,3,4].map(i=>`<i class="${i<=n?'on':''}"></i>`).join('')}</span>`;
   const CHK='<span class="pi-check"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M20 6 9 17l-5-5"/></svg></span>';
   function renderModelPicker(){
-    const cats=[['auto',null,m=>m.provider==='mz'],['text','Texte',m=>m.provider!=='mz'&&!m.kind],['image','Image',m=>m.kind==='image'],['video','Vidéo',m=>m.kind==='video'&&(m.provider!=='kling'||klingUsable())],['voice','Voix',m=>m.kind==='audio']];
+    const cats=[['auto',null,m=>m.provider==='mz'],['text','Texte',m=>m.provider!=='mz'&&!m.kind&&!m.libre],['libre','Non censuré',m=>m.libre],['image','Image',m=>m.kind==='image'],['video','Vidéo',m=>m.kind==='video'&&(m.provider!=='kling'||klingUsable())],['voice','Voix',m=>m.kind==='audio']];
     let html='<div class="ph">Choisir un modèle</div>';
     cats.forEach(([key,label,test])=>{const ms=MODELS.filter(test);if(!ms.length)return;
       if(label)html+=`<div class="prov-h">${label}</div>`;
