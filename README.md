@@ -1,5 +1,7 @@
 # MAZ
 
+[![tests](https://github.com/mazen-create11/mzai/actions/workflows/tests.yml/badge.svg)](https://github.com/mazen-create11/mzai/actions/workflows/tests.yml)
+
 A chat app that puts several AI models behind one interface, with a small backend that keeps the API keys on the server, syncs conversations across devices and runs scheduled AI agents whose final write step waits for approval by default.
 
 Live app: https://mazen-create11.github.io/mzai/mzai-v2.html (an access code is required).
@@ -8,7 +10,10 @@ Live app: https://mazen-create11.github.io/mzai/mzai-v2.html (an access code is 
 
 | Path | What it is |
 |---|---|
-| `mzai-v2.html` | The app. One self-contained file: chat, model picker, image/video/voice generation, agents screen, settings. Served by GitHub Pages. |
+| `src/` | The app's sources: `app.html` (the markup), 13 style sheets in `css/`, 26 scripts in `js/`, each named after the part of the app it holds. |
+| `build.mjs` | Assembles `src/` into `mzai-v2.html`. About a hundred lines of Node, no dependency. The two lists at the top give the order and say what each file is. |
+| `mzai-v2.html` | The app as published: one self-contained file with chat, model picker, image/video/voice generation, agents screen and settings. Generated, never edited by hand. Served by GitHub Pages. |
+| `test-ui/` | Tests that drive the app in a real browser, against a stand-in for the backend. |
 | `maz-proxy/` | The backend, a Cloudflare Worker with a D1 database and a KV store. |
 | `maz-proxy/worker.js` | Access codes, conversation sync, media storage, usage tracking, alerts, admin routes. |
 | `maz-proxy/atelier.js` | The agent engine ("l'atelier"): jobs, runs, steps, deliverables and approval checkpoints. |
@@ -35,7 +40,7 @@ Live app: https://mazen-create11.github.io/mzai/mzai-v2.html (an access code is 
 
 This repository is the source of one deployed instance, not a one-command install. To run your own copy:
 
-Frontend: serve the folder with any static server. The backend only answers the origins listed in `ALLOWED_ORIGINS` (`maz-proxy/wrangler.toml`), so add yours there.
+Frontend: edit the files in `src/`, run `node build.mjs`, then serve the folder with any static server. The backend only answers the origins listed in `ALLOWED_ORIGINS` (`maz-proxy/wrangler.toml`), so add yours there.
 
 Backend:
 
@@ -52,6 +57,10 @@ Account management commands are in [`maz-proxy/README.md`](maz-proxy/README.md).
 
 ## Tests
 
+Both suites run on every push (see the badge above).
+
+### Backend
+
 ```bash
 cd maz-proxy
 npm test
@@ -66,13 +75,24 @@ No dependency to install: the tests use Node's built-in runner (Node 20 or later
 - job settings: budget, automatic writes, time zone and schedule are checked before anything is written, and a job cannot be attached to another account's resources;
 - sync: only live conversations count toward the 400 limit, updating one never evicts another, deletion markers are capped, and the list always returns every live conversation.
 
+### Interface
+
+```bash
+cd test-ui
+npm install
+npx playwright install chromium   # once
+npm test
+```
+
+13 tests. Eight open the published file in a headless browser and use it like a person would: the access gate (a wrong code, the right one, a code revoked in the meantime), sending a message, switching model, a conversation that comes back after a reload, one that arrives from another device and one that was deleted there. No request leaves the machine: a stand-in answers for the backend, and the test fails on any JavaScript error. Five check the assembly: `mzai-v2.html` is byte for byte what `src/` produces, every source file is assembled exactly once, and no file was cut in the middle of a statement or a rule.
+
 ## Known limits
 
 - Files attached by the user (PDFs, source images) stay on the device. The text of the conversation syncs, the source file does not.
 - Sync is last-write-wins: editing the same conversation on two devices at once keeps the most recent version.
 - A deleted conversation leaves a marker so other devices drop their copy. The 400 most recent markers are kept per account; a device that stayed offline through more deletions than that would bring an old conversation back.
 - Schedules are five-field cron with numbers only (no `MON` or `JAN`). When both day-of-month and day-of-week are set, both must match, where classic cron accepts either.
-- The app is a single 6,000-line file. It works, and it is the main thing to break up.
+- The app ships as one file on purpose (it also opens from disk, without a server), and its sources are split by area. But the scripts are joined end to end in a fixed order and share one global scope: they are files, not yet modules that import each other.
 
 ## What is next
 
@@ -80,7 +100,7 @@ No dependency to install: the tests use Node's built-in runner (Node 20 or later
 - **Make the 400 limit atomic.** Two devices writing at the same instant can leave 401 conversations.
 - **Abort in-flight media requests** (API-06). The Stop button stops the interface and the polling, but the request to the provider keeps running and keeps billing.
 - **Remove duplicated code** (ARCH-04/05). The message bubble is rendered in four places and the chat request is written out four times although one helper already exists.
-- **Split `worker.js` and `mzai-v2.html`** into modules, now that tests protect the backend contract.
+- **Turn the scripts into real modules** with explicit imports, and split `worker.js` the same way. The browser tests exist to make that safe.
 
 ## How this is built
 

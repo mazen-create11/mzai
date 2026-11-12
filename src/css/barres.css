@@ -1,0 +1,127 @@
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.sidebar{
+  grid-column:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;
+  background:var(--surface);border-right:1px solid var(--line);
+  transition:width .26s var(--ease);
+  padding-left:env(safe-area-inset-left);
+}
+.sb-head{flex-shrink:0;min-width:0;display:flex;align-items:center;gap:10px;padding:max(14px,env(safe-area-inset-top)) 16px 14px}
+.brand-mini{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.mark{width:30px;height:30px;border-radius:9px;flex-shrink:0;display:grid;place-items:center;background:var(--accent);color:var(--ink-on-accent);font-family:var(--font-display);font-weight:var(--fw-semi);font-size:16px;line-height:1;box-shadow:var(--shadow-xs)}
+.wordmark{font-family:var(--font-mono);font-weight:400;font-size:14px;letter-spacing:.12em;color:var(--ink);white-space:nowrap;flex:0 0 auto;min-width:max-content}   /* jamais d'ellipsis sur 3 lettres : vu tronqué en « M… » chez Mazen */
+.wordmark i,.wordmark .ai{font-style:normal;color:var(--accent-strong);font-weight:var(--fw-semi)}
+
+.sb-scroll{flex:1 1 auto;display:flex;flex-direction:column;gap:4px;padding:8px 12px}
+.sb-label{flex-shrink:0;font-size:var(--fs-xs);letter-spacing:var(--tr-wide);text-transform:uppercase;color:var(--ink-soft);font-weight:var(--fw-semi);margin:14px 4px 4px;white-space:nowrap}
+
+.new-chat{display:flex;align-items:center;gap:10px;width:100%;border:0;background:var(--accent);color:var(--ink-on-accent);font:inherit;font-size:var(--fs-sm);font-weight:var(--fw-semi);text-align:left;cursor:pointer;padding:11px 13px;border-radius:var(--r-sm);box-shadow:var(--shadow-xs);transition:background var(--dur-1) var(--ease),transform var(--dur-1) var(--ease)}
+.new-chat svg{flex-shrink:0}
+.new-chat:hover{background:var(--accent-hover);transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+.new-chat:active{background:var(--accent-press);transform:none}
+.new-chat .lbl{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.nav{display:flex;flex-direction:column;gap:2px;margin-top:6px}
+.nav-item,.profile{display:flex;align-items:center;gap:12px;min-width:0;width:100%;border:0;background:transparent;color:var(--ink-soft);font:inherit;font-size:var(--fs-sm);font-weight:450;text-align:left;cursor:pointer;padding:9px 12px;border-radius:var(--r-sm);position:relative;transition:background var(--dur-1) var(--ease),color var(--dur-1) var(--ease)}
+.nav-item svg{flex-shrink:0;width:18px;height:18px;opacity:.85;transition:.16s}
+.nav-item .lbl,.profile .name,.chat-pill .t,.who{min-width:0;flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav-item .lbl{font-weight:var(--fw-med)}   /* 500 : détache la nav du corps (400) — hiérarchie par la graisse, une seule fonte */
+.nav-item kbd{flex-shrink:0;font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);opacity:0;transition:.16s}
+.nav-item:hover{background:var(--surface-2);color:var(--ink)}
+.nav-item:hover svg{opacity:1}.nav-item:hover kbd{opacity:1}
+.nav-item.active,.nav-item.is-active{background:var(--accent-tint);color:var(--accent-strong)}
+.nav-item.active svg,.nav-item.is-active svg{opacity:1;color:var(--accent-strong)}
+.nav-item.active::before,.nav-item.is-active::before{content:"";position:absolute;left:-1px;top:6px;bottom:6px;width:3px;border-radius:var(--r-pill);background:var(--accent)}
+
+/* récentes (injectées par JS dans #recentList) */
+.chat-pill{display:flex;align-items:center;gap:10px;padding:8px 11px;border-radius:var(--r-sm);border:1px solid transparent;font-size:var(--fs-sm);color:var(--ink-soft);cursor:pointer;transition:.16s var(--ease);white-space:nowrap;overflow:hidden}
+.chat-pill .t{overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.chat-pill:hover{background:var(--surface-2);color:var(--ink)}
+.chat-pill.active{background:var(--accent-tint);color:var(--accent-strong)}
+.pill-ic{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;flex-shrink:0;background:var(--surface-2);border:1px solid var(--line);color:var(--ink-faint);transition:.15s var(--ease)}
+.chat-pill.active .pill-ic{background:var(--accent);color:var(--ink-on-accent);border-color:transparent}
+.pill-live{width:6px;height:6px;border-radius:50%;background:var(--success);flex-shrink:0;animation:lpulse 2s var(--ease) infinite}
+@keyframes lpulse{0%,100%{opacity:1}50%{opacity:.35}}
+.chat-pill .ago{margin-left:auto;font-size:11px;color:var(--ink-soft);flex-shrink:0}
+.chat-pill.active .ago{margin-left:8px}
+.chat-pill .pill-acts{margin-left:auto;display:none;gap:2px;flex-shrink:0}
+.chat-pill:hover .pill-acts{display:flex}
+.chat-pill:hover .ago{display:none}
+.chat-pill .pa{width:24px;height:24px;border-radius:var(--r-xs);display:grid;place-items:center;color:var(--ink-faint);background:transparent;border:0;cursor:pointer;transition:.14s}
+.chat-pill .pa:hover{color:var(--accent-strong);background:var(--surface-2)}
+.chat-pill .pa[data-act=del]:hover{color:var(--danger-strong)}
+
+.sb-foot{flex-shrink:0;min-width:0;display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--line)}
+.profile{padding:8px 10px;border-radius:var(--r-md)}
+.profile:hover{background:var(--surface-2)}
+.profile.pop-on{background:var(--surface-2)}
+.avatar{position:relative;width:34px;height:34px;border-radius:var(--r-sm);flex-shrink:0;background:var(--accent);display:grid;place-items:center;font-weight:var(--fw-bold);font-size:14px;color:var(--ink-on-accent);font-family:var(--font-sans);overflow:hidden}
+/* Deux couches superposées : la lettre au repos, le khatam quand un travail tourne.
+   Crossfade + léger scale — jamais de pulse (le cliché IA n°1). Le mouvement ne
+   signale QUE de l'activité réelle : rotation lente d'un instrument, pas un throb. */
+.avatar .av-m,.avatar .av-k{grid-area:1/1;display:grid;place-items:center;
+  transition:opacity .32s var(--ease),transform .32s var(--ease)}
+.avatar .av-k{opacity:0;transform:scale(.72)}
+.avatar .av-k svg{width:21px;height:21px;color:var(--ink-on-accent)}
+#app[data-travail="1"] .avatar .av-m{opacity:0;transform:scale(.72)}
+#app[data-travail="1"] .avatar .av-k{opacity:1;transform:scale(1)}
+/* 360° pleins, très lents : la symétrie d'ordre 4 du khatam rend la boucle
+   parfaitement continue, on sent que ça tourne sans jamais voir un saut. */
+#app[data-travail="1"] .avatar .av-k svg{animation:av-tourne 8s linear infinite}
+@keyframes av-tourne{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){
+  .avatar .av-m,.avatar .av-k{transition:opacity .12s linear}
+  .avatar .av-m,.avatar .av-k{transform:none}
+  #app[data-travail="1"] .avatar .av-m{transform:none}
+  #app[data-travail="1"] .avatar .av-k{transform:none}
+  #app[data-travail="1"] .avatar .av-k svg{animation:none}   /* apparaît, ne tourne pas */
+}
+.who{display:flex;flex-direction:column;line-height:1.25;flex:1;min-width:0}
+.who .name,.profile .name{font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.who .sub,.profile .sub{font-size:11px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.profile .chev{margin-left:auto;color:var(--ink-faint);flex-shrink:0;transition:.2s}
+.profile.pop-on .chev{transform:rotate(180deg)}
+
+/* mode réduit (rail) */
+.sidebar.collapsed{width:var(--rail-w)}
+.sidebar.collapsed .lbl,.sidebar.collapsed kbd,.sidebar.collapsed .sb-label,.sidebar.collapsed .who,.sidebar.collapsed .chev,.sidebar.collapsed .wordmark,.sidebar.collapsed .chat-pill .t,.sidebar.collapsed .chat-pill .ago,.sidebar.collapsed .chat-pill .pill-acts{display:none}
+.sidebar.collapsed .nav-item,.sidebar.collapsed .new-chat,.sidebar.collapsed .profile,.sidebar.collapsed .chat-pill{justify-content:center;gap:0}
+.sidebar.collapsed .new-chat,.sidebar.collapsed .profile{padding:11px}
+
+/* ============================================================
+   TOPBAR
+   ============================================================ */
+.topbar{
+  grid-row:1;min-height:calc(var(--topbar-h) + env(safe-area-inset-top));flex-shrink:0;
+  display:flex;align-items:center;gap:10px;
+  padding:env(safe-area-inset-top) max(16px,env(safe-area-inset-right)) 0 max(16px,env(safe-area-inset-left));
+  border-bottom:0;background:var(--bg);
+}
+.menu-btn{width:40px;height:40px;border-radius:var(--r-sm);border:0;background:transparent;color:var(--ink-soft);display:none;place-items:center;cursor:pointer;transition:.18s var(--ease);flex-shrink:0;margin-right:4px}   /* à GAUCHE (Mazen, 23/07) : le spacer pousse modèle + réglages à droite */
+.menu-btn:hover{background:var(--surface-2);color:var(--ink)}
+.brand{display:flex;align-items:center;gap:10px;border:0;background:transparent;cursor:pointer;padding:4px 6px;border-radius:var(--r-sm);min-width:0}
+.brand:hover{background:var(--surface-2)}
+.brand .mark{width:28px;height:28px;border-radius:8px;font-size:15px}
+.tb-title{min-width:0;flex:0 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-sans);font-size:var(--fs-base);font-weight:var(--fw-bold);letter-spacing:var(--tr-snug);color:var(--ink)}
+.tb-spacer{flex:1 1 auto;min-width:0}
+.model-pill{display:flex;align-items:center;gap:8px;font-size:var(--fs-sm);font-weight:var(--fw-med);color:var(--ink-soft);padding:7px 12px;border:1px solid var(--line-strong);border-radius:var(--r-pill);background:var(--surface);cursor:pointer;transition:.2s var(--ease);flex-shrink:0}
+.model-pill:hover{border-color:var(--accent);color:var(--ink)}
+.model-pill.pop-on{border-color:var(--accent);background:var(--accent-tint);color:var(--accent-strong)}
+/* Repos : point FIXE. Le pulse qui bat en permanence était le cliché du
+   « statut IA » — on le retire. Pendant une réponse, le point devient un arc
+   qui tourne : même geste que l'avatar-khatam, un seul langage de mouvement. */
+.model-pill .live{width:7px;height:7px;border-radius:50%;background:var(--success);flex-shrink:0;box-sizing:border-box;transition:background .2s var(--ease)}
+#app[data-gen="1"] .model-pill .live{background:transparent;border:1.5px solid var(--accent-tint-2);border-top-color:var(--gen-hue,var(--accent));animation:pill-spin .9s linear infinite}
+@keyframes pill-spin{to{transform:rotate(360deg)}}
+@keyframes ring{0%{box-shadow:0 0 0 0 rgba(63,125,90,.4)}   /* legacy — plus référencé */70%{box-shadow:0 0 0 6px rgba(63,125,90,0)}100%{box-shadow:0 0 0 0 rgba(63,125,90,0)}}
+.model-pill .lbl{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.model-pill .chev{opacity:.7;transition:.2s;flex-shrink:0}
+.model-pill.pop-on .chev{transform:rotate(180deg)}
+.icon-btn{width:36px;height:36px;border-radius:var(--r-sm);border:0;background:transparent;color:var(--ink-soft);display:grid;place-items:center;cursor:pointer;transition:.18s var(--ease);flex-shrink:0}
+.icon-btn svg{width:18px;height:18px}
+.icon-btn:hover{background:var(--surface-2);color:var(--ink)}
+.icon-btn:active{background:var(--surface-3)}
+.icon-btn.is-active{color:var(--accent-strong);background:var(--accent-tint)}
+.icon-btn.ghost{color:var(--ink-faint)}
+

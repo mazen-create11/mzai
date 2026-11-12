@@ -1,0 +1,108 @@
+/* ============================================================
+   MAZ V2 — DESIGN SYSTEM « Encre & Crème »
+   Thème CLAIR par défaut · Dark via [data-theme="dark"] (toggle explicite).
+   Source de vérité des tokens : design system consolidé.
+   Contrastes texte d'info routés vers --ink-soft / --ink-faint assombri.
+   Aucune valeur de marque en dur dans les composants : tout via tokens.
+   ============================================================ */
+
+:root{
+  color-scheme: light;
+
+  /* ── Familles ── */
+  --font-display:'Figtree', ui-sans-serif, system-ui, sans-serif;   /* une seule famille : la hiérarchie vient du réglage, pas d'une fonte décorative */
+  --font-sans:'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* ── Surfaces (crème → blanc) ── */
+  --bg:#FAF8F3; --surface:#FFFFFF; --surface-2:#F1EEE5; --surface-3:#E9E5D8;
+  --overlay:rgba(36,32,24,.34);
+
+  /* ── Encre ── (ink-faint assombri → AA-safe ; réservé placeholder/déco) ── */
+  --ink:#21201B; --ink-soft:#56524A; --ink-faint:#6E695D; --ink-on-accent:#FFFFFF;
+
+  /* ── Lignes ── */
+  --line:#E7E2D5; --line-strong:#D8D2C2; --line-faint:#F0ECE1;
+
+  /* ── Accent UNIQUE : argile / terre cuite ── */
+  --accent:#0E9E66; --accent-hover:#0C8A59; --accent-press:#0A754B;
+  --accent-strong:#0C8A59; --accent-tint:#E3F5EC; --accent-tint-2:#CDEBDC;
+  --accent-ring:rgba(14,158,102,.34);
+
+  /* ── États (base = fills/icônes) + variantes « strong » = TEXTE sur tint (AA) ── */
+  --success:#3F7D5A; --success-tint:#E4EFE7; --success-strong:#2F6347;
+  --warning:#9C6F1E; --warning-tint:#F4EAD2; --warning-strong:#7A560F;
+  --danger:#B23B3B;  --danger-tint:#F5E1DF;  --danger-strong:#8E2F2F;
+  --info:#6E5C52;    --info-tint:#EFE7DF;     --info-strong:#544539;
+
+  /* ── Typo : échelle ~1.2 (minor third), base 15px ── */
+  --fs-xs:.75rem; --fs-sm:.8125rem; --fs-base:.9375rem; --fs-md:1.0625rem;
+  --fs-lg:1.3125rem; --fs-xl:1.75rem; --fs-2xl:2.25rem; --fs-3xl:3rem; --fs-4xl:3.75rem;
+  --lh-tight:1.14; --lh-snug:1.3; --lh-normal:1.6; --lh-relaxed:1.75;
+  --tr-tight:-.02em; --tr-snug:-.011em; --tr-normal:0; --tr-wide:.04em;
+  --fw-reg:400; --fw-med:500; --fw-semi:600; --fw-bold:700;
+
+  /* ── Espacements 4/8 ── */
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:20px; --s-6:24px;
+  --s-7:32px; --s-8:40px; --s-9:48px; --s-10:64px; --s-11:80px; --s-12:96px;
+
+  /* ── Rayons ── */
+  --r-xs:6px; --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:28px; --r-pill:999px;
+
+  /* ── Ombres douces chaudes ── */
+  --shadow-xs:0 1px 2px rgba(43,36,24,.04);
+  --shadow-sm:0 2px 8px rgba(43,36,24,.05);
+  --shadow-md:0 10px 28px rgba(43,36,24,.07);
+  --shadow-lg:0 24px 60px rgba(43,36,24,.10);
+  --shadow-pop:0 16px 44px rgba(43,36,24,.14);
+
+  /* ── Focus accessible ── */
+  --focus-ring:0 0 0 3px var(--accent-ring); --focus-offset:2px;
+
+  /* ── Mouvement ── */
+  --ease:cubic-bezier(.22,.61,.36,1); --ease-out:cubic-bezier(.16,1,.3,1);
+  --dur-1:.12s; --dur-2:.2s; --dur-3:.34s;
+
+  /* ── Z-index ── */
+  --z-base:1; --z-sticky:50; --z-pop:600; --z-modal:1000; --z-toast:1200;   /* toast au-dessus des modales : sinon « Code copié » etc. passent sous l'overlay */
+
+  /* ── STRUCTURE (zones à hauteur maîtrisée) ── */
+  --app-h:100dvh;        /* écrasé par visualViewport (clavier virtuel) */
+  --sidebar-w:284px; --rail-w:74px; --topbar-h:60px; --thread-max:768px;
+
+  /* ── ALIAS DE COMPAT (le markup/JS V1 préservé continue de marcher) ── */
+  --line-2:var(--line-strong);
+  --accent-soft:var(--accent-tint);
+  --radius:var(--r-lg);
+  /* legacy → DA « Encre & Crème » (mappés sur tokens : auto-adaptatifs dark) */
+  --panel:var(--surface); --panel-solid:var(--surface); --panel-2:var(--surface-2);
+  --elev:var(--surface-2); --txt:var(--ink); --txt-dim:var(--ink-soft); --txt-faint:var(--ink-faint);
+  --c1:var(--accent); --c2:var(--accent-strong); --c3:var(--accent-hover); --c-deep:var(--accent-press);
+  --grad:var(--accent);            /* DA plate : pas de dégradé sur les actions */
+  --glow:var(--accent-ring);
+  --shadow-soft:var(--shadow-md); --shadow-deep:var(--shadow-lg);
+  --r:var(--r-lg);
+  --logo-mark:url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%201024%201024%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22tile%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%2326282E%22/%3E%3Cstop%20offset=%22.5%22%20stop-color=%22%2317181C%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%230D0E11%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22steel%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23F2F4F7%22/%3E%3Cstop%20offset=%22.35%22%20stop-color=%22%23C2C8D2%22/%3E%3Cstop%20offset=%22.62%22%20stop-color=%22%238B93A1%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%235C6470%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22steelEdge%22%20x1=%221%22%20y1=%221%22%20x2=%220%22%20y2=%220%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%233A4049%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23AAB1BC%22/%3E%3C/linearGradient%3E%3CradialGradient%20id=%22gem%22%20cx=%22.36%22%20cy=%22.3%22%20r=%22.95%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%2337D492%22/%3E%3Cstop%20offset=%22.3%22%20stop-color=%22%230C9B62%22/%3E%3Cstop%20offset=%22.62%22%20stop-color=%22%23065C3B%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23021D14%22/%3E%3C/radialGradient%3E%3CradialGradient%20id=%22tileShine%22%20cx=%22.5%22%20cy=%220%22%20r=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23FFFFFF%22%20stop-opacity=%22.10%22/%3E%3Cstop%20offset=%22.45%22%20stop-color=%22%23FFFFFF%22%20stop-opacity=%220%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20x=%2232%22%20y=%2232%22%20width=%22960%22%20height=%22960%22%20rx=%22224%22%20fill=%22url(%23tile)%22/%3E%3Crect%20x=%2232%22%20y=%2232%22%20width=%22960%22%20height=%22960%22%20rx=%22224%22%20fill=%22url(%23tileShine)%22/%3E%3Crect%20x=%2237%22%20y=%2237%22%20width=%22950%22%20height=%22950%22%20rx=%22219%22%20fill=%22none%22%20stroke=%22%23FFFFFF%22%20stroke-opacity=%22.07%22%20stroke-width=%226%22/%3E%3Cpath%20fill-rule=%22evenodd%22%20fill=%22url(%23steel)%22%20stroke=%22%230A0B0D%22%20stroke-width=%229%22%20stroke-linejoin=%22miter%22%20d=%22M512.0%2052.0%20L646.7%20186.7%20L837.3%20186.7%20L837.3%20377.3%20L972.0%20512.0%20L837.3%20646.7%20L837.3%20837.3%20L646.7%20837.3%20L512.0%20972.0%20L377.3%20837.3%20L186.7%20837.3%20L186.7%20646.7%20L52.0%20512.0%20L186.7%20377.3%20L186.7%20186.7%20L377.3%20186.7Z%20M512.0%20160.0%20L615.1%20263.1%20L760.9%20263.1%20L760.9%20408.9%20L864.0%20512.0%20L760.9%20615.1%20L760.9%20760.9%20L615.1%20760.9%20L512.0%20864.0%20L408.9%20760.9%20L263.1%20760.9%20L263.1%20615.1%20L160.0%20512.0%20L263.1%20408.9%20L263.1%20263.1%20L408.9%20263.1Z%22%20transform=%22translate(512%20512)%20scale(.78)%20translate(-512%20-512)%22/%3E%3Cpath%20fill=%22none%22%20stroke=%22url(%23steelEdge)%22%20stroke-width=%227%22%20d=%22M512.0%20160.0%20L615.1%20263.1%20L760.9%20263.1%20L760.9%20408.9%20L864.0%20512.0%20L760.9%20615.1%20L760.9%20760.9%20L615.1%20760.9%20L512.0%20864.0%20L408.9%20760.9%20L263.1%20760.9%20L263.1%20615.1%20L160.0%20512.0%20L263.1%20408.9%20L263.1%20263.1%20L408.9%20263.1Z%22%20transform=%22translate(512%20512)%20scale(.78)%20translate(-512%20-512)%22/%3E%3Cpath%20fill=%22none%22%20stroke=%22url(%23steelEdge)%22%20stroke-width=%226%22%20opacity=%22.8%22%20d=%22M512.0%2052.0%20L646.7%20186.7%20L837.3%20186.7%20L837.3%20377.3%20L972.0%20512.0%20L837.3%20646.7%20L837.3%20837.3%20L646.7%20837.3%20L512.0%20972.0%20L377.3%20837.3%20L186.7%20837.3%20L186.7%20646.7%20L52.0%20512.0%20L186.7%20377.3%20L186.7%20186.7%20L377.3%20186.7Z%22%20transform=%22translate(512%20512)%20scale(.755)%20translate(-512%20-512)%22/%3E%3Cpath%20fill=%22%23101215%22%20stroke=%22url(%23steel)%22%20stroke-width=%228%22%20d=%22M512.0%20297.0%20L575.0%20360.0%20L664.0%20360.0%20L664.0%20449.0%20L727.0%20512.0%20L664.0%20575.0%20L664.0%20664.0%20L575.0%20664.0%20L512.0%20727.0%20L449.0%20664.0%20L360.0%20664.0%20L360.0%20575.0%20L297.0%20512.0%20L360.0%20449.0%20L360.0%20360.0%20L449.0%20360.0Z%22/%3E%3Ccircle%20cx=%22512%22%20cy=%22512%22%20r=%2286%22%20fill=%22%230B0D10%22/%3E%3Ccircle%20cx=%22512%22%20cy=%22512%22%20r=%2276%22%20fill=%22url(%23gem)%22%20stroke=%22%236A7280%22%20stroke-width=%226%22/%3E%3Cellipse%20cx=%22543%22%20cy=%22556%22%20rx=%2238%22%20ry=%2220%22%20fill=%22%232ED18E%22%20opacity=%22.16%22%20transform=%22rotate(38%20543%20556)%22/%3E%3Cellipse%20cx=%22487%22%20cy=%22481%22%20rx=%2219%22%20ry=%2212%22%20fill=%22%23EAFFF5%22%20opacity=%22.26%22%20transform=%22rotate(-28%20487%20481)%22/%3E%3C/svg%3E");
+}
+
+[data-theme="dark"]{
+  color-scheme: dark;
+  /* Dark « Damas » : noir profond + émeraude serti */
+  --bg:#08080A; --surface:#121216; --surface-2:#17171C; --surface-3:#202027;
+  --overlay:rgba(0,0,0,.62);
+  --ink:#F2F1EE; --ink-soft:#A8A49D; --ink-faint:#787069; --ink-on-accent:#04150D;
+  --line:rgba(255,255,255,.10); --line-strong:rgba(255,255,255,.17); --line-faint:rgba(255,255,255,.055);
+  --accent:#16B87A; --accent-hover:#1BC885; --accent-press:#12A06B;
+  --accent-strong:#3DD692; --accent-tint:rgba(22,184,122,.14); --accent-tint-2:rgba(22,184,122,.24);
+  --accent-ring:rgba(22,184,122,.36);
+  --success:#2FCB74; --success-tint:rgba(47,203,116,.13); --success-strong:#46D98A;
+  --warning:#D9B25E; --warning-tint:rgba(217,178,94,.13); --warning-strong:#E6C173;
+  --danger:#E8686D;  --danger-tint:rgba(232,104,109,.13);  --danger-strong:#F08A8E;
+  --info:#9A968F;    --info-tint:rgba(255,255,255,.06);     --info-strong:#BCB8B1;
+  --shadow-xs:0 1px 2px rgba(0,0,0,.30);
+  --shadow-sm:0 2px 8px rgba(0,0,0,.34);
+  --shadow-md:0 12px 30px rgba(0,0,0,.42);
+  --shadow-lg:0 26px 64px rgba(0,0,0,.55);
+  --shadow-pop:0 18px 48px rgba(0,0,0,.50);
+}
+

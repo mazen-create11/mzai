@@ -1,6 +1,10 @@
 # MAZ (ex-MZai) — App chat IA premium (modèles chinois)
 
-## ⛔ FICHIER ACTIF = `mzai-v2.html` — `index.html` n'est plus qu'une redirection vers lui (l'ancienne version reste dans l'historique git, remplacée le 12/11/2026).
+## ⛔ ON MODIFIE `src/`, JAMAIS `mzai-v2.html` (découpage du 12/11/2026)
+- `mzai-v2.html` est le fichier publié, GÉNÉRÉ par `node build.mjs` depuis `src/app.html` + `src/css/*.css` + `src/js/*.js` (ordre et rôle de chaque fichier : listes en tête de `build.mjs`). Une modification faite à la main dans `mzai-v2.html` est écrasée au prochain assemblage.
+- Après toute modification de `src/` : `node build.mjs`, puis `cd test-ui && npm test` (navigateur réel, faux serveur, aucune requête ne sort), puis commit de `src/` ET de `mzai-v2.html` ensemble. `node build.mjs --check` et les tests tournent aussi sur GitHub Actions.
+- Les scripts partagent une seule portée globale et sont mis bout à bout : l'ordre de la liste compte, pas d'`import`.
+- `index.html` n'est plus qu'une redirection vers `mzai-v2.html` (l'ancienne version reste dans l'historique git).
 - Live : mazen-create11.github.io/mzai/mzai-v2.html · deploy = `git push origin main` (GitHub Pages).
 
 ## Règles

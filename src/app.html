@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
+<title>MAZ — Intelligence</title>
+<!-- theme-color adaptatif aligné sur la DA Damas -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' data: blob: https://openrouter.ai https://api.siliconflow.com https://api.klingai.com https://*.workers.dev https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com; worker-src 'self' blob: https://cdnjs.cloudflare.com; frame-src 'self' blob: data:; manifest-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="theme-color" content="#FAF8F3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#08080A" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="MAZ">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%201024%201024%22%3E%3Cdefs%3E%3ClinearGradient%20id=%22tile%22%20x1=%220%22%20y1=%220%22%20x2=%220%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%2326282E%22/%3E%3Cstop%20offset=%22.5%22%20stop-color=%22%2317181C%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%230D0E11%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22steel%22%20x1=%220%22%20y1=%220%22%20x2=%221%22%20y2=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23F2F4F7%22/%3E%3Cstop%20offset=%22.35%22%20stop-color=%22%23C2C8D2%22/%3E%3Cstop%20offset=%22.62%22%20stop-color=%22%238B93A1%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%235C6470%22/%3E%3C/linearGradient%3E%3ClinearGradient%20id=%22steelEdge%22%20x1=%221%22%20y1=%221%22%20x2=%220%22%20y2=%220%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%233A4049%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23AAB1BC%22/%3E%3C/linearGradient%3E%3CradialGradient%20id=%22gem%22%20cx=%22.36%22%20cy=%22.3%22%20r=%22.95%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%2337D492%22/%3E%3Cstop%20offset=%22.3%22%20stop-color=%22%230C9B62%22/%3E%3Cstop%20offset=%22.62%22%20stop-color=%22%23065C3B%22/%3E%3Cstop%20offset=%221%22%20stop-color=%22%23021D14%22/%3E%3C/radialGradient%3E%3CradialGradient%20id=%22tileShine%22%20cx=%22.5%22%20cy=%220%22%20r=%221%22%3E%3Cstop%20offset=%220%22%20stop-color=%22%23FFFFFF%22%20stop-opacity=%22.10%22/%3E%3Cstop%20offset=%22.45%22%20stop-color=%22%23FFFFFF%22%20stop-opacity=%220%22/%3E%3C/radialGradient%3E%3C/defs%3E%3Crect%20x=%2232%22%20y=%2232%22%20width=%22960%22%20height=%22960%22%20rx=%22224%22%20fill=%22url(%23tile)%22/%3E%3Crect%20x=%2232%22%20y=%2232%22%20width=%22960%22%20height=%22960%22%20rx=%22224%22%20fill=%22url(%23tileShine)%22/%3E%3Crect%20x=%2237%22%20y=%2237%22%20width=%22950%22%20height=%22950%22%20rx=%22219%22%20fill=%22none%22%20stroke=%22%23FFFFFF%22%20stroke-opacity=%22.07%22%20stroke-width=%226%22/%3E%3Cpath%20fill-rule=%22evenodd%22%20fill=%22url(%23steel)%22%20stroke=%22%230A0B0D%22%20stroke-width=%229%22%20stroke-linejoin=%22miter%22%20d=%22M512.0%2052.0%20L646.7%20186.7%20L837.3%20186.7%20L837.3%20377.3%20L972.0%20512.0%20L837.3%20646.7%20L837.3%20837.3%20L646.7%20837.3%20L512.0%20972.0%20L377.3%20837.3%20L186.7%20837.3%20L186.7%20646.7%20L52.0%20512.0%20L186.7%20377.3%20L186.7%20186.7%20L377.3%20186.7Z%20M512.0%20160.0%20L615.1%20263.1%20L760.9%20263.1%20L760.9%20408.9%20L864.0%20512.0%20L760.9%20615.1%20L760.9%20760.9%20L615.1%20760.9%20L512.0%20864.0%20L408.9%20760.9%20L263.1%20760.9%20L263.1%20615.1%20L160.0%20512.0%20L263.1%20408.9%20L263.1%20263.1%20L408.9%20263.1Z%22%20transform=%22translate(512%20512)%20scale(.78)%20translate(-512%20-512)%22/%3E%3Cpath%20fill=%22none%22%20stroke=%22url(%23steelEdge)%22%20stroke-width=%227%22%20d=%22M512.0%20160.0%20L615.1%20263.1%20L760.9%20263.1%20L760.9%20408.9%20L864.0%20512.0%20L760.9%20615.1%20L760.9%20760.9%20L615.1%20760.9%20L512.0%20864.0%20L408.9%20760.9%20L263.1%20760.9%20L263.1%20615.1%20L160.0%20512.0%20L263.1%20408.9%20L263.1%20263.1%20L408.9%20263.1Z%22%20transform=%22translate(512%20512)%20scale(.78)%20translate(-512%20-512)%22/%3E%3Cpath%20fill=%22none%22%20stroke=%22url(%23steelEdge)%22%20stroke-width=%226%22%20opacity=%22.8%22%20d=%22M512.0%2052.0%20L646.7%20186.7%20L837.3%20186.7%20L837.3%20377.3%20L972.0%20512.0%20L837.3%20646.7%20L837.3%20837.3%20L646.7%20837.3%20L512.0%20972.0%20L377.3%20837.3%20L186.7%20837.3%20L186.7%20646.7%20L52.0%20512.0%20L186.7%20377.3%20L186.7%20186.7%20L377.3%20186.7Z%22%20transform=%22translate(512%20512)%20scale(.755)%20translate(-512%20-512)%22/%3E%3Cpath%20fill=%22%23101215%22%20stroke=%22url(%23steel)%22%20stroke-width=%228%22%20d=%22M512.0%20297.0%20L575.0%20360.0%20L664.0%20360.0%20L664.0%20449.0%20L727.0%20512.0%20L664.0%20575.0%20L664.0%20664.0%20L575.0%20664.0%20L512.0%20727.0%20L449.0%20664.0%20L360.0%20664.0%20L360.0%20575.0%20L297.0%20512.0%20L360.0%20449.0%20L360.0%20360.0%20L449.0%20360.0Z%22/%3E%3Ccircle%20cx=%22512%22%20cy=%22512%22%20r=%2286%22%20fill=%22%230B0D10%22/%3E%3Ccircle%20cx=%22512%22%20cy=%22512%22%20r=%2276%22%20fill=%22url(%23gem)%22%20stroke=%22%236A7280%22%20stroke-width=%226%22/%3E%3Cellipse%20cx=%22543%22%20cy=%22556%22%20rx=%2238%22%20ry=%2220%22%20fill=%22%232ED18E%22%20opacity=%22.16%22%20transform=%22rotate(38%20543%20556)%22/%3E%3Cellipse%20cx=%22487%22%20cy=%22481%22%20rx=%2219%22%20ry=%2212%22%20fill=%22%23EAFFF5%22%20opacity=%22.26%22%20transform=%22rotate(-28%20487%20481)%22/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="icon.png?v=2">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22:%20%22MAZ%22,%20%22short_name%22:%20%22MAZ%22,%20%22start_url%22:%20%22.%22,%20%22display%22:%20%22standalone%22,%20%22background_color%22:%20%22%2308080A%22,%20%22theme_color%22:%20%22%2308080A%22,%20%22icons%22:%20%5B%7B%22src%22:%20%22https://mazen-create11.github.io/mzai/icon.png%22,%20%22sizes%22:%20%22180x180%22,%20%22type%22:%20%22image/png%22%7D%5D%7D">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400..700&family=Geist+Mono:wght@400&display=swap" rel="stylesheet">
+<script>try{var t=JSON.parse(localStorage.getItem('mzai:theme'));var hh=new Date().getHours();
+var d=t==='auto'?!(hh>=7&&hh<19):t!=='light';   /* 'auto' résolu ICI aussi, sinon un flash sombre avant que le script principal ne tranche */
+document.documentElement.dataset.theme=d?'dark':'light'}catch(e){document.documentElement.dataset.theme='dark'}</script>
+<style>
+/* @inclure css */
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Aller au contenu</a>
+
+<!-- ====================================================================
+  MAZ V2 — SHELL (DA « Encre & Crème », anti-découpe)
+  Grille racine #app : sidebar (col 1, drawer mobile) + .shell (col 2).
+  .shell = topbar / #main (vues empilées) / #dockChat (composer ancré).
+  #scrim = frère de la sidebar DANS .shell (z scrim < z sidebar).
+  Composer = nœud UNIQUE #composer, posé à l'accueil dans #dockHome,
+  déplacé par JS vers #dockChat dès qu'une conversation s'ouvre.
+  Overlays (modales, popovers, toast, file input) = frères de #app.
+==================================================================== -->
+<div id="app" data-view="home">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar" id="sidebar" aria-label="Navigation">
+    <header class="sb-head">
+      <span class="brand-mini" id="brandHome" role="button" tabindex="0" data-tip="Accueil" aria-label="Accueil" style="cursor:pointer"><span class="brand-logo" style="width:28px;height:28px;flex-shrink:0;border-radius:8px;background:var(--logo-mark) center/cover no-repeat"></span><span class="wordmark">MA<span class="zmark">Z</span></span></span>
+      <span class="tb-spacer"></span>
+      <button class="icon-btn ghost sb-search" id="navSearch" aria-label="Rechercher" title="Rechercher (⌘K)"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg></button>
+      <button class="icon-btn ghost" id="collapseBtn" aria-label="Réduire ou agrandir le panneau" title="Réduire / agrandir le panneau"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></svg></button>
+    </header>
+
+    <div class="sb-scroll">
+      <button class="new-chat" id="newChat">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        <span class="lbl">Nouvelle conversation</span>
+        <kbd>⌘N</kbd>
+      </button>
+
+      <nav class="nav" aria-label="Espaces">
+        <button class="nav-item" data-view="atelier" data-tip="Agents IA"><span class="nav-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M12 2.6 15.1 8.9 21.4 12 15.1 15.1 12 21.4 8.9 15.1 2.6 12 8.9 8.9Z"/><circle cx="12" cy="12" r="2.1" fill="currentColor" stroke="none"/></svg><span class="at-nav-n" id="atNavN" hidden></span></span><span class="lbl">Agents IA</span></button>
+        <button class="nav-item" data-view="library" data-tip="Discussions"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/></svg><span class="lbl">Discussions</span></button>
+        <button class="nav-item" data-view="projects" data-tip="Projets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4.5 16.5 12 21l7.5-4.5M4.5 12 12 16.5 19.5 12M12 3 4.5 7.5 12 12l7.5-4.5L12 3z"/></svg><span class="lbl">Projets</span></button>
+        <button class="nav-item" data-view="integrations" data-tip="Intégrations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></svg><span class="lbl">Intégrations</span></button>
+        <button class="nav-item" data-view="persona" data-tip="Mon IA"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a5 5 0 0 1 5 5c0 1.6-.7 2.6-1.5 3.5C16.3 11.4 18 12.5 18 15a6 6 0 0 1-12 0c0-2.5 1.7-3.6 2.5-4.5C7.7 9.6 7 8.6 7 7a5 5 0 0 1 5-5z"/></svg><span class="lbl">Mon IA</span><kbd>⌘J</kbd></button>
+        <button class="nav-item" data-act="more" data-tip="Plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="1"/><circle cx="8" cy="12" r="1"/><circle cx="16" cy="12" r="1"/></svg><span class="lbl">Plus</span></button>
+      </nav>
+
+      <div class="sb-label">Récentes</div>
+      <div id="recentList"><!-- conversations injectées par JS --></div>
+    </div>
+
+    <footer class="sb-foot">
+      <button class="profile" id="profileBtn">
+        <span class="avatar" id="navAv"><span class="av-m">M</span><span class="av-k" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="1" fill="none" stroke="currentColor" stroke-width="1.7"/><rect x="5" y="5" width="14" height="14" rx="1" fill="none" stroke="currentColor" stroke-width="1.7" transform="rotate(45 12 12)"/><circle cx="12" cy="12" r="1.9" fill="currentColor"/></svg></span></span>
+        <span class="who"><span class="name" id="navName">Mon espace</span><span class="sub" id="navSub">Premium · local</span></span>
+        <svg class="chev" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+      </button>
+    </footer>
+  </aside>
+
+  <!-- SCRIM : voile du tiroir mobile. Enfant DIRECT de #app (jamais de .shell,
+       dont isolation:isolate + overflow:hidden réduisaient le fixed à 0×0). -->
+  <div class="scrim" id="scrim"></div>
+ <div class="edge-zone" id="edgeZone" aria-hidden="true"></div>
+ <div class="sheet-veil" id="sheetVeil" hidden></div>
+ <div class="sheet" id="sheetConvo" hidden><div class="sheet-grip"></div><div class="sheet-t" id="sheetTitle"></div><div id="sheetBody"></div></div>
+
+  <!-- ================= COLONNE CONTENU ================= -->
+  <div class="shell">
+
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <button class="menu-btn" id="menuBtn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="sidebar" title="Menu">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/></svg>
+      </button>
+      <h1 class="tb-title" id="convTitle" hidden></h1>
+      <span class="tb-spacer"></span>
+      <button class="model-pill" id="modelPill" data-tip="Changer de modèle">
+        <span class="live"></span><span class="lbl" id="modelPillLbl">MAZ Auto</span>
+        <svg class="chev" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <button class="icon-btn" id="installBtn" aria-label="Installer l'app" data-tip="Installer l'app" hidden>
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v10m0 0 4-4m-4 4-4-4"/><path d="M4 16v2.5A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5V16"/></svg>
+      </button>
+      <button class="icon-btn" id="settingsBtn" aria-label="Réglages" data-tip="Réglages">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </header>
+
+    <!-- MAIN : toutes les vues empilées dans une seule cellule grid -->
+    <main class="main" id="main" tabindex="-1">
+
+      <!-- ACCUEIL minimal -->
+      <section class="view active" id="view-home" aria-label="Accueil">
+        <div class="home-wrap">
+          <div class="home-center">
+            <p class="home-status" id="homeEtat" aria-live="polite"></p>
+            <h2 class="home-greet" id="greet">Bonjour<svg class="greet-mark" viewBox="0 0 16 16" aria-hidden="true"><rect x="3.2" y="3.2" width="9.6" height="9.6" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="3.2" y="3.2" width="9.6" height="9.6" fill="none" stroke="currentColor" stroke-width="1.6" transform="rotate(45 8 8)"/></svg></h2>
+            <!-- #dockHome reçoit le composer unique à l'accueil -->
+            <div class="home-dock" id="dockHome">
+
+              <!-- ========== COMPOSER (nœud unique relogé par JS) ========== -->
+              <div class="composer" id="composer">
+                <div class="slash-pop" id="slashPop"></div>
+                <div class="input-shell">
+                  <div class="attachrow" id="attachRow"></div>
+                  <!-- chip(s) de mode amovible(s), masqué tant que vide -->
+                  <div class="opt-row" id="modeChip"></div>
+                  <div class="input-row">
+                    <button class="clip" id="attachBtn" aria-label="Joindre un fichier" title="Joindre un fichier"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 11.5 12.5 20a5 5 0 0 1-7-7l8.5-8.5a3.5 3.5 0 0 1 5 5L10.5 18a2 2 0 0 1-3-3l7.5-7.5"/></svg></button>
+                    <textarea id="prompt" rows="1" placeholder="Écris à MAZ…" aria-label="Message à MAZ"></textarea>
+                    <button class="clip" id="dictateBtn" aria-label="Dicter" title="Dicter (tape pour parler, retape pour arrêter)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+                    <button class="send rip" id="sendBtn" aria-label="Envoyer" title="Envoyer"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg></button>
+                  </div>
+                  <!-- options contextuelles propres à l'outil choisi, masqué tant que vide -->
+                  <div class="opt-row" id="toolOpts"></div>
+                  <div class="toolbar" id="toolbar" role="toolbar" aria-label="Outils">
+                    <button class="tools-btn" id="toolsBtn" aria-haspopup="true" aria-expanded="false" aria-label="Ajouter et outils" title="Ajouter · outils"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+                    <button class="tool" id="toolModel" title="Choisir le modèle"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5l2.4 6.1 6.1 2.4-6.1 2.4L12 19.5l-2.4-6.1L3.5 11l6.1-2.4z"/></svg><span id="toolModelLbl">MAZ Auto</span></button>
+                    <button class="tool" id="fsChipBtn" hidden title="Fichiers du Mac — dossier autorisé et mode d'accès"><span class="fs-dot" id="fsDot"></span><span id="fsChipLbl">Fichiers Mac</span><span class="fs-mode-tag" id="fsModeTag" hidden></span></button>
+                    <span class="tb-spacer"></span>
+                    <span class="counter" id="counter">0 mots</span>
+                    <button class="tool ghost" id="magicWand" aria-label="Améliorer le prompt" title="Améliorer mon prompt (le reformule en mieux)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 19.5 14 10"/><path d="M16 3.2l1 2.6 2.6 1-2.6 1-1 2.6-1-2.6-2.6-1 2.6-1z"/><path d="M6 6.5l.5 1.3 1.3.5-1.3.5L6 10.6l-.5-1.3L4.2 8.8l1.3-.5z"/></svg></button>
+                  </div>
+                </div>
+                <div class="hint"><span>MAZ peut se tromper. <b>Vérifie les informations importantes.</b></span><span class="hint-shortcut"><kbd>↵</kbd> envoyer&nbsp; · &nbsp;<kbd>⇧↵</kbd> nouvelle ligne</span><span class="tok-count" id="tokCount" data-tip="Tokens utilisés cette session">0 tokens</span></div>
+              </div><!-- /#composer -->
+
+            </div><!-- /#dockHome -->
+
+            <div class="home-suggest" id="homeSuggest">
+              <button class="sug" data-mode="image"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="m21 15-5-5L5 21"/></svg>Image</button>
+              <button class="sug" data-mode="doc"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M13 2v7h7"/></svg>Documents</button>
+              <button class="sug" data-mode="code"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg>Code</button>
+              <button class="sug" data-mode="translate"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h7M9 3v2c0 4-2.5 7-5 8M5 9c0 2.5 2.5 4.5 5 5M13 21l4-9 4 9M14.5 17h5"/></svg>Traduction</button>
+              <button class="sug" data-mode="voice"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/></svg>Voix</button>
+              <button class="sug" data-toggle="search"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>Recherche web</button>
+              <button class="sug" data-toggle="reason"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg>Réflexion</button>
+            </div>
+            <div class="home-quick" aria-label="Démarrages rapides">
+              <div class="home-quick-head"><span>DÉMARRAGES RAPIDES</span><span>des canevas prêts à lancer</span></div>
+              <div class="home-quick-grid">
+                <button class="quick-card" data-prompt="Aide-moi à clarifier cette idée : [décris ton idée]. Donne-moi l'objectif, la cible et les 3 prochaines actions."><span class="quick-card-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15Z"/><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H20M8 7h8M8 11h6"/></svg></span><span><b>Clarifier une idée</b><small>Objectif, cible, prochaines actions</small></span><svg class="quick-card-go" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+                <button class="quick-card" data-prompt="Analyse ce brief avec un regard critique : [colle le brief]. Relève les risques, les angles morts et propose une recommandation priorisée."><span class="quick-card-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 5 5M8.5 11h5M11 8.5v5"/></svg></span><span><b>Auditer un brief</b><small>Risques, angles morts, recommandation</small></span><svg class="quick-card-go" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+                <button class="quick-card" data-prompt="Transforme ce brouillon en plan d'exécution : [colle ton brouillon]. Découpe en étapes, livrables et critères de réussite."><span class="quick-card-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v16H6z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg></span><span><b>Passer à l'exécution</b><small>Étapes, livrables, critères de réussite</small></span><svg class="quick-card-go" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CHAT : fil de conversation (seule zone scrollable) -->
+      <section class="view" id="view-chat" aria-label="Conversation">
+        <div class="thread" id="chat" role="log" aria-live="polite"></div>
+        <button class="jump-down" id="jumpDown" aria-label="Revenir en bas"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg></button>
+        <!-- Le pont entre les deux moitiés de l'app : cet échange a marché, il devient un poste. -->
+        <div class="at-pont" id="atPont" hidden>
+          <span class="at-pont-t">Cet échange a marché&nbsp;?</span>
+          <button class="at-btn" id="atPontBtn">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.6 15.1 8.9 21.4 12 15.1 15.1 12 21.4 8.9 15.1 2.6 12 8.9 8.9Z"/></svg>
+            En faire un agent
+          </button>
+        </div>
+      </section>
+
+      <!-- BIBLIOTHÈQUE -->
+      <!-- ================= L'ATELIER ================= -->
+      <section class="view" id="view-atelier" aria-label="Agents IA">
+        <header class="vhead"><div class="min0"><div class="vt">Agents IA</div><div class="vs" id="atSub">Tes agents qui travaillent sans toi</div></div><span class="tb-spacer"></span><button class="vbtn" id="atRefresh" aria-label="Actualiser"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v5h-5"/></svg>Actualiser</button></header>
+        <div class="vbody"><div class="at-wrap" id="atBody"></div></div>
+      </section>
+
+      <!-- ================= FICHE DE POSTE ================= -->
+      <section class="view" id="view-poste" aria-label="Agent">
+        <header class="vhead">
+          <button class="back-btn" id="atBack" aria-label="Retour aux agents" data-tip="Retour"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="min0"><div class="vt" id="atPosteNom">Agent</div><div class="vs" id="atPosteSub"></div></div>
+        </header>
+        <div class="vbody"><div class="at-wrap" id="atPosteBody"></div></div>
+      </section>
+
+      <!-- ================= LE CONTRÔLE ================= -->
+      <section class="view" id="view-controle" aria-label="Contrôle">
+        <header class="vhead"><div class="min0"><div class="vt">À valider</div><div class="vs">Rien ne part sans ton accord</div></div></header>
+        <div class="vbody"><div class="at-wrap" id="atCtrlBody"></div></div>
+      </section>
+
+      <section class="view" id="view-library" aria-label="Discussions">
+        <header class="vhead"><div class="min0"><div class="vt">Discussions</div><div class="vs">Toutes tes conversations</div></div></header>
+        <div class="vsearch"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4" stroke-linecap="round"/></svg><input id="libSearch" placeholder="Rechercher une discussion…" aria-label="Rechercher une discussion"></div>
+        <div class="vbody"><div id="libList"></div></div>
+      </section>
+
+      <!-- INTÉGRATIONS -->
+      <section class="view" id="view-integrations" aria-label="Intégrations">
+        <header class="vhead"><div class="min0"><div class="vt">Intégrations <span class="tr-count" id="intCount"></span></div><div class="vs">Connecte tes outils et services</div></div></header>
+        <div class="vsearch"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4" stroke-linecap="round"/></svg><input id="intSearch" placeholder="Rechercher une intégration…" aria-label="Rechercher une intégration"></div>
+        <div class="vbody"><div class="int-preview-note"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01" stroke-linecap="round"/></svg>Préversion — sélectionne les intégrations qui t'intéressent ; la connexion réelle arrive bientôt.</div><div id="intList"></div></div>
+      </section>
+
+      <!-- PROJETS -->
+      <section class="view" id="view-projects" aria-label="Projets">
+        <header class="vhead"><div class="min0"><div class="vt">Projets</div><div class="vs">Espaces de travail organisés</div></div><span class="tb-spacer"></span><button class="vbtn" id="addProject"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nouveau projet</button></header>
+        <div class="vbody"><div class="pgrid" id="projGrid"></div></div>
+      </section>
+
+      <!-- PROJET (détail) -->
+      <section class="view" id="view-project" aria-label="Projet">
+        <header class="vhead">
+          <button class="back-btn" id="prjBack" aria-label="Retour" data-tip="Retour"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="prj-headic" id="prjHeadIc"></div>
+          <div class="min0"><div class="vt" id="prjName">Projet</div><div class="vs" id="prjDesc"></div></div>
+          <span class="tb-spacer"></span>
+          <button class="vbtn ghost" id="prjNewConv"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Nouvelle conv.</button>
+        </header>
+        <div class="vbody">
+          <!-- rempli par openProject() → projPanelHTML(p) + conversations (un seul #prjCtx, plus de doublon) -->
+          <div id="prjList"></div>
+        </div>
+      </section>
+
+      <!-- MON IA (in-place) -->
+      <section class="view" id="view-persona" aria-label="Mon IA">
+        <header class="vhead">
+          <button class="back-btn" id="psBack" aria-label="Retour" data-tip="Retour"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="prj-headic" id="psAv">M</div>
+          <div class="min0"><div class="vt">Mon IA</div><div class="vs">Personnalise le comportement de MAZ</div></div>
+          <span class="tb-spacer"></span>
+          <button class="vbtn ghost" id="psReset">Réinitialiser</button>
+          <button class="vbtn" id="psSave"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>Enregistrer</button>
+        </header>
+        <div class="vbody"><div class="view-form">
+          <div class="field"><label for="psName">Nom de l'assistant</label><input class="inp" id="psName" placeholder="MAZ"></div>
+          <div class="field"><label>Personnalités</label><div class="seg" id="psPresets"></div></div>
+          <div class="field"><label>Ton</label><div class="seg" id="psTone"></div></div>
+          <div class="field"><label>Longueur des réponses</label><div class="seg" id="psLength"></div></div>
+          <div class="field"><label>Traits</label><div class="seg" id="psTraits"></div></div>
+          <div class="field"><label for="psSys">Instructions système</label><textarea class="inp" id="psSys" placeholder="Comment MAZ doit-il répondre ?"></textarea></div>
+          <div class="sb-label" style="margin:20px 0 2px 0">Mémoire — injectée dans chaque conversation</div>
+          <div class="field"><label for="memProfile">Ton profil permanent (qui tu es, tes projets, ton ton — jamais écrasé)</label><textarea class="inp" id="memProfile" style="min-height:120px" placeholder="Ex : Je suis Mazen, entrepreneur (Hacktogone). Mes offres : formation IA 1 400 €, site+SEO local 925 €+35 €/mois… Tutoie-moi, va droit au but, zéro cliché."></textarea></div>
+          <div class="field"><label for="memAuto">Mémoire auto (MAZ résume tes sessions — modifiable, effaçable)</label><textarea class="inp" id="memAuto" style="min-height:64px" placeholder="Encore vide — elle se remplit au fil des conversations."></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px"><div class="btn" id="memClear">Effacer la mémoire auto</div></div></div>
+        </div></div>
+      </section>
+
+      <!-- PROMPTS RAPIDES (in-place) -->
+      <section class="view" id="view-prompts" aria-label="Prompts rapides">
+        <header class="vhead">
+          <button class="back-btn" id="prBack" aria-label="Retour" data-tip="Retour"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="min0"><div class="vt">Prompts rapides</div><div class="vs">Ta boîte à prompts /commande — clique pour prévisualiser, ajuster, copier</div></div>
+          <span class="tb-spacer"></span>
+          <button class="vbtn" id="promptAdd"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Ajouter</button>
+        </header>
+        <div class="vsearch"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4" stroke-linecap="round"/></svg><input id="prSearch" placeholder="Rechercher un prompt…" aria-label="Rechercher un prompt"></div>
+        <div class="vbody"><div class="prompt-cats" id="prCats"></div><div id="promptList"></div></div>
+      </section>
+
+      <!-- AIDE (in-place) -->
+      <section class="view" id="view-help" aria-label="Aide">
+        <header class="vhead">
+          <button class="back-btn" id="hpBack" aria-label="Retour" data-tip="Retour"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="min0"><div class="vt">Aide</div><div class="vs">Questions fréquentes &amp; ressources</div></div>
+        </header>
+        <div class="vbody"><div class="view-form wide">
+          <div id="faqList"></div>
+          <div class="sb-label" style="margin-left:0;margin-top:20px">Ressources</div>
+          <div id="helpLinks"></div>
+        </div></div>
+      </section>
+
+    </main>
+
+    <!-- COMPOSER ANCRÉ : dock chat/outils, vide à l'accueil (replié) -->
+    <footer class="composer-dock" id="dockChat" aria-label="Saisie"></footer>
+
+  </div><!-- /.shell -->
+</div><!-- /#app -->
+
+<!-- ================= OVERLAYS : frères de #app, hors de la grille ================= -->
+
+<input type="file" id="fileInput" multiple hidden aria-label="Joindre des fichiers">
+
+<!-- popovers -->
+<div class="pop" id="popModel"></div>
+<div class="pop" id="popMore">
+  <div class="pop-h">Plus</div>
+  <div class="pi" id="popPersona"><span class="pic2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2a5 5 0 0 1 5 5c0 1.6-.7 2.6-1.5 3.5C16.3 11.4 18 12.5 18 15a6 6 0 0 1-12 0c0-2.5 1.7-3.6 2.5-4.5C7.7 9.6 7 8.6 7 7a5 5 0 0 1 5-5z"/></svg></span><div class="pt"><div class="pn">Mon IA</div><div class="pd">Personnalité &amp; instructions</div></div></div>
+</div>
+<div class="pop" id="popProfile"></div>
+
+<!-- + OUTILS : sélecteur des 10 outils, groupé en 3 -->
+<div class="pop wide" id="popTools">
+  <div class="pop-h">Ajouter</div>
+  <div class="pi" data-add="file"><span class="pic2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 11.5 12.5 20a5 5 0 0 1-7-7l8.5-8.5a3.5 3.5 0 0 1 5 5L10.5 18a2 2 0 0 1-3-3l7.5-7.5"/></svg></span><div class="pt"><div class="pn">Joindre un fichier</div><div class="pd">Document, image ou audio</div></div><span class="pi-kbd">⌘U</span></div>
+  <div class="pop-sep"></div>
+  <div class="pop-h">Converser</div>
+  <div class="pi" data-tool="text" data-mode="text"><span class="pic2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg></span><div class="pt"><div class="pn">Assistant</div><div class="pd">Discussion, MZ&nbsp;Auto par défaut</div></div></div>
+  <div class="pi" data-toggle="search"><span class="pic2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4" stroke-linecap="round"/></svg></span><div class="pt"><div class="pn">Recherche web</div><div class="pd">Réponses sourcées en direct</div></div></div>
+  <div class="pi" data-toggle="reason"><span class="pic2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg></span><div class="pt"><div class="pn">Réflexion</div><div class="pd">Raisonnement étape par étape</div></div></div>
+  <div class="pop-sep"></div>
+  <div class="pop-h">Créer</div>
+  <div class="pi" data-mode="image"><span class="pic2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.6"/><path d="m21 15-5-5L5 21"/></svg></span><div class="pt"><div class="pn">Image</div><div class="pd">Génère ou édite une image</div></div></div>
+  <div class="pi" data-mode="video"><span class="pic2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="6" width="13" height="12" rx="2.5"/><path d="M16 10l5.5-3v10L16 14z"/></svg></span><div class="pt"><div class="pn">Vidéo</div><div class="pd">Texte ou image → vidéo</div></div></div>
+  <div class="pi" data-mode="voice"><span class="pic2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/></svg></span><div class="pt"><div class="pn">Voix</div><div class="pd">Texte → voix off (audio)</div></div></div>
+  <div class="pi" data-mode="code"><span class="pic2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg></span><div class="pt"><div class="pn">Code / Canvas</div><div class="pd">Génère du code + aperçu live</div></div></div>
+  <div class="pop-sep"></div>
+  <div class="pop-h">Analyser</div>
+  <div class="pi" data-mode="doc"><span class="pic2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M13 2v7h7"/></svg></span><div class="pt"><div class="pn">Documents</div><div class="pd">Résumé · extraction · Q&amp;A</div></div></div>
+  <div class="pi" data-mode="translate"><span class="pic2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h7M9 3v2c0 4-2.5 7-5 8M5 9c0 2.5 2.5 4.5 5 5M13 21l4-9 4 9M14.5 17h5"/></svg></span><div class="pt"><div class="pn">Traduction</div><div class="pd">Langue source → cible + registre</div></div></div>
+  <div class="pi" data-mode="transcribe"><span class="pic2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span><div class="pt"><div class="pn">Transcription</div><div class="pd">Audio → texte (micro ou fichier)</div></div></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="ov" id="settings"><div class="modal" role="dialog" aria-modal="true" aria-label="Réglages">
+  <div class="m-head"><div class="m-ic maz-mark" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="2"/><rect x="5" y="5" width="14" height="14" rx="2" transform="rotate(45 12 12)"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/></svg></div><div class="m-tt"><div class="m-t">Réglages</div><div class="m-s" id="setSubtitle">Modèle et préférences</div></div><div class="m-x" id="setClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
+  <div class="m-body set-body">
+    <div class="field"><label>Modèle par défaut</label><button type="button" class="inp model-field" id="setModelBtn" data-popanchor><span class="mf-dot" id="setModelDot"></span><span id="setModelLbl">MAZ Auto</span><svg class="mf-chev" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></button></div>
+    <div class="field" id="set-api"><label>Clés API</label><div id="apiList"></div></div>
+    <div class="field" id="set-privacy"><label>Confidentialité</label>
+      <div class="privacy-card">
+        <p id="privacyNote"><b>Ton espace privé.</b> MAZ gère les connexions aux modèles pour toi. Tu n’as rien à configurer.</p>
+        <div id="privacyProviders">
+          <p>Quand tu envoies un message, l'appel part <b>directement</b> de ton navigateur vers le fournisseur du modèle choisi : <b>OpenRouter</b> (texte), <b>SiliconFlow</b> (image · voix · transcription), <b>Kling</b> (vidéo). Leurs serveurs traitent ta requête selon leurs propres conditions.</p>
+          <p>Tes clés restent locales et ne quittent ton appareil que vers ces fournisseurs. Tu peux tout exporter (JSON) ou tout effacer ci-dessous.</p>
+        </div>
+      </div>
+    </div>
+    <div class="row"><div><div class="rl">Thème</div><div class="rd">Apparence de l'interface</div></div><div class="seg" id="segTheme"></div></div>
+    <div class="row"><div><div class="rl">Animations</div><div class="rd">Effets et transitions</div></div><div class="toggle on" data-set="anim"></div></div>
+    <div class="row"><div><div class="rl">Densité</div><div class="rd">Espacement de l'interface</div></div><div class="seg" id="segDensity"><div class="sg" data-d="cozy">Cozy</div><div class="sg" data-d="dense">Dense</div></div></div>
+    <div class="row"><div><div class="rl">Exporter mes données</div><div class="rd">Conversations &amp; réglages (JSON)</div></div><div class="mini-btn" id="setExport">Exporter</div></div>
+    <div class="field" id="set-alertes"><label>Me prévenir quand un agent casse</label>
+      <div class="privacy-card">
+        <p>Tes agents tournent sans onglet ouvert. Sans ça, un arrêt à 9 h du matin attend que tu ouvres MAZ. Renseigne un canal, les deux, ou aucun.</p>
+      </div>
+      <div class="field" style="margin-top:10px"><label for="alEmail">Adresse mail</label><input class="inp" id="alEmail" type="email" autocomplete="email" placeholder="toi@exemple.com" aria-label="Adresse mail d’alerte"><div class="rd" id="alMailEtat" style="margin-top:6px"></div></div>
+      <div class="field"><label for="alHook">Ou une URL de notification (Discord, Slack, Make…)</label><input class="inp" id="alHook" type="url" spellcheck="false" placeholder="https://…" aria-label="URL de notification"></div>
+      <div class="row"><div><div class="rl">Prévenir aussi quand ça marche</div><div class="rd">Chaque résultat produit tout seul t'est signalé. Rien pour ce que tu lances toi-même.</div></div><div class="toggle" id="alSucces" role="switch" tabindex="0" aria-checked="false" aria-label="Prévenir aussi en cas de réussite"></div></div>
+      <div class="field"><label for="alPlafond">Plafond du mois, tous agents confondus</label>
+        <div style="display:flex;gap:8px;align-items:center"><input class="inp at-num" id="alPlafond" type="number" min="0" max="200" step="1" style="max-width:120px" aria-label="Plafond mensuel en euros"><span class="rd" id="alDepense"></span></div>
+        <div class="rd" style="margin-top:6px">Au plafond, tous tes agents s'arrêtent. Tu es prévenu à 80 %. Mets 0 pour ne pas en avoir.</div></div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn primary" id="alSave">Enregistrer</button><button class="btn" id="alTest">Envoyer un test</button><span class="rd" id="alEtat"></span></div>
+    </div>
+    <div class="row"><div><div class="rl">Nettoyer les récentes</div><div class="rd">Envoie à la corbeille tout sauf les épinglées</div></div><div class="mini-btn" id="setTidy">Nettoyer</div></div>
+    <div class="row"><div><div class="rl">Effacer tout</div><div class="rd">Supprime conversations &amp; mémoire, ici et sur le serveur</div></div><div class="mini-btn danger" id="setClear">Effacer</div></div>
+  </div>
+  <div class="m-foot"><span class="rd" id="setVersion" style="margin-right:auto"></span><div class="btn primary" id="setUpgrade">Terminé</div></div>
+</div></div>
+
+<!-- PROMPT — prévisualiser / modifier / copier -->
+<div class="ov" id="prPrev"><div class="modal sm" role="dialog" aria-modal="true" aria-label="Prompt">
+  <div class="m-head"><div class="m-ic maz-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.6L19.5 10l-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.4z"/></svg></div><div class="m-tt"><div class="m-t" id="ppvHead">Prompt</div><div class="m-s" id="ppvSub">Relis, ajuste, puis copie ou insère</div></div><div class="m-x" id="ppvClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
+  <div class="m-body">
+    <div class="field"><label for="ppvTitle">Nom</label><input class="inp" id="ppvTitle" placeholder="Ex : Narration douce"></div>
+    <div class="field"><label for="ppvCmd">Raccourci (sans /)</label><input class="inp" id="ppvCmd" placeholder="narration"></div>
+    <div class="field"><label for="ppvText">Texte du prompt</label><textarea class="inp" id="ppvText" style="min-height:190px;resize:vertical;line-height:1.6;font-family:inherit" placeholder="Le prompt complet…"></textarea></div>
+  </div>
+  <div class="m-foot"><div class="btn" id="ppvCopy">Copier</div><div class="btn" id="ppvInsert">Insérer dans le chat</div><div class="btn primary" id="ppvSave">Enregistrer</div></div>
+</div></div>
+
+<!-- PROFILE -->
+<div class="ov" id="profileModal"><div class="modal sm" role="dialog" aria-modal="true" aria-label="Profil">
+  <div class="m-head"><div class="m-ic" id="pfAv">M</div><div class="m-tt"><div class="m-t">Profil</div><div class="m-s">Ton identité dans MAZ</div></div><div class="m-x" id="pfClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
+  <div class="m-body">
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:18px;gap:2px"><div class="m-t" id="pfNameP"></div><div class="m-s" id="pfEmailP"></div></div>
+    <div class="field"><label for="pfName">Nom</label><input class="inp" id="pfName" placeholder="Ton nom"></div>
+    <div class="field"><label for="pfRole">Rôle</label><input class="inp" id="pfRole" placeholder="Ex : Entrepreneur"></div>
+    <div class="field"><label for="pfEmail">Email</label><input class="inp" id="pfEmail" placeholder="toi@exemple.com"></div>
+    <div class="field"><label>Couleur d'accent</label><div class="swatches" id="pfColors"></div></div>
+  </div>
+  <div class="m-foot"><div class="btn" id="pfCancel">Annuler</div><div class="btn primary" id="pfSave">Enregistrer</div></div>
+</div></div>
+
+<!-- PROJECT MODAL -->
+<div class="ov" id="projModal"><div class="modal" role="dialog" aria-modal="true" aria-label="Projet">
+  <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4.5 16.5 12 21l7.5-4.5M4.5 12 12 16.5 19.5 12M12 3 4.5 7.5 12 12l7.5-4.5L12 3z"/></svg></div><div class="m-tt"><div class="m-t">Nouveau projet</div><div class="m-s">Un espace de travail dédié</div></div><div class="m-x" id="pmClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
+  <div class="m-body">
+    <div class="field"><label for="pmName">Nom du projet</label><input class="inp" id="pmName" placeholder="Ex : Lancement produit"></div>
+    <div class="field"><label for="pmDesc">Description</label><input class="inp" id="pmDesc" placeholder="Courte description"></div>
+    <div class="field"><label>Type</label><div class="ptype-grid" id="pmTypes"></div></div>
+    <div class="field"><label for="pmCtx">Contexte</label><textarea class="inp pm-ta" id="pmCtx" placeholder="Instructions permanentes du projet…"></textarea></div>
+  </div>
+  <div class="m-foot"><div class="btn" id="pmCancel">Annuler</div><div class="btn primary" id="pmCreate">Créer le projet</div></div>
+</div></div>
+
+<!-- ARTIFACT / CANVAS -->
+<div class="ov" id="artifactModal"><div class="modal" role="dialog" aria-modal="true" aria-label="Aperçu du code">
+  <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 6-6 6 6 6M16 6l6 6-6 6"/></svg></div><div class="m-tt"><div class="m-t">Aperçu</div><div class="m-s">Artifact interactif</div></div>
+    <div class="art-seg seg" style="margin-right:4px"><button class="sg on" data-art="preview">Aperçu</button><button class="sg" data-art="code">Code</button></div>
+    <div class="art-vp seg" style="margin-right:4px"><button class="sg on" data-vp="desktop">🖥</button><button class="sg" data-vp="mobile">📱</button></div>
+    <div class="art-tabs"><div class="mini-btn" id="artOpen">Ouvrir</div><div class="mini-btn" id="artCopy">Copier</div></div>
+    <div class="m-x" id="artClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
+  <div class="m-body" style="display:flex;flex-direction:column;gap:0">
+    <div class="art-stage" id="artStage"><iframe id="artFrame" sandbox="allow-scripts" referrerpolicy="no-referrer"></iframe></div>
+    <div class="art-codewrap" id="artCodeWrap" style="display:none"><textarea id="artCode" spellcheck="false" aria-label="Code de l'artifact"></textarea></div>
+  </div>
+</div></div>
+
+
+<!-- NEWS / ROADMAP -->
+<div class="ov" id="newsModal"><div class="modal" role="dialog" aria-modal="true" aria-label="Nouveautés">
+  <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 11l18-5v12L3 14v-3zM11.6 16.8a3 3 0 0 1-5.8-1.6"/></svg></div><div class="m-tt"><div class="m-t">Nouveautés</div><div class="m-s">Mises à jour &amp; feuille de route</div></div><div class="m-x" id="nwClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
+  <div class="m-body"><div id="newsLog"></div><div class="sb-label" style="margin-left:0;margin-top:18px">Bientôt</div><div id="newsRoad"></div></div>
+</div></div>
+
+<!-- BILLING -->
+<div class="ov" id="billingModal"><div class="modal sm" role="dialog" aria-modal="true" aria-label="Facturation">
+  <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 11l18-5v12L3 14v-3z"/></svg></div><div class="m-tt"><div class="m-t">Activité</div><div class="m-s">Aperçu de ton usage</div></div><div class="m-x" id="blClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
+  <div class="m-body"><div id="usageList"></div></div>
+  <div class="m-foot"><div class="btn primary" id="blUpgrade">Fermer</div></div>
+</div></div>
+
+<!-- TRASH -->
+<div class="ov" id="trashModal"><div class="modal" role="dialog" aria-modal="true" aria-label="Corbeille">
+  <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14"/></svg></div><div class="m-tt"><div class="m-t">Corbeille <span class="tr-count" id="trashCount"></span></div><div class="m-s">Restaure ou supprime définitivement</div></div><div class="m-x" id="trClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
+  <div class="m-body"><div class="tr-note"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01" stroke-linecap="round"/></svg>Les éléments sont conservés 30 jours.</div><div id="trashList"></div><div class="empty-state" id="trEmpty" style="display:none"><div class="es-ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14"/></svg></div><div class="es-t">Corbeille vide</div></div></div>
+  <div class="m-foot"><div class="btn danger" id="trashEmpty">Vider la corbeille</div></div>
+</div></div>
+
+<!-- SHORTCUTS -->
+<div class="ov" id="shortcuts"><div class="modal sm" role="dialog" aria-modal="true" aria-label="Raccourcis clavier">
+  <div class="m-head"><div class="m-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="M6 8h.01M10 8h.01M14 8h.01M7 12h10M8 16h8"/></svg></div><div class="m-tt"><div class="m-t">Raccourcis clavier</div></div><div class="m-x" id="scClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>
+  <div class="m-body"><div id="scList"></div></div>
+</div></div>
+
+<!-- COMMAND PALETTE -->
+<div class="ov palette" id="palette"><div class="modal" role="dialog" aria-modal="true" aria-label="Palette de commandes">
+  <div class="pal-search"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4-4" stroke-linecap="round"/></svg><input id="cpInput" placeholder="Tape une commande ou recherche…" aria-label="Tape une commande ou recherche"></div>
+  <div class="m-body"><div id="cpList"></div></div>
+</div></div>
+
+<!-- ONBOARDING (3 étapes : thème → clé + test → prêt) -->
+<div class="ov" id="onboard"><div class="modal sm" role="dialog" aria-modal="true" aria-label="Bienvenue"><div class="ob-box">
+  <div class="ob-dots" id="obDots"></div>
+  <div class="ob-step" data-step="0">
+    <div class="ob-logo" style="background:var(--logo-mark) center/cover no-repeat;box-shadow:var(--shadow-md)"></div>
+    <div class="ob-t">Bienvenue sur MAZ</div>
+    <div class="ob-d">Ton IA premium — 100% sur ton appareil, rien n'est envoyé ailleurs que vers le modèle que tu choisis. Choisis ton thème.</div>
+    <div class="ob-themes" id="obThemes"></div>
+  </div>
+  <div class="ob-step" data-step="1" hidden>
+    <div class="ob-logo"><span class="mark" style="width:46px;height:46px;border-radius:13px"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="var(--ink-on-accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.6 7.6a5 5 0 1 0-2 2L13 13l2 2 2-2 2 2 2-2-2-2 2.6-2.6"/></svg></span></div>
+    <div class="ob-t">Connecte ton IA</div>
+    <div class="ob-d">MAZ utilise <b>ta</b> clé (gratuite à créer) — c'est ce qui garde tes conversations privées. Colle ta clé <b>OpenRouter</b> pour discuter ; image, voix et vidéo s'ajoutent ensuite dans Réglages.</div>
+    <div class="ob-key"><input id="obKey" class="inp" type="password" placeholder="Colle ta clé OpenRouter…" autocomplete="off" spellcheck="false" aria-label="Clé API OpenRouter"><button class="btn primary" id="obTest" type="button">Tester</button></div>
+    <div class="ob-keystat" id="obKeyStat" role="status" aria-live="polite"></div>
+    <a class="ob-keylink" href="https://openrouter.ai/keys" target="_blank" rel="noopener">Créer une clé gratuite sur OpenRouter →</a>
+  </div>
+  <div class="ob-step" data-step="2" hidden>
+    <div class="ob-logo"><span class="mark" style="width:46px;height:46px;border-radius:13px;font-size:24px">✦</span></div>
+    <div class="ob-t">Tout est prêt</div>
+    <div class="ob-d">Pose ta question, ou choisis un outil sous le champ. « MAZ Auto » sélectionne le meilleur modèle pour toi — et tu vois lequel sous chaque réponse.</div>
+    <div class="ob-tools" id="obTools"></div>
+  </div>
+  <div class="ob-foot"><div class="ob-skip" id="obSkip" role="button" tabindex="0">Passer</div><div style="display:flex;gap:9px"><div class="btn" id="obBack" role="button" tabindex="0">Retour</div><div class="btn primary" id="obNext" role="button" tabindex="0">Continuer</div></div></div>
+</div></div></div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><span class="ti"></span><span class="tm"></span><span class="tu" id="toastUndo">Annuler</span></div>
+<div id="slashManage" hidden></div>
+<div id="assGrid" hidden></div>
+<script src="keys.local.js"></script>
+<script>
+/* @inclure js */
+</script>
+</body>
+</html>

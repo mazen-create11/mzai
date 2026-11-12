@@ -1,0 +1,482 @@
+/* ============================================================
+   L'ATELIER — espace de noms `.at-` ÉTANCHE
+   ------------------------------------------------------------
+   Règle tenue sans exception : aucun sélecteur d'élément nu, aucun nom de
+   classe déjà employé ailleurs, aucune valeur brute — tout passe par les
+   tokens du haut de cette feuille. La cascade historique tient par l'ordre
+   d'écriture (`.tools-btn` est redéfini quatre fois) : plutôt que d'aplatir
+   1 300 lignes sous une app en production, on rend la collision IMPOSSIBLE.
+
+   Intention : un instrument de mesure. Trois signaux, jamais quatre —
+   émeraude (en cours, réussi) · craie (attend un humain) · brique (cassé).
+   Tout chiffre est en chasse fixe alignée : c'est ce qui sépare un
+   instrument d'une page web.
+   ============================================================ */
+/* 1240 et pas 1080 : en dessous de 1179 le registre replie ses colonnes et
+   n'atteint jamais sa disposition pleine. La prose, elle, reste bornée par
+   ses propres max-width en ch. */
+.at-wrap{display:flex;flex-direction:column;gap:var(--s-7);padding:var(--s-6) var(--s-6) var(--s-10);max-width:1240px;width:100%;margin:0 auto}
+@media (max-width:760px){.at-wrap{padding:var(--s-4) var(--s-4) var(--s-9);gap:var(--s-6)}}
+
+/* ── le bandeau narratif : le SEUL moment éditorial de l'atelier ── */
+.at-narr{font-family:var(--font-display);font-size:var(--fs-md);line-height:1.4;
+  color:var(--ink);margin:0;max-width:56ch;font-weight:700;letter-spacing:-.01em;text-wrap:pretty}
+.at-narr .at-em{color:var(--accent);font-style:normal}   /* pas d'italique chargée : l'oblique synthétique est un défaut, pas un style */
+.at-narr .at-mute{color:var(--ink-soft)}
+/* La chasse fixe est faite pour aligner des colonnes, pas pour porter un
+   montant en corps 30 : chaque virgule y prend une cellule entière et « 6,86 € »
+   se lit « 6 , 86  € ». Dans le bandeau, le chiffre reprend la police du texte
+   et garde seulement ses chiffres tabulaires. */
+.at-narr .at-num{font-family:inherit;letter-spacing:inherit}
+@media (min-width:761px){.at-narr{font-size:var(--fs-lg)}}
+
+/* ── chiffres : toujours alignés, jamais en corps de texte ── */
+.at-num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;letter-spacing:var(--tr-normal)}
+
+/* ── le pont : pied de conversation, hors du fil pour ne rien perturber ── */
+.at-pont{display:flex;align-items:center;gap:var(--s-3);justify-content:flex-end;
+  padding:var(--s-3) var(--s-6) var(--s-2);max-width:var(--thread-max);margin:0 auto;width:100%;
+  animation:at-monte var(--dur-3) var(--ease) both}
+.at-pont[hidden]{display:none}
+.at-pont-t{font-size:var(--fs-xs);color:var(--ink-faint)}
+@keyframes at-monte{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@media (max-width:760px){.at-pont{padding-inline:var(--s-4)}}
+@media (prefers-reduced-motion:reduce){.at-pont{animation:none}}
+
+/* ── le livrable : c'est le produit du poste, il se lit en grand ── */
+.at-livr{border:1px solid var(--line);border-left:2px solid var(--accent);border-radius:var(--r-sm);
+  background:var(--surface-2);padding:var(--s-4) var(--s-5);display:flex;flex-direction:column;gap:var(--s-3)}
+.at-livr-h{display:flex;align-items:baseline;gap:var(--s-3);flex-wrap:wrap}
+.at-livr-t{font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--ink)}
+.at-livr-m{margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--ink-faint);
+  font-variant-numeric:tabular-nums}
+.at-livr-c{max-height:26em;overflow:auto;font-size:var(--fs-sm);line-height:var(--lh-normal)}
+.at-livr-c>:first-child{margin-top:0}
+.at-livr-c>:last-child{margin-bottom:0}
+.at-livr-c table{width:auto;min-width:100%}
+.at-livr-c th{white-space:nowrap}
+
+/* compteur de signatures en attente, dans la navigation */
+/* Le compteur se pose SUR le khatam de la nav, coin haut-droit : le sceau
+   compte ce qui attend une signature, là où l'œil passe déjà. */
+.nav-ic{position:relative;display:grid;place-items:center;flex-shrink:0}
+/* Un poste qui casse fait clignoter le sceau UNE fois, en brique. La seule
+   alerte qui a le droit d'attirer l'œil : elle appelle une action, pas un
+   statut. Itération unique — jamais un pulse. */
+@keyframes at-sceau-flash{0%{color:inherit}28%{color:var(--danger)}100%{color:inherit}}
+.nav-item.at-flash .nav-ic svg{animation:at-sceau-flash .72s var(--ease) 1}
+@media (prefers-reduced-motion:reduce){.nav-item.at-flash .nav-ic svg{animation:none}}
+
+.at-nav-n{position:absolute;top:-6px;right:-7px;min-width:15px;height:15px;padding:0 3px;border-radius:var(--r-pill);
+  background:var(--accent);color:var(--ink-on-accent);font-family:var(--font-mono);font-size:9px;line-height:1;
+  font-weight:var(--fw-semi);display:inline-flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums;
+  box-shadow:0 0 0 1.5px var(--surface)}   /* liseré : détache le badge des branches du sceau */
+
+/* ── surtitre ── */
+.at-lbl{font-family:var(--font-mono);font-size:var(--fs-xs);letter-spacing:var(--tr-wide);
+  text-transform:uppercase;color:var(--ink-faint);display:block}
+
+/* ── la ligne de journée : 24 h de haut en bas d'un trait ── */
+.at-day{display:flex;flex-direction:column;gap:var(--s-2)}
+.at-daybar{position:relative;height:38px;border-bottom:1px solid var(--line);overflow:hidden}
+.at-tick{position:absolute;bottom:0;width:1px;height:5px;background:var(--line-strong)}
+.at-th{position:absolute;bottom:8px;transform:translateX(-50%);font-family:var(--font-mono);
+  font-size:10px;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.at-ev{position:absolute;bottom:14px;width:9px;height:9px;border-radius:var(--r-pill);
+  transform:translateX(-50%);border:1.5px solid transparent;cursor:pointer}
+.at-ev.ok{background:var(--accent)}
+.at-ev.att{background:transparent;border-color:var(--ink-faint)}
+.at-ev.ko{background:var(--danger)}
+.at-ev.run{background:var(--accent);animation:at-pulse 2.4s var(--ease) infinite}
+.at-now{position:absolute;top:0;bottom:0;width:1px;background:var(--accent);opacity:.5}
+@keyframes at-pulse{0%,100%{opacity:1;transform:translateX(-50%) scale(1)}50%{opacity:.45;transform:translateX(-50%) scale(.8)}}
+
+/* ── LE REGISTRE ──────────────────────────────────────────────────────────
+   Trois directions ont été mises en concurrence et jugées ; celle-ci l'a
+   emporté sur ce motif : « la seule qui ressemble à du logiciel et pas à une
+   page web ». Donc zéro carte, zéro ombre, zéro pastille. La hiérarchie
+   s'obtient PAR RETRAIT D'ENCRE : on éteint ce qui dort, et ce qui réclame
+   un geste reste seul à pleine encre.
+   Le khatam quitte le rôle de jauge — illisible à 30 px — pour celui de
+   SCEAU DE SIGNATURE : un sceau, c'est ce qu'on appose quand on valide. */
+/* Colonnes calées sur la vraie place disponible : 1440 px d'écran moins la
+   sidebar (284) moins les marges ≈ 1060 px pour le registre. Un seuil à
+   1179 px comme proposé n'aurait jamais laissé la disposition pleine
+   apparaître sur l'écran de Mazen. */
+.at-reg{--at-c1:20px;--at-c3:132px;--at-c4:80px;--at-c5:176px;--at-c6:64px;--at-c7:112px;--at-c8:40px;
+  container-type:inline-size;width:100%}
+.at-strate{display:flex;align-items:center;gap:var(--s-3);padding:var(--s-5) var(--s-3) var(--s-2)}
+.at-strate:first-child{padding-top:0}
+.at-strate-t{font-family:var(--font-sans);font-size:var(--fs-xs);font-weight:var(--fw-med);
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);white-space:nowrap}
+.at-strate-n{font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--ink-faint);
+  font-variant-numeric:tabular-nums}
+.at-strate-f{flex:1;height:1px;background:var(--line-faint)}
+.at-strate.urgent .at-strate-t,.at-strate.urgent .at-strate-n{color:var(--warning-strong)}
+.at-strate.casse .at-strate-t,.at-strate.casse .at-strate-n{color:var(--danger-strong)}
+
+.at-lignes{list-style:none;margin:0;padding:0}
+.at-ligne{--at-encre:var(--ink);--at-encre-2:var(--ink-soft);--at-encre-3:var(--ink-faint);
+  position:relative;display:grid;align-items:center;column-gap:var(--s-4);
+  grid-template-columns:var(--at-c1) minmax(0,1fr) var(--at-c3) var(--at-c4) var(--at-c5) var(--at-c6) var(--at-c7) var(--at-c8);
+  padding:var(--s-3);border-bottom:1px solid var(--line-faint);
+  transition:background var(--dur-1) var(--ease)}
+.at-ligne:last-child{border-bottom:0}
+@media (hover:hover){.at-ligne:hover{background:var(--surface)}}
+/* toute la ligne est activable : le lien s'étire, l'action rapide passe au-dessus */
+.at-lien{position:absolute;inset:0;z-index:1;border-radius:var(--r-xs)}
+.at-lien:focus-visible{outline:2px solid var(--accent);outline-offset:-3px}
+.at-c{min-width:0}
+.at-poincon{display:flex;color:var(--at-encre-3)}
+.at-ident{display:grid;row-gap:2px;min-width:0}
+.at-nm{margin:0;font-family:var(--font-sans);font-size:14px;font-weight:var(--fw-semi);
+  line-height:1.25;color:var(--at-encre);display:flex;align-items:baseline;gap:var(--s-2);min-width:0}
+.at-nm>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.at-obj{margin:0;font-size:var(--fs-sm);line-height:1.35;color:var(--at-encre-2);
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:var(--at-lignes-obj,1);overflow:hidden}
+/* le sceau : la seule tache de couleur du registre */
+.at-sceau{flex:none;display:inline-flex;align-items:center;gap:4px;font-family:var(--font-sans);
+  font-size:var(--fs-xs);font-weight:var(--fw-med);color:var(--warning-strong);white-space:nowrap}
+.at-attrib{display:contents}
+.at-c-ouv{display:grid;row-gap:1px;min-width:0}
+.at-ouv,.at-chant,.at-proch{font-size:var(--fs-sm);color:var(--at-encre-2);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.at-mod,.at-cad{font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--at-encre-3);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.at-c-cad{display:grid;row-gap:1px;min-width:0}
+.at-proch{color:var(--at-encre);font-variant-numeric:tabular-nums}
+
+/* ── le peigne : 8 passages autour d'une ligne de base.
+      Réussi monte, échec descend et s'épaissit — l'information passe par la
+      POSITION, pas seulement par la couleur. ── */
+/* inline-flex : la ligne de base ne doit courir que sous les huit barres,
+   sinon au pouce elle traverse toute la ligne comme un filet parasite. */
+.at-peigne{position:relative;display:inline-flex;align-items:center;gap:3px;height:18px}
+.at-peigne::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line)}
+.at-pas{position:relative;width:5px;height:18px;flex:none}
+.at-pas::after{content:"";position:absolute;left:0;right:0;border-radius:1px}
+.at-pas.o::after{bottom:calc(50% + 1px);height:7px;background:var(--ink-soft)}
+.at-pas.x::after{top:calc(50% + 1px);height:8px;left:-1px;right:-1px;background:var(--danger)}
+.at-pas.q::after{top:calc(50% - 3px);height:7px;box-shadow:inset 0 0 0 1.5px var(--warning)}
+.at-pas.v::after{top:calc(50% - 1px);height:2px;background:var(--line-strong)}
+.at-pas.der.o::after{background:var(--accent);height:9px}
+.at-pas.der.x::after{height:10px}
+
+/* ── enveloppe du mois ── */
+.at-c-env{display:grid;row-gap:5px;justify-items:end;min-width:0}
+.at-mnt{font-family:var(--font-mono);font-size:var(--fs-sm);font-variant-numeric:tabular-nums;
+  color:var(--at-encre);white-space:nowrap}
+.at-mnt em{font-style:normal;color:var(--at-encre-3)}
+.at-env{width:100%;height:2px;background:var(--line);border-radius:var(--r-pill);overflow:hidden}
+.at-env::after{content:"";display:block;height:100%;width:clamp(0%,var(--at-part,0%),100%);
+  background:var(--ink-faint);transition:width var(--dur-3) var(--ease)}
+.at-c-env[data-seuil="proche"] .at-env::after{background:var(--warning)}
+.at-c-env[data-seuil="depasse"] .at-env::after{background:var(--danger)}
+
+/* ── action rapide : elle se révèle au survol, elle ne décore pas ── */
+.at-c-act{display:flex;justify-content:flex-end}
+.at-go{position:relative;z-index:2;width:40px;height:40px;margin:-6px 0;display:grid;place-items:center;
+  background:transparent;border:1px solid transparent;border-radius:var(--r-xs);color:var(--ink-soft);
+  cursor:pointer;transition:opacity var(--dur-1) var(--ease),color var(--dur-1) var(--ease),
+  border-color var(--dur-1) var(--ease),background var(--dur-1) var(--ease)}
+.at-go:hover{color:var(--accent);border-color:var(--line-strong);background:var(--surface-2)}
+.at-go:focus-visible{outline:2px solid var(--accent);outline-offset:1px;color:var(--accent)}
+@media (hover:hover) and (pointer:fine){
+  .at-go{opacity:0}
+  .at-ligne:hover .at-go,.at-ligne:focus-within .at-go,.at-go:focus-visible{opacity:1}
+}
+
+/* ── le second bouton de ligne : les gestes qui ne sont pas « lancer ».
+      Même dessin que .at-go, même révélation au survol — un registre n'affiche
+      pas six boutons en permanence. ── */
+.at-c-act{gap:2px}
+.at-go.at-plus svg{transform:none}
+
+/* ── la barre de contrôle : elle n'apparaît qu'à partir de 4 postes, sinon
+      elle pèse plus que ce qu'elle trie. Champ nu, filtres en texte : aucun
+      composant décoratif, on reste sur l'instrument. ── */
+.at-bar{display:flex;align-items:center;gap:var(--s-4);flex-wrap:wrap;
+  padding-bottom:var(--s-3);border-bottom:1px solid var(--line-faint)}
+.at-find{flex:1;min-width:180px;display:flex;align-items:center;gap:var(--s-2);color:var(--ink-faint)}
+.at-find input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);
+  font-family:var(--font-sans);font-size:var(--fs-sm);padding:6px 0}
+.at-find input:focus{outline:0}
+.at-find input::placeholder{color:var(--ink-faint)}
+.at-find:focus-within{color:var(--accent)}
+.at-filtres{display:flex;align-items:center;gap:var(--s-1,4px);flex-wrap:wrap}
+.at-fl{border:0;background:transparent;cursor:pointer;font-family:var(--font-sans);
+  font-size:var(--fs-xs);font-weight:var(--fw-med);letter-spacing:.04em;color:var(--ink-faint);
+  padding:5px var(--s-3);border-radius:var(--r-pill);transition:color var(--dur-1) var(--ease),background var(--dur-1) var(--ease)}
+.at-fl:hover{color:var(--ink-soft);background:var(--surface-2)}
+.at-fl[aria-pressed="true"]{color:var(--ink);background:var(--surface-2)}
+.at-fl b{font-family:var(--font-mono);font-weight:var(--fw-med);font-variant-numeric:tabular-nums;
+  color:var(--ink-faint);margin-left:5px}
+.at-fl:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.at-rien{padding:var(--s-6) var(--s-3);font-size:var(--fs-sm);color:var(--ink-soft)}
+
+/* ── le menu de ligne ── */
+.at-menu{position:fixed;z-index:var(--z-pop,90);min-width:194px;padding:var(--s-2);
+  border:1px solid var(--line-strong);border-radius:var(--r-sm);background:var(--panel-solid,var(--surface));
+  box-shadow:var(--shadow-pop);display:flex;flex-direction:column;gap:1px}
+.at-mi{display:flex;align-items:center;gap:var(--s-3);width:100%;border:0;background:transparent;
+  text-align:left;font-family:var(--font-sans);font-size:var(--fs-sm);color:var(--ink);
+  padding:8px var(--s-3);border-radius:var(--r-xs);cursor:pointer;white-space:nowrap}
+.at-mi:hover{background:var(--surface-2)}
+.at-mi:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.at-mi[disabled]{opacity:.4;cursor:not-allowed}
+.at-mi.danger{color:var(--danger-strong)}
+.at-mi svg{flex:none;opacity:.7}
+.at-msep{height:1px;background:var(--line-faint);margin:var(--s-2) 0}
+
+/* ── états : on éteint, on n'allume pas ── */
+.at-ligne[data-etat="actif"] .at-poincon{color:var(--accent)}
+.at-ligne[data-etat="pause"] .at-poincon{color:var(--ink-soft)}
+.at-ligne[data-etat="disjoncte"] .at-poincon,
+.at-ligne[data-etat="disjoncte"] .at-cad{color:var(--danger-strong)}
+.at-ligne[data-etat="brouillon"],.at-ligne[data-etat="sommeil"]{
+  --at-encre:var(--ink-soft);--at-encre-2:var(--ink-faint);--at-encre-3:var(--ink-faint)}
+/* brouillon : l'encre douce suffit — une oblique synthétique sur Archivo signalerait surtout la synthèse */
+.at-ligne[data-etat="brouillon"] .at-mnt,.at-ligne[data-etat="brouillon"] .at-env{opacity:.45}
+
+/* ── les brouillons se replient : ils ne méritent pas le haut de l'écran ── */
+.at-repli{border-top:1px solid var(--line-faint);margin-top:var(--s-4)}
+.at-repli>summary{cursor:pointer;list-style:none;padding:var(--s-3);display:flex;align-items:center;
+  gap:var(--s-3);font-family:var(--font-sans);font-size:var(--fs-xs);font-weight:var(--fw-med);
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint)}
+.at-repli>summary::-webkit-details-marker{display:none}
+.at-repli>summary::after{content:"";flex:1;height:1px;background:var(--line-faint)}
+.at-repli>summary:hover{color:var(--ink-soft)}
+.at-repli>summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px;border-radius:var(--r-xs)}
+
+/* ── replis de gabarit : sur la largeur du REGISTRE, pas de la fenêtre ──
+   Seuil ramené de 1023 à 880 px (27/07) : les colonnes fixes pèsent 624 px +
+   112 px de gouttières = 736 px, il reste donc ~145 px pour le nom dès 880 —
+   assez, le nom s'ellipse. À 1023, l'écran de Mazen (registre ≈ 900 px) tombait
+   TOUJOURS dans la version repliée : une ligne de poste y prenait quatre lignes
+   de hauteur, et la version pleine n'était jamais vue. */
+@container (max-width:879px){
+  .at-ligne{grid-template-columns:var(--at-c1) minmax(0,1fr) var(--at-c5) var(--at-c6) var(--at-c7) var(--at-c8);
+    row-gap:5px}
+  .at-attrib{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:var(--s-2);row-gap:2px;
+    grid-column:2;grid-row:2}
+  .at-c-ouv{grid-auto-flow:column;column-gap:var(--s-2);align-items:baseline}
+  .at-poincon{grid-column:1;grid-row:1/span 2;align-self:start;margin-top:3px}
+  .at-ident{grid-column:2;grid-row:1}
+  .at-c-cad{grid-column:3;grid-row:1/span 2}
+  .at-c-sante{grid-column:4;grid-row:1/span 2}
+  .at-c-env{grid-column:5;grid-row:1/span 2}
+  .at-c-act{grid-column:6;grid-row:1/span 2}
+}
+/* Sous 780 px, empiler CINQ rangées faisait une ligne de poste haute de 156 px :
+   six postes ne tenaient plus sur un écran, et l'atelier cessait de se lire d'un
+   coup d'œil. On resserre à TROIS rangées — identité · attribution+cadence ·
+   mesures — en gardant l'ordre de lecture. (27/07) */
+@container (max-width:779px){
+  .at-ligne{grid-template-columns:var(--at-c1) minmax(0,1fr) auto auto;row-gap:3px;
+    padding:var(--s-3);--at-lignes-obj:1}
+  .at-poincon{grid-column:1;grid-row:1;margin-top:2px}
+  .at-ident{grid-column:2/4;grid-row:1}
+  .at-c-act{grid-column:4;grid-row:1/span 3;align-self:start}
+  .at-attrib{grid-column:2;grid-row:2;display:flex;flex-wrap:wrap;align-items:baseline;
+    column-gap:var(--s-2);row-gap:0;min-width:0}
+  .at-c-ouv{grid-auto-flow:column;column-gap:var(--s-2);align-items:baseline;min-width:0}
+  /* la cadence rejoint l'attribution : même registre d'information, même rangée,
+     mais sa PROPRE colonne — superposées dans la même cellule, les deux textes
+     se chevauchaient dès que le nom du modèle était long. */
+  .at-c-cad{grid-column:3;grid-row:2;display:flex;align-items:baseline;
+    justify-content:flex-end;gap:var(--s-2);white-space:nowrap}
+  .at-c-sante{grid-column:2;grid-row:3;align-self:center}
+  .at-c-env{grid-column:3;grid-row:3;justify-self:end;align-self:center;width:min(150px,40vw)}
+}
+/* Au pouce : chaque mesure reprend sa rangée, les boutons deviennent des cibles
+   de 44 px, et le peigne cède la place — il se lit mal à cette largeur. */
+@container (max-width:559px){
+  .at-ligne{row-gap:5px;padding:var(--s-4) var(--s-3);grid-template-columns:var(--at-c1) minmax(0,1fr) auto}
+  .at-ident{grid-column:2;grid-row:1}
+  .at-c-act{grid-column:3;grid-row:1/span 4}
+  .at-attrib{grid-column:2/-1;grid-row:2}
+  .at-c-cad{grid-column:2/-1;grid-row:3;justify-content:flex-start;white-space:normal}
+  .at-c-sante{display:none}
+  .at-c-env{grid-column:2/-1;grid-row:4;justify-self:start;width:100%}
+  .at-go{opacity:1;border-color:var(--line);width:44px;height:44px}
+}
+.at-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip-path:inset(50%);white-space:nowrap;border:0}
+
+/* ── l'état vide : il ne s'excuse pas, il propose ── */
+.at-empty{border:1px dashed var(--line-strong);border-radius:var(--r-md);padding:var(--s-8) var(--s-6);
+  text-align:center;display:flex;flex-direction:column;align-items:center;gap:var(--s-4)}
+.at-empty .at-et{font-family:var(--font-display);font-weight:700;letter-spacing:-.01em;font-size:var(--fs-md);color:var(--ink);margin:0}
+.at-empty .at-es{font-size:var(--fs-sm);color:var(--ink-soft);margin:0;max-width:44ch}
+
+/* ── la forge : une phrase, un poste ── */
+.at-forge{display:flex;flex-direction:column;gap:var(--s-3);border:1px solid var(--line);
+  border-radius:var(--r-md);background:var(--surface);padding:var(--s-5);box-shadow:var(--shadow-xs)}
+.at-forge:focus-within{border-color:var(--accent);box-shadow:var(--focus-ring)}
+.at-ta{width:100%;border:0;background:transparent;color:var(--ink);font-family:var(--font-sans);
+  font-size:var(--fs-base);line-height:var(--lh-normal);resize:none;min-height:2.6em;padding:0}
+.at-ta:focus{outline:0}
+.at-ta::placeholder{color:var(--ink-faint)}
+.at-frow{display:flex;align-items:center;gap:var(--s-3);flex-wrap:wrap}
+
+/* ── boutons : plats, un seul plein par écran ── */
+.at-btn{display:inline-flex;align-items:center;justify-content:center;gap:var(--s-2);
+  min-height:38px;padding:0 var(--s-4);border-radius:var(--r-sm);border:1px solid var(--line-strong);
+  background:var(--surface);color:var(--ink);font-family:var(--font-sans);font-size:var(--fs-sm);
+  font-weight:var(--fw-semi);cursor:pointer;transition:background var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease),transform var(--dur-1) var(--ease)}
+.at-btn:hover{background:var(--surface-2);border-color:var(--ink-faint)}
+.at-btn:active{transform:scale(.985)}
+.at-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.at-btn[disabled]{opacity:.45;cursor:not-allowed}
+.at-btn.plein{background:var(--accent);border-color:var(--accent);color:var(--ink-on-accent)}
+.at-btn.plein:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.at-btn.danger{color:var(--danger-strong);border-color:var(--line-strong)}
+.at-btn.danger:hover{border-color:var(--danger)}
+
+/* ── la fiche de poste : deux colonnes, la consigne à gauche ── */
+.at-fiche{display:grid;grid-template-columns:minmax(0,1fr);gap:var(--s-6)}
+@media (min-width:900px){.at-fiche{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);align-items:start}}
+.at-card{border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface);
+  padding:var(--s-5);display:flex;flex-direction:column;gap:var(--s-4);box-shadow:var(--shadow-xs)}
+.at-ct{font-size:var(--fs-sm);font-weight:var(--fw-semi);color:var(--ink);letter-spacing:var(--tr-snug);margin:0}
+
+/* les quatre blocs nommés — la structure EST la méthode */
+.at-blocs{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r-sm);overflow:hidden}
+.at-bloc{border-top:1px solid var(--line);display:flex;flex-direction:column}
+.at-bloc:first-child{border-top:0}
+.at-bh{display:flex;align-items:baseline;gap:var(--s-2);padding:var(--s-3) var(--s-4) 0}
+.at-bn{font-family:var(--font-mono);font-size:10px;letter-spacing:var(--tr-wide);text-transform:uppercase;color:var(--accent)}
+.at-bc{margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.at-bt{width:100%;border:0;background:transparent;color:var(--ink);font-family:var(--font-sans);
+  font-size:var(--fs-sm);line-height:var(--lh-normal);resize:none;overflow:hidden;
+  min-height:3.4em;padding:var(--s-2) var(--s-4) var(--s-3)}
+.at-bt:focus{outline:0;background:var(--surface-2)}
+.at-bt::placeholder{color:var(--ink-faint)}
+
+/* ── le diff : seuls les mots qui ont bougé sont marqués ── */
+.at-ct-row{display:flex;align-items:center;gap:var(--s-3);flex-wrap:wrap}
+.at-cmp{display:flex;align-items:center;gap:var(--s-2);margin-left:auto;
+  font-family:var(--font-mono);font-size:10px;letter-spacing:var(--tr-wide);
+  text-transform:uppercase;color:var(--ink-faint)}
+.at-sel-mini{min-height:28px;width:auto;padding:0 var(--s-6) 0 var(--s-3);font-size:var(--fs-xs);
+  background-position:calc(100% - 13px) 12px,calc(100% - 9px) 12px}
+.at-diff{padding:var(--s-2) var(--s-4) var(--s-3);font-size:var(--fs-sm);line-height:var(--lh-normal);
+  color:var(--ink);white-space:pre-wrap;word-break:break-word}
+.at-diff-off{color:var(--ink-faint)}
+.at-del{background:var(--danger-tint);color:var(--danger-strong);text-decoration-thickness:1px;
+  border-radius:2px;padding:0 2px}
+.at-ins{background:var(--accent-tint);color:var(--accent-strong);text-decoration:none;
+  border-radius:2px;padding:0 2px}
+
+/* ── le correctif proposé : une écriture sur la consigne, donc une signature ── */
+.at-corr{border:1px solid var(--accent);background:var(--accent-tint);border-radius:var(--r-sm);
+  padding:var(--s-4) var(--s-5);display:flex;flex-direction:column;gap:var(--s-3)}
+.at-corr-h{display:flex;align-items:baseline;gap:var(--s-2);flex-wrap:wrap}
+.at-corr-b{font-family:var(--font-mono);font-size:10px;letter-spacing:var(--tr-wide);
+  text-transform:uppercase;color:var(--accent-strong)}
+.at-corr-t{width:100%;border:1px solid var(--line);border-radius:var(--r-xs);background:var(--surface);
+  color:var(--ink);font-family:var(--font-sans);font-size:var(--fs-sm);line-height:var(--lh-normal);
+  padding:var(--s-3);resize:vertical;min-height:3.6em}
+.at-corr-t:focus{outline:0;border-color:var(--accent)}
+
+/* ── le pouce : deux boutons, jamais deux couleurs criardes ── */
+.at-pouce{display:flex;align-items:center;gap:var(--s-2)}
+.at-pb{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid var(--line);border-radius:var(--r-xs);background:transparent;color:var(--ink-faint);
+  cursor:pointer;transition:color var(--dur-1) var(--ease),border-color var(--dur-1) var(--ease)}
+.at-pb:hover{color:var(--ink);border-color:var(--line-strong)}
+.at-pb:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.at-pb.on{color:var(--accent);border-color:var(--accent);background:var(--accent-tint)}
+.at-pb.on.bas{color:var(--danger-strong);border-color:var(--danger);background:var(--danger-tint)}
+.at-motif{flex:1 1 160px;min-width:0;min-height:32px;border:1px solid var(--line);border-radius:var(--r-xs);
+  background:var(--surface);color:var(--ink);font-size:var(--fs-xs);padding:0 var(--s-3)}
+.at-motif:focus{outline:0;border-color:var(--danger)}
+@media (max-width:760px){.at-pb{width:44px;height:44px}.at-motif{min-height:44px}}
+
+/* champs */
+.at-f{display:flex;flex-direction:column;gap:var(--s-2)}
+.at-in,.at-sel{width:100%;min-height:38px;border:1px solid var(--line-strong);border-radius:var(--r-sm);
+  background:var(--surface);color:var(--ink);font-family:var(--font-sans);font-size:var(--fs-sm);padding:0 var(--s-3)}
+.at-sel{-webkit-appearance:none;appearance:none;cursor:pointer;
+  background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);
+  background-position:calc(100% - 15px) 17px,calc(100% - 10px) 17px;background-size:5px 5px;background-repeat:no-repeat;padding-right:var(--s-8)}
+.at-in:focus,.at-sel:focus{outline:0;border-color:var(--accent);box-shadow:var(--focus-ring)}
+.at-grid2{display:grid;grid-template-columns:1fr 1fr;gap:var(--s-3)}
+
+/* outillage : le prix est là où on clique, pas dans une page de facturation */
+.at-tool{display:flex;align-items:flex-start;gap:var(--s-3);padding:var(--s-3);border-radius:var(--r-sm);
+  border:1px solid var(--line);cursor:pointer;transition:border-color var(--dur-1) var(--ease)}
+.at-tool:hover{border-color:var(--line-strong)}
+.at-tool.on{border-color:var(--accent);background:var(--accent-tint)}
+.at-tool input{margin:2px 0 0;accent-color:var(--accent);width:15px;height:15px;flex:0 0 auto}
+.at-tn{font-size:var(--fs-sm);font-weight:var(--fw-med);color:var(--ink);display:block}
+.at-td{font-family:var(--font-mono);font-size:10px;color:var(--ink-faint);display:block;margin-top:1px}
+.at-td.cher{color:var(--warning-strong)}
+
+/* ── le journal d'un passage : une étape par ligne ── */
+.at-steps{display:flex;flex-direction:column;gap:0;font-family:var(--font-mono);font-size:var(--fs-xs)}
+.at-step{display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:var(--s-3);align-items:baseline;
+  padding:var(--s-2) 0;border-top:1px solid var(--line-faint)}
+.at-step:first-child{border-top:0}
+.at-si{width:7px;height:7px;border-radius:var(--r-pill);background:var(--accent);align-self:center}
+.at-si.sim{background:transparent;border:1.5px solid var(--ink-faint)}
+.at-si.ko{background:var(--danger)}
+.at-si.att{background:var(--ink-faint)}
+.at-sn{color:var(--ink);overflow:hidden;text-overflow:ellipsis}
+.at-sv{color:var(--ink-faint);font-variant-numeric:tabular-nums;white-space:nowrap}
+.at-plan{grid-column:2/-1;color:var(--ink-soft);font-family:var(--font-sans);font-size:var(--fs-xs);
+  padding:var(--s-1) 0 var(--s-2);line-height:var(--lh-snug)}
+
+/* ── le contrôle : ce qui va partir, en clair ── */
+.at-ctrl{border:1px solid var(--line);border-left:2px solid var(--ink-faint);border-radius:var(--r-md);
+  background:var(--surface);padding:var(--s-5);display:flex;flex-direction:column;gap:var(--s-4)}
+.at-ctrl-h{display:flex;align-items:baseline;gap:var(--s-3);flex-wrap:wrap}
+.at-ctrl-t{font-size:var(--fs-base);font-weight:var(--fw-semi);color:var(--ink)}
+.at-exp{margin-left:auto;font-family:var(--font-mono);font-size:var(--fs-xs);color:var(--ink-faint);font-variant-numeric:tabular-nums}
+.at-prev{border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface-2);
+  padding:var(--s-4) var(--s-5);max-height:24em;overflow:auto;font-size:var(--fs-sm);
+  line-height:var(--lh-normal);color:var(--ink);word-break:break-word}
+.at-prev>:first-child{margin-top:0}
+.at-prev>:last-child{margin-bottom:0}
+/* Un tableau défile, il ne s'écrase pas : sans ça les en-têtes se coupent en
+   « RÉFÉREN / CE » et une date devient « 10/07/20 / 26 ». */
+.at-prev table{width:auto;min-width:100%}
+.at-prev th{white-space:nowrap}
+.at-prev td{white-space:normal}
+.at-why{font-size:var(--fs-xs);color:var(--ink-soft);margin:0}
+/* Deux boutons ne s'étirent pas sur 1 400 px de large : taille réelle, posés à droite. */
+.at-acts{display:flex;gap:var(--s-3);flex-wrap:wrap;justify-content:flex-end}
+.at-acts .at-btn{min-width:134px;padding:0 var(--s-5)}
+@media (max-width:560px){.at-acts .at-btn{flex:1 1 auto;min-width:0}}
+
+/* ── enveloppe consommée ── */
+.at-jauge{height:3px;border-radius:var(--r-pill);background:var(--surface-3);overflow:hidden}
+.at-jauge i{display:block;height:100%;background:var(--accent);border-radius:inherit;transition:width var(--dur-3) var(--ease)}
+.at-jauge.chaud i{background:var(--warning)}
+.at-jauge.plein i{background:var(--danger)}
+
+/* ── bandeau d'état hors-ligne : on grise, on ne cache jamais ── */
+.at-off{display:flex;align-items:center;gap:var(--s-2);padding:var(--s-3) var(--s-4);border-radius:var(--r-sm);
+  background:var(--warning-tint);color:var(--warning-strong);font-size:var(--fs-sm)}
+.at-stale{opacity:.5}
+
+/* ── squelette de chargement, aux hauteurs exactes des vraies lignes ── */
+.at-sk{height:62px;border-top:1px solid var(--line-faint);
+  background:linear-gradient(90deg,var(--surface) 0%,var(--surface-2) 50%,var(--surface) 100%);
+  background-size:200% 100%;animation:at-sh 1.4s linear infinite}
+.at-sk:first-child{border-top:0}
+@keyframes at-sh{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.at-sk,.at-ev.run{animation:none}}
+
+/* ── Au pouce ─────────────────────────────────────────────────────────────
+   EN DERNIER dans le bloc, volontairement : à spécificité égale c'est l'ordre
+   qui tranche, et placée plus haut cette règle se faisait écraser par la
+   définition des champs. Aucune cible sous 44 px, champs compris — on les
+   vise aussi mal que les boutons. */
+@media (max-width:760px){
+  .at-btn{min-height:44px;padding:0 var(--s-5)}
+  .at-in,.at-sel{min-height:44px}
+  .at-sel{background-position:calc(100% - 15px) 20px,calc(100% - 10px) 20px}
+  .at-tool{padding:var(--s-4) var(--s-3)}
+}
+

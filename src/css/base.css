@@ -1,0 +1,91 @@
+/* ============================================================
+   BASE
+   ============================================================ */
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{
+  min-height:100dvh; overflow:hidden; overscroll-behavior:none;
+  background:var(--bg); color:var(--ink);
+  font-family:var(--font-sans); font-size:var(--fs-base);
+  line-height:var(--lh-normal); letter-spacing:var(--tr-snug); font-weight:var(--fw-reg);
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; text-rendering:optimizeLegibility;
+  -webkit-text-size-adjust:100%; text-size-adjust:100%;
+  font-feature-settings:"kern" 1,"liga" 1,"calt" 1; font-variant-ligatures:common-ligatures contextual;
+}
+h1,h2,h3,h4{font-family:var(--font-sans); font-weight:var(--fw-bold);
+  line-height:var(--lh-tight); letter-spacing:var(--tr-tight); color:var(--ink);
+  margin:0; font-optical-sizing:auto}
+h1{font-size:var(--fs-2xl)} h2{font-size:var(--fs-xl)} h3{font-size:var(--fs-lg)}
+a{color:var(--accent-strong);text-decoration:none}
+a:hover{text-decoration:underline;text-underline-offset:3px}
+code,kbd{font-family:var(--font-mono);font-size:.92em}
+button{font-family:inherit}
+::selection{background:var(--accent-tint-2);color:var(--ink)}
+::placeholder{color:var(--ink-faint);opacity:1}
+:focus{outline:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:var(--focus-offset);border-radius:var(--r-xs)}
+[hidden]{display:none!important}
+*{scrollbar-width:thin;scrollbar-color:var(--line-strong) transparent}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+
+/* ── Scroll interne discret (clé anti-découpe) ── */
+.scroll-y,.sb-scroll,.home-wrap,.thread,.vbody,.m-body,.rc,#cpList{
+  min-height:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;scrollbar-gutter:stable;
+  scrollbar-width:thin;scrollbar-color:var(--line-strong) transparent}
+.scroll-y::-webkit-scrollbar,.sb-scroll::-webkit-scrollbar,.home-wrap::-webkit-scrollbar,.thread::-webkit-scrollbar,.vbody::-webkit-scrollbar,.m-body::-webkit-scrollbar,.pop::-webkit-scrollbar,#cpList::-webkit-scrollbar{width:9px;height:9px}
+.scroll-y::-webkit-scrollbar-thumb,.sb-scroll::-webkit-scrollbar-thumb,.home-wrap::-webkit-scrollbar-thumb,.thread::-webkit-scrollbar-thumb,.vbody::-webkit-scrollbar-thumb,.m-body::-webkit-scrollbar-thumb,.pop::-webkit-scrollbar-thumb,#cpList::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:var(--r-pill);border:2px solid var(--bg)}
+.scroll-y::-webkit-scrollbar-track,.sb-scroll::-webkit-scrollbar-track,.thread::-webkit-scrollbar-track,.vbody::-webkit-scrollbar-track{background:transparent}
+
+/* ── Tooltips (puce encre, contraste fort, les 2 thèmes) ── */
+[data-tip]{position:relative}
+[data-tip]::after{content:attr(data-tip);position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%) translateY(4px);background:var(--ink);color:var(--bg);font-size:11.5px;font-weight:500;letter-spacing:0;padding:5px 9px;border-radius:var(--r-xs);white-space:nowrap;opacity:0;pointer-events:none;transition:.16s var(--ease);z-index:var(--z-toast);box-shadow:var(--shadow-md)}
+.topbar [data-tip]::after,.composer [data-tip]::after{top:auto;bottom:calc(100% + 8px);transform:translateX(-50%) translateY(-4px)}
+/* Révélation SEULEMENT sur un vrai pointeur qui survole. Sur tactile (pur OU hybride
+   type iPad+trackpad), un tap déclenchait un :hover collant qui laissait le tooltip
+   « Accueil » figé sous le logo — un tooltip au survol n'a aucun sens au doigt. */
+@media (hover:hover){
+  [data-tip]:hover::after{opacity:1;transform:translateX(-50%) translateY(0);transition-delay:.35s}
+  .topbar [data-tip]:hover::after,.composer [data-tip]:hover::after{transform:translateX(-50%) translateY(0)}
+}
+
+/* ── Ripple (interaction discrète) ── */
+.rip{position:relative;overflow:hidden}
+.rip>span.r{position:absolute;border-radius:50%;background:var(--accent-ring);transform:translate(-50%,-50%) scale(0);animation:rip .6s var(--ease) forwards;pointer-events:none}
+@keyframes rip{to{transform:translate(-50%,-50%) scale(1);opacity:0}}
+
+/* ============================================================
+   GRILLE ANTI-DÉCOUPE
+   Une seule hauteur réelle (#app) · scroll uniquement sur zones internes.
+   min-height:0 + min-width:0 = condition pour qu'un enfant rétrécisse.
+   ============================================================ */
+#app,.app{
+  height:var(--app-h);
+  display:grid;
+  grid-template-columns:var(--sidebar-w) minmax(0,1fr);  /* colonne sidebar FIXE */
+  grid-template-rows:100%;
+  overflow:hidden;
+  isolation:isolate;                                     /* contexte d'empilement racine */
+}
+
+/* SHELL = colonne contenu : topbar / fil / dock composer */
+.shell{
+  grid-column:2;min-width:0;min-height:0;
+  display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;   /* colonne bornée au viewport (sinon le composer déborde à droite sur mobile) · topbar | main | dock */
+  overflow:hidden;position:relative;isolation:isolate;background:var(--bg);
+}
+
+/* MAIN = vues empilées dans UNE cellule grid (le dock est FRÈRE, jamais dedans) */
+.main,#main{grid-row:2;min-height:0;min-width:0;position:relative;display:grid;grid-template-rows:minmax(0,1fr);overflow:hidden}
+.view{grid-area:1/1;min-height:0;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.view:not(.active){display:none}                 /* JAMAIS visibility:hidden */
+.view.active{animation:vfade var(--dur-3) var(--ease) both}
+@keyframes vfade{from{opacity:0}to{opacity:1}}   /* opacity-only : aucun transform sur .view */
+
+/* COMPOSER ancré (footer) : grid-row 3, frère de #main */
+.composer-dock{grid-row:3;min-height:0;flex-shrink:0}
+#app:not([data-view="chat"]) .composer-dock{display:none}   /* dock chat visible uniquement en conversation */
+
+/* SCRIM : voile mobile · z(scrim) < z(sidebar) ⇒ sidebar cliquable au-dessus */
+.scrim{position:fixed;inset:0;z-index:40;background:var(--overlay);opacity:0;visibility:hidden;transition:opacity .25s var(--ease),visibility .25s var(--ease);display:none;cursor:pointer}   /* cursor:pointer indispensable : sans lui Safari iOS n'émet pas de click sur un div */
+

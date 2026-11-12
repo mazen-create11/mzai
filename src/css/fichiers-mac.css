@@ -1,0 +1,33 @@
+/* ═══ FICHIERS MAC — accès à un dossier local (File System Access, lecture seule) ═══ */
+.fs-dot{width:7px;height:7px;border-radius:50%;background:var(--ink-faint);flex-shrink:0;transition:background var(--dur-2)}
+.fs-dot[data-st="on"]{background:var(--accent);box-shadow:0 0 0 3px var(--accent-tint)}
+.fs-dot[data-st="ask"]{background:var(--warning)}
+#fsChipLbl{max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fs-mode-tag{font-size:10px;font-weight:var(--fw-semi);letter-spacing:.03em;text-transform:uppercase;color:var(--accent-strong);background:var(--accent-tint);border-radius:var(--r-pill);padding:2px 7px}
+.fs-note{display:flex;align-items:center;gap:10px;width:fit-content;max-width:min(92%,560px);margin:6px auto;padding:9px 14px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface-2);color:var(--ink-soft);font-size:12.5px;line-height:1.45}
+.fs-note svg{flex-shrink:0;color:var(--accent)}
+.fs-note b{color:var(--ink);font-weight:var(--fw-semi);display:block}
+.fs-note span{display:block;color:var(--ink-faint);font-size:11.5px;word-break:break-word}
+.fs-card{margin-top:10px;border:1px solid var(--line-strong);border-radius:var(--r-md);background:var(--surface);box-shadow:var(--shadow-sm);padding:13px 14px;max-width:480px}
+.fs-card-t{display:flex;align-items:center;gap:8px;font-weight:var(--fw-semi);font-size:13.5px;color:var(--ink)}
+.fs-card-t svg{color:var(--accent);flex-shrink:0}
+.fs-card-list{display:flex;flex-direction:column;gap:3px;margin:9px 0 11px;padding-left:2px}
+.fs-card-list span{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--ink-soft);word-break:break-all}
+.fs-card-acts{display:flex;gap:8px}
+.fs-card-acts button{font:inherit;font-size:13px;font-weight:var(--fw-semi);border-radius:var(--r-pill);padding:7px 16px;cursor:pointer;transition:background var(--dur-2),transform var(--dur-1)}
+.fs-card-acts button:active{transform:scale(.97)}
+.fs-ok{border:0;background:var(--accent);color:var(--ink-on-accent)}
+.fs-ok:hover{background:var(--accent-hover)}
+.fs-no{border:1px solid var(--line-strong);background:transparent;color:var(--ink-soft)}
+.fs-no:hover{background:var(--surface-2)}
+.fs-req{border:1px dashed var(--accent-tint-2);background:var(--accent-tint);border-radius:var(--r-md);padding:10px 13px;margin:8px 0;font-size:12.5px}
+.fs-req b{display:flex;align-items:center;gap:7px;color:var(--accent-strong);font-size:11px;font-weight:var(--fw-semi);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.fs-req code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;display:block;color:var(--ink);word-break:break-all}
+.fs-sh-head{display:flex;align-items:flex-start;gap:10px;padding:4px 12px 12px;color:var(--ink-soft);font-size:13px;line-height:1.5}
+.fs-sh-head svg{flex-shrink:0;color:var(--accent);margin-top:2px}
+.fs-sh-head b{color:var(--ink)}
+.fs-seg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r-pill);padding:4px;margin:2px 12px 10px}
+.fs-seg button{border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:var(--fw-med);color:var(--ink-soft);padding:7px 4px;border-radius:var(--r-pill);cursor:pointer;transition:background var(--dur-2),color var(--dur-2)}
+.fs-seg button.on{background:var(--accent);color:var(--ink-on-accent);font-weight:var(--fw-semi);box-shadow:var(--shadow-xs)}
+.fs-mode-desc{margin:0 14px 12px;font-size:12px;line-height:1.5;color:var(--ink-faint);min-height:30px}
+@media (min-width:641px){.sheet{inset-inline:auto;left:50%;translate:-50% 0;width:min(92vw,540px)}}   /* desktop : la feuille ne s'étire plus sur 1280px — translate ne touche pas le transform animé */

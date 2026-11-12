@@ -1,0 +1,41 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  serveur:
+    name: Serveur (Worker)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Tests du Worker
+        working-directory: maz-proxy
+        run: npm test
+
+  interface:
+    name: Interface (navigateur)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Le fichier publié correspond aux sources
+        run: node build.mjs --check
+      - name: Installer le navigateur de test
+        working-directory: test-ui
+        run: |
+          npm ci
+          npx playwright install --with-deps --only-shell chromium
+      - name: Tests de l'interface
+        working-directory: test-ui
+        run: npm test

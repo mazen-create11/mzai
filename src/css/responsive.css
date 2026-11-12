@@ -1,0 +1,98 @@
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+/* ≤1024 : sidebar = drawer overlay (z>scrim) */
+@media (max-width:1024px){
+  #app,.app{grid-template-columns:minmax(0,1fr)}
+  .shell{grid-column:1}
+  .menu-btn{display:grid}
+  .scrim{display:block}
+  .sidebar{
+    position:fixed;top:0;left:0;bottom:0;z-index:50;
+    width:min(var(--sidebar-w),calc(100vw - var(--s-9)));
+    transform:translateX(-105%);transition:transform .28s var(--ease);
+    box-shadow:var(--shadow-lg);will-change:transform;
+  }
+  .sidebar.open{transform:translateX(0)}
+  .sidebar.collapsed{width:min(var(--sidebar-w),calc(100vw - var(--s-9)))}
+  .scrim.show{opacity:1;visibility:visible}
+}
+@media (min-width:1025px){.menu-btn{display:none}.scrim{display:none}}
+
+/* paysage : insets gauche/droite (encoche) sur barres + dock */
+@media (orientation:landscape){
+  .composer{padding-left:max(18px,env(safe-area-inset-left));padding-right:max(18px,env(safe-area-inset-right))}
+  .thread,.chat,.vbody{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
+}
+
+/* ≤640 : ergonomie pouce, anti-zoom iOS, cibles tactiles ≥44px */
+@media (max-width:640px){
+  :root{--topbar-h:54px}
+  .thread,.chat{padding:20px 16px 10px;gap:24px}
+  .bubble{font-size:1rem;line-height:1.7}          /* 16px : lisibilité mobile alignée ChatGPT/Claude */
+  .msg{gap:10px}
+  .msg .col{max-width:88%}
+  .msg.ai .col{max-width:100%}
+  .vhead{padding:16px 16px 10px}
+  .vsearch{margin-inline:16px}
+  .vbody{padding-inline:16px}
+  .composer{padding:10px 12px max(10px,env(safe-area-inset-bottom))}
+  #prompt,input,textarea,select,.inp,.api-in,.vsearch input,.pal-search input,.edit-ta,.pp-ctx,.ch-in{font-size:16px}
+  .icon-btn,.menu-btn,.send,.clip,.m-x,.chat-pill .pa{min-width:44px;min-height:44px}
+  /* Actions sous un message (.act/.pa) : le visuel reste petit et discret —
+     la cible tactile de 44px passe par un pseudo étendu, invisible. Fini les
+     grosses tuiles. */
+  .act,.la{width:32px;height:32px;min-width:0;min-height:0;background:transparent;border:0;position:relative}
+  /* le rang déplié doit loger la boîte 40px. ⚠ pas de marge négative pour l'alignement
+     optique : elle sortirait le 1er bouton de la boîte de confinement de .msg → zone morte */
+  .msg.ai:hover .actions,.msg.user:hover .actions,.msg .actions{max-height:44px}
+  /* ⚠ pas de ::after ici — il appartient au tooltip [data-tip] (fond crème, z-index toast) :
+     partager le pseudo écrasait son texte mais gardait son fond → boîte crème opaque
+     par-dessus l'icône au survol/tap. Payé le 23/07. */
+  .act{width:40px;height:40px}   /* vraie boîte 40px, invisible (fond transparent) : le confinement content-visibility de .msg clippe un pseudo qui dépasse, jamais une vraie boîte */
+  .la::before{content:"";position:absolute;inset:-6px}   /* 44px de contact hors .msg (la sidebar n'a pas de confinement) */
+  .act:active,.la:active{background:var(--surface-2)}
+  .att-chip .ax,.mc-x{min-width:26px;min-height:26px;padding:4px}   /* croix de chips : zone de contact élargie sans casser le chip */
+  .send{border-radius:var(--r-md)}
+  .hint{display:none}
+  .counter,#counter{display:none}           /* compteur de mots = bruit sur mobile (comme Claude/ChatGPT) */
+  .brand .wordmark{display:none}            /* masquer contrôle secondaire <640 */
+  .pop,.pop.wide{max-width:calc(100vw - 20px);min-width:0;max-height:min(64dvh,520px)}   /* .pop.wide (330px) débordait : on borne au viewport */
+  .modal{max-height:90dvh}
+  .opt select,.opt-model .opt-cur,.opt-model .opt-lbl{font-size:16px}   /* anti-zoom iOS sur les sélecteurs d'options */
+  .ptype-grid{grid-template-columns:repeat(2,1fr)}
+  #psPresets{grid-template-columns:1fr}
+  /* en-tête de l'aperçu de code : passe sur 2 rangées au lieu de déborder/clipper les contrôles */
+  #artifactModal .m-head{flex-wrap:wrap;row-gap:8px}
+  #artifactModal .m-tt{flex:1 1 100%;order:-1}
+  /* cibles tactiles ≥44px sur les contrôles secondaires */
+  .toggle,.sg,.theme-sg,.swatch,.sug,.sug-chip,.pcard-acts .pa,.ch-edit,.cb-btns button{min-height:44px}
+}
+
+/* fallback dvh (vieux WebKit) — garder le filet JS visualViewport */
+@supports not (height:100dvh){
+  :root{--app-h:100vh}
+  body{min-height:-webkit-fill-available}
+  #app,.app{min-height:-webkit-fill-available}   /* uniquement en fallback : sinon écrase le rétrécissement clavier iOS */
+}
+
+/* tactile : ce qui n'apparaît qu'au survol doit rester atteignable */
+@media (hover:none){
+  .msg .actions{max-height:44px!important;margin-top:0!important;opacity:1!important;transform:none!important;overflow:visible}   /* toujours dépliées au tactile, assez hautes pour la boîte 40px ; le clip ne sert qu'au repli desktop */
+  .lacts{opacity:1!important;transform:none!important}
+  /* tactile : les actions n'apparaissent que sur la conversation ACTIVE (sinon elles écrasent le titre dans une sidebar étroite) */
+  .chat-pill.active .pill-acts{display:flex!important}
+  .chat-pill.active .ago{display:none}
+  .pcard-acts{display:flex!important}
+  .conv-head .ch-edit{opacity:1!important}
+  .nav-item kbd{display:none}
+  [data-tip]::after{display:none!important}
+}
+
+/* animations désactivables (réglage + préférence système) */
+body.no-anim *,body.no-anim *::before,body.no-anim *::after{animation-duration:0s!important;animation-delay:0s!important;transition-duration:0s!important}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+  .gm-sheen,.typing span,.pill-live,.model-pill .live{animation:none!important}
+}
+

@@ -1,0 +1,188 @@
+/* ── La lumière ───────────────────────────────────────────────────────────
+   Une gemme éclaire par diffusion, pas par une tache posée sur un fond.
+   Trois nappes donc : une lueur haute très large qui descend derrière le
+   contenu, une reprise chaude à droite qui décale le centre optique, et une
+   assise basse à gauche qui creuse la profondeur. Rayons volontairement plus
+   grands que le viewport — c'est ce qui évite le « blob » de dégradé
+   générique : on ne doit jamais voir où la lumière s'arrête. */
+/* Posée sur la racine, donc COMMUNE à la barre latérale et au contenu :
+   c'est ce qui fait qu'on ne lit plus l'app en deux morceaux. */
+/* z-index:-1 et non pas 0 : la nappe se glisse SOUS les enfants sans qu'on ait
+   à leur imposer un empilement. Une règle `.sidebar{position:relative}` posée
+   ici écraserait le `position:fixed` du tiroir mobile déclaré plus haut — et
+   toute l'app disparaissait derrière la lumière sous 1024 px. `isolation` sur
+   #app garde la nappe dans son propre contexte : elle ne passe jamais derrière
+   la page. */
+/* --halo-y : la hauteur de la source, réglée sur l'heure (voir « l'heure » dans
+   le script). --lx/--ly : le déport très amorti qui suit le pointeur.
+   La nappe déborde de 12 % : ses bords restent hors cadre, on peut donc la
+   TRANSLATER sans jamais les voir entrer. Une translation se compose sur le
+   GPU — repeindre un dégradé plein écran à chaque image ne passerait pas. */
+#app{position:relative;--halo-y:30%;--halo-i:36%;--lx:0px;--ly:0px}
+#app::before{content:"";position:absolute;inset:-12%;z-index:-1;pointer-events:none;
+  transform:translate3d(var(--lx),var(--ly),0);will-change:transform;background:
+  /* le halo : centré sur le contenu, pas sur le cadre — c'est lui qui donne
+     le relief. Rayon très supérieur au viewport : on ne voit jamais son bord. */
+  radial-gradient(1150px 640px at 58% var(--halo-y), color-mix(in srgb,var(--accent) var(--halo-i),transparent), transparent 58%),
+  /* la reprise haute : la source déborde par le dessus, la page n'a pas de plafond */
+  radial-gradient(1400px 520px at 52% -18%, color-mix(in srgb,var(--accent) 18%,transparent), transparent 62%),
+  /* l'assise : creuse le bas-gauche pour que le halo ne flotte pas dans le noir */
+  radial-gradient(1000px 780px at 0% 108%, color-mix(in srgb,var(--accent) 11%,transparent), transparent 64%),
+  /* la nappe de gauche : sans elle le halo n'atteint pas la barre latérale
+     (mesuré : vert-net à 0), et la barre redevenait une plaque morte à côté
+     d'un contenu éclairé. Étroite et haute, elle la baigne sans déplacer le
+     centre optique de la page. */
+  radial-gradient(620px 1000px at 4% 46%, color-mix(in srgb,var(--accent) 13%,transparent), transparent 66%)}
+
+/* ── Quand un agent travaille ─────────────────────────────────────────────
+   Une seconde nappe, plus serrée, qui se révèle le temps du passage. Elle
+   n'ajoute AUCUN repeint : seules l'opacité et l'échelle bougent, deux
+   propriétés composées sur le GPU. L'app dit qu'elle fait quelque chose sans
+   le moindre indicateur, et le silence revient tout seul quand c'est fini. */
+#app::after{content:"";position:absolute;inset:-12%;z-index:-1;pointer-events:none;opacity:0;
+  transition:opacity .9s var(--ease);
+  background:radial-gradient(560px 380px at 58% var(--halo-y),
+    color-mix(in srgb,var(--accent) 20%,transparent), transparent 62%)}
+#app[data-travail="1"]::after{opacity:1;animation:at-souffle 3.4s var(--ease) infinite}
+@keyframes at-souffle{0%,100%{transform:scale(1)}50%{transform:scale(.93)}}
+@media (prefers-reduced-motion:reduce){
+  #app[data-travail="1"]::after{animation:none}
+}
+/* La barre latérale devient un voile : la lumière la traverse, elle reste
+   lisible parce qu'elle garde 62 % de sa surface. Plus d'ombre portée — une
+   ombre entre deux zones du même plan recrée la couture qu'on efface. */
+/* Pas de backdrop-filter : derrière il n'y a qu'un dégradé lisse, un flou n'y
+   change rien de visible et coûte une couche de composition à chaque image.
+   86 % et non 58 : la lumière traverse encore, mais la barre reste une matière
+   (retour Mazen : « j'aime pas trop transparent »). */
+.sidebar{background:color-mix(in srgb,var(--surface) 86%,transparent);
+  border-right:1px solid var(--line-faint);box-shadow:none;backdrop-filter:none}
+/* ⚠ APRÈS la règle translucide, jamais avant : à spécificité égale c'est
+   l'ordre qui tranche — posée plus haut, elle se faisait écraser et le tiroir
+   mobile restait transparent PAR-DESSUS le contenu. */
+@media (max-width:1024px){
+  .sidebar{background:var(--surface);backdrop-filter:none;box-shadow:var(--shadow-lg)}
+}
+/* Pas de fil sur l'arête haute : quelle que soit sa finesse, une ligne en
+   travers de l'écran redevient la séparation qu'on vient d'enlever. La
+   lumière suffit, et elle n'a pas de bord. */
+/* En clair, la même lumière écraserait le texte : on la divise par trois. */
+:root:not([data-theme="dark"]) #app::before{background:
+  radial-gradient(1150px 640px at 58% var(--halo-y), color-mix(in srgb,var(--accent) calc(var(--halo-i) / 4),transparent), transparent 58%),
+  radial-gradient(1400px 520px at 52% -18%, color-mix(in srgb,var(--accent) 5%,transparent), transparent 62%),
+  radial-gradient(1000px 780px at 0% 108%, color-mix(in srgb,var(--accent) 4%,transparent), transparent 64%),
+  radial-gradient(620px 1000px at 4% 46%, color-mix(in srgb,var(--accent) 5%,transparent), transparent 66%)}
+/* En clair, un voile à 62 % laisserait la lumière remonter sur le texte de la
+   barre : on la remonte à 82 %, elle reste solidaire sans se délaver. */
+:root:not([data-theme="dark"]) .sidebar{background:color-mix(in srgb,var(--surface) 82%,transparent)}
+:root:not([data-theme="dark"]) .home-status{color:var(--accent-strong)}   /* #16B87A = 2,4:1 sur crème — interdit en texte */
+
+/* ── Le trait vert sous la barre du haut n'était pas une séparation ───────
+   C'était l'anneau de focus de #main — focusable uniquement pour que le
+   clavier puisse le faire défiler, jamais parce qu'on l'actionne. L'anneau,
+   rogné par `overflow:hidden` de .shell, ne laissait voir que son arête
+   haute : une barre émeraude en travers de l'écran. On garde une marque
+   pour le clavier, mais neutre et à l'intérieur, donc jamais coupée. */
+.main:focus-visible,.thread:focus-visible,.home-wrap:focus-visible,.vbody:focus-visible{
+  outline:none;box-shadow:inset 0 0 0 1px var(--line-strong)}
+.home-wrap{background:radial-gradient(620px 330px at 50% 40%,color-mix(in srgb,var(--accent) 4%,transparent),transparent 68%)}
+.input-shell{border-color:var(--line-strong);box-shadow:0 20px 48px rgba(0,0,0,.16),inset 0 1px rgba(255,255,255,.07)}
+.input-shell:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-ring),0 20px 48px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.09)}
+.home-dock .composer{padding-inline:0;background:transparent}
+.home-dock .composer .hint{padding-inline:0}
+.tools-btn,.la,.pcard-acts .pa{border-radius:50%}
+.library-empty{min-height:360px;padding:40px 20px}
+.library-empty .es-ic{background:var(--accent-tint);border-color:var(--accent-tint-2);box-shadow:0 12px 28px color-mix(in srgb,var(--accent) 10%,transparent)}
+.library-empty .es-d{margin-bottom:17px}
+.library-empty-cta{padding:9px 14px}
+.modal{border-color:color-mix(in srgb,var(--line) 72%,transparent);box-shadow:0 26px 80px rgba(0,0,0,.16)}
+.m-head,.m-foot{border-color:color-mix(in srgb,var(--line) 78%,transparent)}
+.m-ic.maz-mark{background-color:var(--surface-2);background-image:var(--logo-mark);background-position:center;background-repeat:no-repeat;background-size:cover;border-color:var(--line-strong);border-radius:50%;box-shadow:inset 0 1px rgba(255,255,255,.12),0 5px 14px rgba(0,0,0,.18)}
+.m-ic.maz-mark svg{display:none}
+.m-x{width:40px;height:40px;border-radius:50%;background:transparent}
+.m-x:focus-visible,.la:focus-visible,.vbtn:focus-visible,.icon-btn:focus-visible{outline:1px solid var(--line-strong);outline-offset:2px}   /* contrôles icônes : ring neutre — le ring accent 2px restait collé après un tap iOS */
+.topbar .icon-btn,.topbar .menu-btn{border-radius:50%}
+.topbar .icon-btn:focus-visible,.topbar .menu-btn:focus-visible{outline:1px solid var(--line-strong);outline-offset:2px;background:var(--surface-2)}
+.model-field{border-radius:var(--r-pill)}
+.privacy-card{border-color:var(--line);background:color-mix(in srgb,var(--surface-2) 72%,var(--surface));box-shadow:inset 0 1px rgba(255,255,255,.1)}
+#segTheme,#segDensity{display:inline-flex;flex-wrap:nowrap;gap:2px;padding:3px;border:1px solid var(--line);border-radius:var(--r-pill);background:var(--surface-2)}
+#segTheme .sg,#segDensity .sg{min-height:0;padding:8px 12px;border:0;border-radius:var(--r-pill);background:transparent}
+#segTheme .sg.on,#segDensity .sg.on{color:var(--accent-strong);background:var(--surface);box-shadow:var(--shadow-xs)}
+#setUpgrade{border-radius:var(--r-pill)}
+@media(max-width:640px){
+  .m-x{width:44px;height:44px;min-width:44px;min-height:44px}
+  .toggle{width:54px;height:44px;min-height:44px;background:transparent;border:0}
+  .toggle::before{content:"";position:absolute;inset:9px 0;border-radius:14px;background:var(--surface-3);border:1px solid var(--line-strong);transition:.22s var(--ease)}
+  .toggle::after{top:11px;left:2px}
+  .toggle.on{background:transparent;border:0}
+  .toggle.on::before{background:var(--accent);border-color:transparent}
+  .toggle.on::after{left:32px}
+}
+
+/* ═══ Polish 23/07 — retours et rythme (additif, cascade intacte) ═══ */
+/* rouvrir une conversation POSE l'historique, il ne rejoue pas son entrée ; seuls
+   les vrais nouveaux messages bougent — et le tien claque plus vite que la réponse */
+.msg.settled{animation:none}
+.msg.user{animation-duration:.22s}
+/* la bascule vers le chat est le geste le plus fréquent : elle tombe à 180ms,
+   les autres vues gardent leur respiration — la hiérarchie temporelle dit la fréquence */
+#view-chat.active{animation-duration:.18s}
+/* la ligne de routage est un cadran d'instrument : chiffres en chasse fixe,
+   seul le nom du modèle reste en Figtree */
+.msg-stats{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:10.5px;letter-spacing:0}
+.msg-stats b{font-family:var(--font-sans);font-size:11px;letter-spacing:.02em}
+.ms-why{color:var(--ink-faint)}
+/* la signature : le sceau de routage se pose APRÈS le texte (délai court, 4px, fondu) —
+   uniquement sur une vraie fin de génération (.live), jamais au rendu de l'historique */
+.msg-stats.live{animation:statsIn .26s var(--ease) .12s both}
+@keyframes statsIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+/* le compteur de tokens encaisse le coût : montée émeraude instantanée, retour lent
+   (répare l'état .pulse mort — le JS le posait déjà, le CSS ne faisait rien) */
+.tok-count{transition:opacity .3s,color .5s var(--ease)}
+.tok-count.pulse{color:var(--accent-strong);transition:color .08s}
+/* la pill confirme le choix de modèle sur place — le toast à l'autre bout est retiré */
+.model-pill.m-flash{animation:pillFlash .28s var(--ease)}
+@keyframes pillFlash{from{transform:translateY(3px);opacity:.35}to{transform:none;opacity:1}}
+/* Figtree n'a pas d'axe italique : le blockquote penché était une oblique simulée */
+.bubble.md blockquote{font-style:normal}
+.bubble.md td,.bubble.md th{font-variant-numeric:tabular-nums}
+/* la dictée répond au doigt AVANT la permission micro (l'armement était muet ~1s) */
+#dictateBtn.arming{color:var(--danger-strong);background:var(--danger-tint);border-color:var(--danger)}
+/* redescendre : la pilule apparaît dès qu'on remonte lire, pile au-dessus du composer */
+#view-chat{position:relative}
+.jump-down{position:absolute;left:50%;bottom:14px;transform:translateX(-50%) translateY(8px);width:38px;height:38px;border-radius:50%;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-soft);display:grid;place-items:center;cursor:pointer;box-shadow:var(--shadow-md);opacity:0;visibility:hidden;transition:opacity .18s var(--ease),transform .18s var(--ease),visibility 0s .18s;z-index:5}
+.jump-down.show{opacity:1;visibility:visible;transform:translateX(-50%);transition:opacity .18s var(--ease),transform .18s var(--ease)}
+.jump-down:hover{color:var(--accent-strong);border-color:var(--accent)}
+.jump-down:focus-visible{outline:1px solid var(--line-strong);outline-offset:2px}
+
+/* ═══ Gestes 23/07 — le tiroir suit le doigt · appui long sur une conversation ═══ */
+.edge-zone{display:none}
+@media (hover:none) and (max-width:1024px){
+  .edge-zone{display:block;position:fixed;top:0;left:0;bottom:0;width:16px;z-index:30;touch-action:pan-y}   /* pan-y : le navigateur garde le scroll vertical, nous prenons l'horizontal */
+  .sidebar{touch-action:pan-y}
+  .chat-pill{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}   /* l'appui long est à nous, pas au menu natif iOS */
+}
+.sidebar.dragging,.scrim.dragging{transition:none!important}   /* pendant le drag, le tiroir est sous le doigt — aucune interpolation */
+/* feuille d'actions — appui long sur une conversation */
+.sheet-veil{position:fixed;inset:0;background:rgba(5,8,7,.52);z-index:60;opacity:0;transition:opacity .22s var(--ease)}
+.sheet-veil.show{opacity:1}
+.sheet{position:fixed;inset-inline:0;bottom:0;z-index:61;background:var(--surface);border:1px solid var(--line-strong);border-bottom:0;border-radius:16px 16px 0 0;padding:8px 10px calc(10px + env(safe-area-inset-bottom));transform:translateY(102%);transition:transform .28s var(--ease);box-shadow:var(--shadow-lg)}
+.sheet.show{transform:none}
+.sheet-grip{width:36px;height:4px;border-radius:2px;background:var(--line-strong);margin:2px auto 10px}
+.sheet-t{font-size:12px;font-weight:var(--fw-semi);color:var(--ink-soft);padding:0 12px 8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sheet-i{display:flex;align-items:center;gap:12px;width:100%;padding:13px 12px;border:0;background:transparent;color:var(--ink);font:inherit;font-size:15px;border-radius:var(--r-sm);cursor:pointer;text-align:left}
+.sheet-i:active{background:var(--surface-2)}
+.sheet-i svg{flex-shrink:0;color:var(--ink-faint)}
+.sheet-i.danger,.sheet-i.danger svg{color:var(--danger-strong)}
+/* ═══ Pickers → bottom sheets ≤640 : le choix de modèle tombait du HAUT de l'écran, hors pouce ═══ */
+@media (max-width:640px){
+  .pop.pop--sheet{top:auto;left:0;right:0;bottom:0;min-width:0;max-width:none;width:100%;max-height:min(70dvh,560px);border-radius:16px 16px 0 0;border-bottom:0;padding:8px 10px calc(12px + env(safe-area-inset-bottom));transform:translateY(102%);transform-origin:bottom;transition:opacity .22s var(--ease),transform .24s var(--ease),visibility .24s var(--ease)}
+  .pop.pop--sheet.show{transform:translateY(0)}
+  .pop.pop--sheet::before{content:"";display:block;width:36px;height:4px;border-radius:2px;background:var(--line-strong);margin:2px auto 10px}
+}
+/* ═══ Échec → aiguillage : réessayer, ou partir sur un autre modèle ═══ */
+.actions.err{max-height:44px;margin-top:0;opacity:1;transform:none}   /* une erreur montre ses issues D'OFFICE, pas au survol */
+.reroute{display:flex;flex-wrap:wrap;gap:8px}
+.rr{font-size:12px;padding:7px 13px;border:1px solid var(--line-strong);border-radius:var(--r-pill);background:var(--surface);color:var(--ink-soft);cursor:pointer;transition:.15s var(--ease);font-family:inherit}
+.rr:hover{color:var(--accent-strong);border-color:var(--accent);background:var(--surface-2)}
+.rr b{font-weight:var(--fw-semi)}
