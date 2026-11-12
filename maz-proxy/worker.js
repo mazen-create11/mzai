@@ -58,7 +58,15 @@ const CHAMPS_DETOUR = ['models', 'fallbacks', 'route'];
 const MEDIA_HOSTS = /(^|\.)(bfl\.ai|aliyuncs\.com|siliconflow\.com|klingai\.com|kling\.ai)$/i;
 const MAX_MEDIA = 22 * 1024 * 1024;   // 22 Mo par média
 const MAX_CONVO = 1_500_000;          // 1,5 Mo par conversation (les blobs n'y sont jamais)
-const MAX_CONVOS = 400;               // par utilisateur
+const MAX_CONVOS = 400;               // conversations vivantes, par utilisateur
+/* Lignes « supprimée » gardées par utilisateur, les plus récentes. Une telle
+   ligne ne sert qu'à l'appareil qui tient encore une copie de la conversation :
+   il l'efface à sa prochaine synchro. Elle ne pèse rien (`data` vaut `{}`) :
+   on en garde autant que de vivantes, la table est bornée à 800 lignes par compte,
+   et une suppression n'est oubliée qu'après 400 suppressions plus récentes.
+   Oubliée, elle ne perd rien : l'appareil resté hors ligne tout ce temps
+   renvoie sa copie, et la conversation réapparaît. */
+const MAX_SUPPRIMEES = 400;
 const MAX_BUDGET_POSTE = 20000;       // 200 € par mois et par poste : la même borne que le plafond du compte
 
 /* ── helpers ── */
@@ -298,9 +306,15 @@ export default {
     /* SYNC — historique par utilisateur, isolé par user_id (requêtes préparées) */
     if (path === '/sync/convos' && req.method === 'GET') {
       if (!user) return J({ error: 'code_required' }, 401, cors);
-      const rows = await env.maz_db.prepare('SELECT id,data,updated_at,deleted FROM convos WHERE user_id=?1 ORDER BY updated_at DESC LIMIT ?2')
-        .bind(user.id, MAX_CONVOS).all();
-      return J(rows.results, 200, cors);
+      /* Deux lectures, une par sorte de ligne. En une seule, plafonnée à 400,
+         les lignes supprimées récentes poussaient les conversations vivantes
+         les plus anciennes hors de la réponse. Les suppressions restent dans
+         la réponse : c'est par elles qu'un autre appareil efface sa copie. */
+      const lire = (supprimees, combien) => env.maz_db.prepare(
+        'SELECT id,data,updated_at,deleted FROM convos WHERE user_id=?1 AND deleted=?2 ORDER BY updated_at DESC LIMIT ?3'
+      ).bind(user.id, supprimees, combien).all();
+      const [vivantes, supprimees] = await Promise.all([lire(0, MAX_CONVOS), lire(1, MAX_SUPPRIMEES)]);
+      return J([...vivantes.results, ...supprimees.results].sort((x, y) => y.updated_at - x.updated_at), 200, cors);
     }
     if (path === '/sync/convo' && req.method === 'PUT') {
       if (!user) return J({ error: 'code_required' }, 401, cors);
@@ -310,12 +324,18 @@ export default {
       if (data.length > MAX_CONVO) return J({ error: 'convo_too_big' }, 413, cors);
       /* On ne fait de la place que pour une conversation NOUVELLE. Une mise à
          jour n'ajoute aucune ligne : à 400, chaque message envoyé dans une
-         conversation existante en effaçait une autre, la plus ancienne. */
-      const deja = await env.maz_db.prepare('SELECT 1 x FROM convos WHERE user_id=?1 AND id=?2').bind(user.id, id).first();
-      if (!deja) {
-        const n = await env.maz_db.prepare('SELECT COUNT(*) c FROM convos WHERE user_id=?1').bind(user.id).first();
-        if (n.c >= MAX_CONVOS) {   // fenêtre glissante : on écrase la plus ancienne
-          await env.maz_db.prepare('DELETE FROM convos WHERE user_id=?1 AND id IN (SELECT id FROM convos WHERE user_id=?1 ORDER BY updated_at ASC LIMIT 1)').bind(user.id).run();
+         conversation existante en effaçait une autre, la plus ancienne.
+         Le plafond ne compte que les VIVANTES : les lignes supprimées
+         occupaient des places, et une conversation vivante partait alors
+         qu'il en restait moins de 400. « Nouvelle » veut donc dire qui arrive
+         parmi les vivantes : absente de la base, ou supprimée et ramenée par
+         cet envoi (l'INSERT ne l'accepte que s'il est aussi récent que la
+         suppression ; plus ancien, il est ignoré et ne doit rien effacer). */
+      const enBase = await env.maz_db.prepare('SELECT deleted,updated_at FROM convos WHERE user_id=?1 AND id=?2').bind(user.id, id).first();
+      if (!enBase || (enBase.deleted && ts >= enBase.updated_at)) {
+        const n = await env.maz_db.prepare('SELECT COUNT(*) c FROM convos WHERE user_id=?1 AND deleted=0').bind(user.id).first();
+        if (n.c >= MAX_CONVOS) {   // fenêtre glissante : on écrase la plus ancienne des vivantes
+          await env.maz_db.prepare('DELETE FROM convos WHERE user_id=?1 AND id IN (SELECT id FROM convos WHERE user_id=?1 AND deleted=0 ORDER BY updated_at ASC LIMIT 1)').bind(user.id).run();
         }
       }
       await env.maz_db.prepare(
@@ -329,6 +349,9 @@ export default {
       const id = String(url.searchParams.get('id') || '').slice(0, 64);
       await env.maz_db.prepare('UPDATE convos SET deleted=1,data=?3,updated_at=?4 WHERE user_id=?1 AND id=?2')
         .bind(user.id, id, '{}', Date.now()).run();   // tombstone : le contenu est purgé, la suppression se propage
+      // Rien n'effaçait jamais ces lignes : on ne garde que les plus récentes (voir MAX_SUPPRIMEES).
+      await env.maz_db.prepare('DELETE FROM convos WHERE user_id=?1 AND deleted=1 AND id IN (SELECT id FROM convos WHERE user_id=?1 AND deleted=1 ORDER BY updated_at DESC LIMIT -1 OFFSET ?2)')
+        .bind(user.id, MAX_SUPPRIMEES).run();
       return J({ ok: true }, 200, cors);
     }
 
@@ -470,8 +493,10 @@ export default {
             // seulement qu'on passe le poste en cron pour faire lever le battement.
             if (!A.fuseauValide(tz)) return J({ error: 'tz_invalide', hint: tz.slice(0, 60) }, 400, cors);
             const decale = await A.decalageDe(id);
-            const prochain = cadence === 'cron' && corps.cron ? A.prochaineCadence(corps.cron, tz, t, decale) : null;
-            if (cadence === 'cron' && !prochain) return J({ error: 'cron_invalide', hint: corps.cron }, 400, cors);
+            // Même contrôle que le PATCH : une chaîne, et lisible. `['0 8 * * *']` passait,
+            // parce que `String()` d'un tableau à un élément rend cet élément.
+            const prochain = cadence === 'cron' && typeof corps.cron === 'string' ? A.prochaineCadence(corps.cron, tz, t, decale) : null;
+            if (cadence === 'cron' && !prochain) return J({ error: 'cron_invalide', hint: String(corps.cron).slice(0, 60) }, 400, cors);
             await db.prepare(
               `INSERT INTO postes (id,user_id,chantier_id,ouvrier_id,nom,objectif,consigne_ver,cadence,cron,tz,decale_s,
                  prochain_at,livrable_forme,destinataire,ecriture_auto,budget_cents,etat,cree_at,maj_at,seq)

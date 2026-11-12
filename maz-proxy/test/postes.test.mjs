@@ -191,3 +191,39 @@ test('à la création non plus, le chantier ou l’ouvrier d’un autre compte n
   assert.equal(r.status, 200);
   assert.equal(r.json.chantier_id, 'chantier-nadia');
 });
+
+/* ── le lecteur strict : un champ fautif est refusé comme un champ manquant ── */
+
+const CRONS_FAUTIFS = ['99 99 99 99 99', 'abc def ghi jkl mno', '0 8 * * 8', '0 8 * * lun', '*/0 * * * *', '5/15 * * * *', '0-300000000 * * * *'];
+
+test('créer un poste planifié avec un champ de cron illisible ou hors bornes est refusé avant d’écrire', async (t) => {
+  const m = await monde(); t.after(m.fin);
+  for (const cron of CRONS_FAUTIFS) await m.refuse(() => m.creer({ cadence: 'cron', cron }), 'cron_invalide', `cron ${JSON.stringify(cron)}`);
+  assert.equal(m.db.tables.postes.length, 1, 'aucun poste n’a été créé');
+});
+
+test('donner à un poste planifié un champ de cron illisible ou hors bornes est refusé avant d’écrire', async (t) => {
+  const m = await monde(); t.after(m.fin);
+  for (const cron of CRONS_FAUTIFS) await m.refuse(() => m.modifier({ cron }), 'cron_invalide', `cron ${JSON.stringify(cron)}`);
+  await m.refuse(() => m.modifier({ cron: '0 8 * * 8', nom: 'Autre nom', budget_cents: 500 }), 'cron_invalide', 'refus groupé');
+  assert.equal(m.db.lePoste('p1').cron, '0 8 * * *');
+});
+
+test('à la création comme à la modification, le cron doit être une chaîne', async (t) => {
+  const m = await monde(); t.after(m.fin);
+  for (const cron of [['0 8 * * *'], 8, { cron: '0 8 * * *' }, true]) {
+    await m.refuse(() => m.creer({ cadence: 'cron', cron }), 'cron_invalide', `création, cron ${JSON.stringify(cron)}`);
+    await m.refuse(() => m.modifier({ cron }), 'cron_invalide', `modification, cron ${JSON.stringify(cron)}`);
+  }
+  await m.refuse(() => m.creer({ cadence: 'cron' }), 'cron_invalide', 'création sans cron');
+});
+
+test('le dimanche écrit « 7 » est accepté, et planifie bien un dimanche', async (t) => {
+  const m = await monde(); t.after(m.fin);
+  const jour = (ms) => new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Paris', weekday: 'short' }).format(ms);
+  const cree = await m.creer({ cadence: 'cron', cron: '0 8 * * 7' });
+  assert.equal(cree.status, 200);
+  assert.equal(jour(cree.json.prochain_at - cree.json.decale_s * 1000), 'Sun');
+  assert.equal((await m.modifier({ cron: '0 8 * * 7' })).status, 200);
+  assert.equal(jour(m.db.lePoste('p1').prochain_at), 'Sun');
+});

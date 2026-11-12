@@ -53,22 +53,45 @@ export async function seqNext(env, userId) {
 
 /* ═══ cadence : quand le prochain passage est-il dû ? ══════════════════════ */
 
-/** Découpe un champ cron en ensemble de valeurs. Gère `*`, listes, plages, pas. */
+/** Découpe un champ cron en ensemble de valeurs, ou `null` s'il est illisible.
+ *  Formes lues : `*`, un nombre, une plage `a-b`, un pas (`/n` derrière `*` ou
+ *  derrière une plage), et leurs listes séparées par des virgules.
+ *  `null` voulait dire « tout accepter » : un champ illisible ou hors bornes
+ *  était donc lu comme `*`, et une faute de frappe faisait d'un poste
+ *  hebdomadaire un poste qui part chaque minute. Il veut dire maintenant
+ *  « illisible », et `*` rend l'ensemble complet. */
 function champCron(txt, min, max) {
-  if (txt === '*') return null;                        // null = tout accepter
   const out = new Set();
   for (const part of String(txt).split(',')) {
-    const [plage, pasTxt] = part.split('/');
-    const pas = pasTxt ? parseInt(pasTxt, 10) : 1;
-    if (!Number.isFinite(pas) || pas < 1) return null;
-    let a, b;
-    if (plage === '*') { a = min; b = max; }
-    else if (plage.includes('-')) { const [x, y] = plage.split('-'); a = parseInt(x, 10); b = parseInt(y, 10); }
-    else { a = b = parseInt(plage, 10); }
-    if (!Number.isFinite(a) || !Number.isFinite(b)) return null;
-    for (let v = a; v <= b; v += pas) if (v >= min && v <= max) out.add(v);
+    const m = /^(?:\*|(\d+)(?:-(\d+))?)(?:\/(\d+))?$/.exec(part);
+    if (!m) return null;
+    const etoile = m[1] === undefined, seul = !etoile && m[2] === undefined;
+    // `5/15` : ce lecteur y lisait « 5 », d'autres y lisent « de 5 en 15 ». Refusé plutôt que deviné.
+    if (seul && m[3] !== undefined) return null;
+    const a = etoile ? min : +m[1];
+    const b = etoile ? max : seul ? a : +m[2];
+    const pas = m[3] === undefined ? 1 : +m[3];
+    /* Les bornes AVANT la boucle : `0-300000000` la faisait tourner sur toute
+       la plage (une demi-seconde de processeur) pour ne garder que 60 valeurs.
+       Un pas plus grand que la borne haute ne retient que la première
+       valeur (un pas de 90 minutes valait « à l'heure pile ») : refusé aussi. */
+    if (a < min || b > max || a > b || pas < 1 || pas > max) return null;
+    for (let v = a; v <= b; v += pas) out.add(v);
   }
-  return out.size ? out : null;
+  return out;
+}
+
+/** Les cinq champs d'une expression cron, ou `null` si un seul est illisible. */
+function lireCron(cron) {
+  const ch = String(cron || '').trim().split(/\s+/);
+  if (ch.length !== 5) return null;
+  const champs = [
+    champCron(ch[0], 0, 59), champCron(ch[1], 0, 23),
+    champCron(ch[2], 1, 31), champCron(ch[3], 1, 12), champCron(ch[4], 0, 7),
+  ];
+  if (champs.some(c => !c)) return null;
+  champs[4] = new Set([...champs[4]].map(v => v % 7));   // 7 vaut dimanche, comme 0
+  return champs;
 }
 
 /** Les composantes locales d'un instant dans un fuseau donné. */
@@ -113,14 +136,15 @@ function localToEpoch(tz, y, mo, d, h, mi) {
  * On balaie les jours d'abord (au plus 400), puis les minutes du jour retenu :
  * quelques centaines d'itérations au lieu d'un demi-million, ce qui garde le
  * battement loin du plafond de temps processeur.
+ * Rend `null` pour une expression illisible : c'est ce `null` que les routes
+ * traduisent en « cron_invalide ».
  */
 export function prochaineCadence(cron, tz, depuis, decaleS = 0) {
-  const ch = String(cron || '').trim().split(/\s+/);
-  if (ch.length !== 5) return null;
-  const [cMi, cH, cD, cMo, cDow] = [
-    champCron(ch[0], 0, 59), champCron(ch[1], 0, 23),
-    champCron(ch[2], 1, 31), champCron(ch[3], 1, 12), champCron(ch[4], 0, 6),
-  ];
+  const champs = lireCron(cron);
+  if (!champs) return null;
+  const [cMi, cH, cD, cMo, cDow] = champs;
+  const croissant = (s) => [...s].sort((a, b) => a - b);
+  const heures = croissant(cH), minutes = croissant(cMi);
   const base = depuis - decaleS * 1000;   // le décalage s'applique APRÈS le calcul
   let cur = partsIn(tz, base);
 
@@ -129,11 +153,11 @@ export function prochaineCadence(cron, tz, depuis, decaleS = 0) {
     // ne pas fabriquer un 31 février
     const tJour = localToEpoch(tz, cur.y, cur.mo, cur.d, 12, 0) + jour * 86400000;
     const p = partsIn(tz, tJour);
-    if (cD && !cD.has(p.d)) continue;
-    if (cMo && !cMo.has(p.mo)) continue;
-    if (cDow && !cDow.has(p.dow)) continue;
-    for (const h of (cH ? [...cH].sort((a, b) => a - b) : Array.from({ length: 24 }, (_, i) => i))) {
-      for (const mi of (cMi ? [...cMi].sort((a, b) => a - b) : Array.from({ length: 60 }, (_, i) => i))) {
+    if (!cD.has(p.d)) continue;
+    if (!cMo.has(p.mo)) continue;
+    if (!cDow.has(p.dow)) continue;
+    for (const h of heures) {
+      for (const mi of minutes) {
         const t = localToEpoch(tz, p.y, p.mo, p.d, h, mi) + decaleS * 1000;
         if (t > depuis) return t;
       }
@@ -917,8 +941,15 @@ export async function battement(env, ctx) {
        poste fautif restait donc le plus ancien dû et revenait en tête à chaque
        minute : plus aucun poste, d'aucun compte, ne partait. */
     let suivant;
-    try { suivant = prochaineCadence(poste.cron, poste.tz, t, poste.decale_s); }
-    catch (e) { await horsCadence(env, ctx, poste, e); continue; }
+    try {
+      suivant = prochaineCadence(poste.cron, poste.tz, t, poste.decale_s);
+      /* Un cron illisible ne lève pas, il rend `null`. Sans cette garde le
+         poste perdait son échéance mais restait « actif », après un dernier
+         passage lancé sur une cadence que personne ne sait lire, et sans un
+         mot au journal. Les routes refusent ces expressions ; celles qui sont
+         en base datent d'avant le lecteur strict. */
+      if (suivant == null && !lireCron(poste.cron)) throw new Error(`cron illisible « ${String(poste.cron).slice(0, 60)} »`);
+    } catch (e) { await horsCadence(env, ctx, poste, e); continue; }
     // On replanifie AVANT d'exécuter : si l'exécution échoue, le poste ne se
     // rejoue pas en boucle à chaque battement.
     // Une base qui ne répond pas n'est PAS une faute du poste : on le laisse dû,

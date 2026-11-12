@@ -150,3 +150,43 @@ test('six postes dus d’un compte révoqué ne prennent pas les six places du b
   assert.deepEqual(m.db.partis, ['de-nadia']);
   assert.deepEqual(m.db.imprevues, []);
 });
+
+/* ── un cron devenu illisible en base ── */
+
+// Ces expressions sont en base depuis avant le lecteur strict : la première
+// était lue « chaque jour à 8h », la deuxième « chaque minute », la troisième
+// n'a que quatre champs.
+const CRONS_ILLISIBLES = ['0 8 * * 99', 'abc def ghi jkl mno', '0 8 * *'];
+
+test('un poste au cron illisible sort de la file sans partir : en pause, échec au journal, plus jamais repris', async (t) => {
+  const m = monde([compte('u1'), compte('u2')], [
+    // les plus anciens dus : ils sortent en tête de file
+    ...CRONS_ILLISIBLES.map((cron, i) => poste('casse-' + i, 'u1', { cron, prochain_at: Date.now() - (9 - i) * MIN })),
+    poste('sain-1', 'u1', { prochain_at: Date.now() - 2 * MIN }),
+    poste('sain-2', 'u2', { prochain_at: Date.now() - MIN }),
+  ]); t.after(m.fin);
+  assert.equal(await m.battre(), 5);
+  assert.deepEqual(m.db.partis, ['sain-1', 'sain-2'], 'un poste impossible à planifier ne doit pas être lancé');
+  const journal = (id) => m.db.passages.filter((p) => p.poste_id === id);
+  CRONS_ILLISIBLES.forEach((cron, i) => {
+    const casse = m.db.lePoste('casse-' + i);
+    assert.equal(casse.etat, 'pause', cron);
+    assert.equal(casse.prochain_at, null, cron);
+    assert.equal(casse.sante, 'X', cron);
+    assert.equal(journal(casse.id).length, 1, cron);
+    assert.ok(journal(casse.id)[0].erreur.startsWith(`Planification impossible : cron illisible « ${cron} »`), journal(casse.id)[0].erreur);
+  });
+
+  assert.equal(await m.battre(), 0, 'au battement suivant, plus rien n’est dû');
+  CRONS_ILLISIBLES.forEach((cron, i) => assert.equal(journal('casse-' + i).length, 1, `« ${cron} » : l’échec n’est noté qu’une fois`));
+  assert.deepEqual(m.db.imprevues, []);
+});
+
+test('le propriétaire du poste au cron illisible est prévenu par son webhook', async (t) => {
+  const m = monde([compte('u1', { alerte_webhook: 'https://alertes.exemple/maz' })], [poste('casse', 'u1', { cron: '0 8 * * 99' })]); t.after(m.fin);
+  await m.battre();
+  assert.equal(m.sorties.length, 1);
+  assert.match(m.sorties[0].corps, /Poste casse/);
+  assert.match(m.sorties[0].corps, /cron illisible/);
+  assert.deepEqual(m.db.imprevues, []);
+});

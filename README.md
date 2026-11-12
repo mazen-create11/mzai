@@ -57,24 +57,27 @@ cd maz-proxy
 npm test
 ```
 
-No dependency to install: the tests use Node's built-in runner (Node 20 or later) and call the Worker's handlers directly, with an in-memory stand-in for the database and for the providers. 46 tests cover:
+No dependency to install: the tests use Node's built-in runner (Node 20 or later) and call the Worker's handlers directly, with an in-memory stand-in for the database and for the providers. 65 tests cover:
 
 - access control: personal codes (format, hashing, case, revocation), admin routes, rules for custom codes, account deletion, the origin check;
 - the provider relay: which paths, methods and models pass, which key leaves the server, that an uploaded file is relayed byte for byte, and that every model the app sends is on the server's list;
-- the scheduler: one job with an unreadable time zone does not stop the others, and jobs of a revoked account no longer run;
+- the schedule parser: every schedule the app offers keeps its exact next run, an unreadable or out-of-range field refuses the whole expression, and `7` means Sunday;
+- the scheduler: one job with an unreadable time zone or schedule is paused and logged without stopping the others, and jobs of a revoked account no longer run;
 - job settings: budget, automatic writes, time zone and schedule are checked before anything is written, and a job cannot be attached to another account's resources;
-- sync: updating a conversation at the 400 limit no longer evicts another one.
+- sync: only live conversations count toward the 400 limit, updating one never evicts another, deletion markers are capped, and the list always returns every live conversation.
 
 ## Known limits
 
 - Files attached by the user (PDFs, source images) stay on the device. The text of the conversation syncs, the source file does not.
 - Sync is last-write-wins: editing the same conversation on two devices at once keeps the most recent version.
+- A deleted conversation leaves a marker so other devices drop their copy. The 400 most recent markers are kept per account; a device that stayed offline through more deletions than that would bring an old conversation back.
+- Schedules are five-field cron with numbers only (no `MON` or `JAN`). When both day-of-month and day-of-week are set, both must match, where classic cron accepts either.
 - The app is a single 6,000-line file. It works, and it is the main thing to break up.
 
 ## What is next
 
-- **A stricter schedule parser.** An unreadable field in a cron expression is read as "every", so a typo can turn a weekly job into one that runs every minute. Only the wrong number of fields is refused today.
-- **Deleted conversations still count toward the 400 limit**, and the sync list is not paginated. Both need one rule for purging deleted rows.
+- **Paginate the sync list.** It returns up to 400 conversations and 400 deletion markers in one response.
+- **Make the 400 limit atomic.** Two devices writing at the same instant can leave 401 conversations.
 - **Abort in-flight media requests** (API-06). The Stop button stops the interface and the polling, but the request to the provider keeps running and keeps billing.
 - **Remove duplicated code** (ARCH-04/05). The message bubble is rendered in four places and the chat request is written out four times although one helper already exists.
 - **Split `worker.js` and `mzai-v2.html`** into modules, now that tests protect the backend contract.
