@@ -39,6 +39,11 @@ async function fauxWorker(route, appels, etat) {
   if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Access-Control-Allow-Methods': '*' } });
   if (url.pathname === '/auth/verify') return corps && corps.code === CODE ? json(200, { ok: true, uid: 'u1', name: 'Nadia', admin: false }) : json(401, { ok: false });
   if (req.headers()['x-maz-code'] !== CODE) return json(401, { error: 'code_required' });
+  // les réponses propres à un test passent avant les réponses par défaut
+  if (etat.routes) {
+    const propre = await etat.routes({ method: req.method(), chemin: url.pathname, corps });
+    if (propre !== undefined) return json(propre.status || 200, propre.json);
+  }
   if (url.pathname === '/sync/convos') return json(200, etat.convos);
   if (/\/chat\/completions$/.test(url.pathname)) {
     if (corps && corps.stream) {
@@ -53,13 +58,15 @@ async function fauxWorker(route, appels, etat) {
 /**
  * Ouvre l'app dans un navigateur neuf.
  * `connecte` : le code est déjà enregistré sur l'appareil, et la prise en main déjà vue.
+ * `routes` : ce que le faux Worker répond pour ce test, `({ method, chemin, corps }) => ({ status?, json })`,
+ *            ou rien pour laisser la réponse par défaut.
  */
-export async function monde({ connecte = false, convos = [] } = {}) {
+export async function monde({ connecte = false, convos = [], routes = null } = {}) {
   const serveur = await servir();
   const origine = `http://127.0.0.1:${serveur.address().port}`;
   const navigateur = await chromium.launch();
   const contexte = await navigateur.newContext({ viewport: { width: 1280, height: 800 }, locale: 'fr-FR' });
-  const appels = [], erreurs = [], etat = { convos };
+  const appels = [], erreurs = [], etat = { convos, routes };
   await contexte.route((u) => u.origin !== origine, (route) => {
     const u = new URL(route.request().url());
     if (u.origin === WORKER) return fauxWorker(route, appels, etat);

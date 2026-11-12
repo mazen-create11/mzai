@@ -76,10 +76,10 @@
     // Images → base64 persistant ; documents (txt/docx/xlsx/pdf) → texte extrait côté client
     const files=await Promise.all(rawFiles.map(async f=>{
       if(f.isImg&&f.url){try{const b64=await blobToB64(f.url);URL.revokeObjectURL(f.url);const o={name:f.name,isImg:true,b64};const id='f'+newId();if(await MEDIA.put(id,b64))o._mid=id;return o;}catch(e){return{name:f.name,isImg:false};}}
-      if(!f.isImg&&f.file){try{const textContent=await extractFileText(f.file);
+      if(!f.isImg&&f.file){try{const textContent=await Fichiers.extractFileText(f.file);
         // OCR/vision : PDF scanné (aucun texte sélectionnable) en mode Documents → rastériser les pages pour le modèle vision
         if(currentMode==='doc'&&/\.pdf$/i.test(f.name)&&/^\[PDF «/.test(textContent||'')){
-          try{const pages=await pdfToImages(await f.file.arrayBuffer(),8);if(pages.length){const o={name:f.name,isImg:false,textContent,ocrPages:pages};const id='f'+newId();if(await MEDIA.put(id,JSON.stringify(pages))){o._mid=id;o._ocr=true;}return o;}}catch(e){toast("Lecture PDF indisponible (réseau ou intégrité)")}
+          try{const pages=await Fichiers.pdfToImages(await f.file.arrayBuffer(),8);if(pages.length){const o={name:f.name,isImg:false,textContent,ocrPages:pages};const id='f'+newId();if(await MEDIA.put(id,JSON.stringify(pages))){o._mid=id;o._ocr=true;}return o;}}catch(e){toast("Lecture PDF indisponible (réseau ou intégrité)")}
         }
         if(textContent){const o={name:f.name,isImg:false,textContent};if(textContent.length>20000){const id='f'+newId();if(await MEDIA.put(id,textContent)){o._mid=id;o._txt=true;}}return o;}}catch(e){}}
       return{name:f.name,isImg:false};

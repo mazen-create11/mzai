@@ -134,4 +134,6 @@
     });
   }
   const col0=n=>n.querySelector('.col');
+  /* init visuel du sélecteur */
+  renderModeChip();renderToolOpts();syncToolUI();
 
