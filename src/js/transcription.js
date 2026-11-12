@@ -24,9 +24,9 @@
   function downloadText(name,txt,mime){const b=new Blob([txt],{type:mime||'text/plain'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;a.click();URL.revokeObjectURL(u)}
   /* wrapper OpenRouter réutilisable (post-traitement, etc.) */
   async function chatOR(messages,model,opt){
-    if(!KEYS.openrouter)throw new Error('Clé OpenRouter manquante — ajoute-la dans Réglages › Clés API');
-    const res=await fetch(OR_HOST+'/api/v1/chat/completions',{method:'POST',
-      headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MAZ'},
+    if(!Relais.cle('openrouter'))throw new Error('Clé OpenRouter manquante — ajoute-la dans Réglages › Clés API');
+    const res=await fetch(Relais.orHost+'/api/v1/chat/completions',{method:'POST',
+      headers:{'Authorization':'Bearer '+Relais.cle('openrouter'),'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MAZ'},
       body:JSON.stringify(Object.assign({model:model||'deepseek/deepseek-v4-flash',messages},opt||{}))});
     if(!res.ok)throw new Error('HTTP '+res.status+' · '+(await res.text().catch(()=>'')).slice(0,160));
     const d=await res.json();return (d.choices?.[0]?.message?.content||'').trim();
@@ -41,7 +41,7 @@
       if(!hasKey('siliconflow'))throw new Error('Clé SiliconFlow manquante — ajoute-la dans Réglages › Clés API');
       if(file.size>30*1024*1024)throw new Error('Fichier trop lourd ('+(file.size/1048576).toFixed(1)+' Mo). Limite ≈ 30 Mo.');
       const fd=new FormData();fd.append('model','FunAudioLLM/SenseVoiceSmall');fd.append('file',file);
-      const res=await fetch(SF_HOST+'/v1/audio/transcriptions',{method:'POST',headers:{'Authorization':'Bearer '+KEYS.siliconflow},body:fd});
+      const res=await fetch(Relais.sfHost+'/v1/audio/transcriptions',{method:'POST',headers:{'Authorization':'Bearer '+Relais.cle('siliconflow')},body:fd});
       if(!res.ok)throw new Error('HTTP '+res.status+' · '+(await res.text().catch(()=>'')).slice(0,200));
       const data=await res.json();const text=((data.text||'')+'').trim()||'(aucune parole détectée dans l\'audio)';
       if(done)return;
@@ -68,7 +68,7 @@
         try{
           const body={model:'Qwen/Qwen3-Omni-30B-A3B-Instruct',stream:true,max_tokens:4096,
             messages:[{role:'user',content:[{type:'text',text:sys},part]}]};
-          const res=await fetch(SF_HOST+'/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+KEYS.siliconflow,'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctrl.signal});
+          const res=await fetch(Relais.sfHost+'/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+Relais.cle('siliconflow'),'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctrl.signal});
           if(!res.ok){lastErr='HTTP '+res.status+' · '+(await res.text().catch(()=>'')).slice(0,180);continue;}
           text='';const reader=res.body.getReader(),dec=new TextDecoder();let buf='';
           while(!stopped){const{done,value}=await reader.read();if(done)break;buf+=dec.decode(value,{stream:true});const lines=buf.split('\n');buf=lines.pop();

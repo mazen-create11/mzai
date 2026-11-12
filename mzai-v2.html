@@ -2580,6 +2580,14 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     // reste pas figée dans un coin.
     addEventListener('pointerleave',()=>{cx=0;cy=0;if(!anim)anim=requestAnimationFrame(boucle)},{passive:true});
   })();
+  // messages d'erreur propres pour l'utilisateur (le détail technique va en console) — un hoquet réseau ne doit pas ressembler à une app cassée
+  function friendlyErr(e){const m=((e&&e.message)||String(e||'')).trim();try{console.warn('[MAZ]',e);}catch(_){}
+    if(/Failed to fetch|NetworkError|Load failed|ERR_/i.test(m))return 'Connexion au service impossible — vérifie ta connexion et réessaie.';
+    if(/ISO-8859-1|code point/i.test(m))return 'Clé API invalide (caractère non autorisé) — elle a été nettoyée, réessaie.';
+    if(/Abort/i.test(m))return 'Requête annulée.';
+    if(/timeout|délai|timed?.?out/i.test(m))return 'Le service met trop de temps à répondre — réessaie.';
+    if(/quota|exceeded|insufficient|402|balance/i.test(m))return 'Crédit API épuisé côté serveur.';
+    return m.length>160?m.slice(0,160)+'…':(m||'Erreur inconnue');}
 
   /* ===== data ===== */
   const now=()=>Date.now();
@@ -2710,45 +2718,50 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   if(!MODELS.some(m=>m.id===currentModel))currentModel=MODELS[0].id;
   const PERSONA=DB.get('persona',{name:'MAZ',tone:'Direct',length:'Équilibré',sys:'',traits:[]});
   const SETTINGS=DB.get('settings',{anim:true,stream:true,enter:true,showReason:false,webSearch:false,density:'cozy'});
-  /* Clés chargées depuis keys.local.js (gitignored) → "toujours connecté" en local,
-     sans aucun secret dans index.html. Fichier absent (ex: hébergé) → saisie dans Paramètres. */
-  if(!window.MZAI_KEYS)console.info('[MAZ] keys.local.js absent — ajoute tes clés API dans Réglages › Clés API (stockées uniquement sur cet appareil).');
-  const DEFAULT_KEYS=Object.assign({openrouter:'',siliconflow:'',kling_ak:'',kling_sk:'',kling_proxy:''},window.MZAI_KEYS||{});
-  const KEYS=Object.assign({},DEFAULT_KEYS,DB.get('apikeys',{}));
-  Object.keys(DEFAULT_KEYS).forEach(k=>{if(DEFAULT_KEYS[k]&&!KEYS[k])KEYS[k]=DEFAULT_KEYS[k]});
-  // Les clés fournies par keys.local.js restent EN MÉMOIRE : on ne les recopie pas dans localStorage (un XSS/CDN compromis ne peut pas les exfiltrer). Seules les clés saisies par l'utilisateur sont persistées.
-  function persistKeys(){const o={};for(const k in KEYS){if(!(window.MZAI_KEYS&&window.MZAI_KEYS[k]))o[k]=KEYS[k]}DB.set('apikeys',o)}
-  persistKeys();
-  // ── Proxy API optionnel : app HÉBERGÉE + aucune clé locale + Worker configuré → les appels passent par lui
-  //    (il détient les clés) → clés jamais exposées, marche pour tout le monde. En local (keys.local.js), appels directs. Voir maz-proxy/README.md.
-  const PROXY_URL='https://maz-proxy.maz-chaban.workers.dev';   // Worker déployé (clés OpenRouter+SiliconFlow en secrets Cloudflare). En ligne sans clé locale → passe par lui.
-  // une clé mal collée (espace, retour à la ligne, caractère non-ASCII) casserait l'en-tête HTTP (« non ISO-8859-1 ») → on ne garde que l'ASCII imprimable. Appliqué au boot ET à chaque saisie.
-  const cleanKey=v=>(typeof v==='string'?v:'').replace(/[^\x21-\x7E]/g,'');
-  ['openrouter','siliconflow','kling_ak','kling_sk'].forEach(k=>{KEYS[k]=cleanKey(KEYS[k]);});
-  // messages d'erreur propres pour l'utilisateur (le détail technique va en console) — un hoquet réseau ne doit pas ressembler à une app cassée
-  function friendlyErr(e){const m=((e&&e.message)||String(e||'')).trim();try{console.warn('[MAZ]',e);}catch(_){}
-    if(/Failed to fetch|NetworkError|Load failed|ERR_/i.test(m))return 'Connexion au service impossible — vérifie ta connexion et réessaie.';
-    if(/ISO-8859-1|code point/i.test(m))return 'Clé API invalide (caractère non autorisé) — elle a été nettoyée, réessaie.';
-    if(/Abort/i.test(m))return 'Requête annulée.';
-    if(/timeout|délai|timed?.?out/i.test(m))return 'Le service met trop de temps à répondre — réessaie.';
-    if(/quota|exceeded|insufficient|402|balance/i.test(m))return 'Crédit API épuisé côté serveur.';
-    return m.length>160?m.slice(0,160)+'…':(m||'Erreur inconnue');}
-  // Proxy actif dès qu'il n'y a PAS de fichier keys.local.js (= app hébergée), MÊME si l'utilisateur a saisi des clés dans Réglages : le proxy prime, ses clés sont ignorées. Le Worker fournit les vraies. En local (keys.local.js présent) → appels directs.
-  const _keyFile=!!(window.MZAI_KEYS && ((window.MZAI_KEYS.openrouter||'').trim()||(window.MZAI_KEYS.siliconflow||'').trim()));
-  const VIA_PROXY=!!PROXY_URL && !_keyFile;
-  const SHOW_API_SETTINGS=!!window.MZAI_DEV_SETTINGS;
-  if(VIA_PROXY){KEYS.openrouter='via-proxy';KEYS.siliconflow='via-proxy';}  // placeholders ASCII : le Worker remplace l'Authorization par la vraie clé
-  const _PB=(PROXY_URL||'').replace(/\/$/,'');
-  const OR_HOST=VIA_PROXY?_PB+'/or':'https://openrouter.ai';
-  const SF_HOST=VIA_PROXY?_PB+'/sf':'https://api.siliconflow.com';
+  /* Clés et chemin des appels.
+     Clés chargées depuis keys.local.js (gitignored) → "toujours connecté" en local,
+     sans aucun secret dans index.html. Fichier absent (ex: hébergé) → les appels passent par le Worker.
+     Module fermé : le magasin de clés n'est visible de personne. Le reste de l'app lit une clé
+     par `Relais.cle(nom)` et l'écrit par `Relais.poserCle(nom,valeur)`, qui la nettoie et
+     l'enregistre à chaque fois : aucune écriture ne peut plus oublier l'un des deux. */
+  const Relais=(function(){
+    if(!window.MZAI_KEYS)console.info('[MAZ] keys.local.js absent — ajoute tes clés API dans Réglages › Clés API (stockées uniquement sur cet appareil).');
+    const DEFAULT_KEYS=Object.assign({openrouter:'',siliconflow:'',kling_ak:'',kling_sk:'',kling_proxy:''},window.MZAI_KEYS||{});
+    const KEYS=Object.assign({},DEFAULT_KEYS,DB.get('apikeys',{}));
+    Object.keys(DEFAULT_KEYS).forEach(k=>{if(DEFAULT_KEYS[k]&&!KEYS[k])KEYS[k]=DEFAULT_KEYS[k]});
+    // Les clés fournies par keys.local.js restent EN MÉMOIRE : on ne les recopie pas dans localStorage (un XSS/CDN compromis ne peut pas les exfiltrer). Seules les clés saisies par l'utilisateur sont persistées.
+    function persistKeys(){const o={};for(const k in KEYS){if(!(window.MZAI_KEYS&&window.MZAI_KEYS[k]))o[k]=KEYS[k]}DB.set('apikeys',o)}
+    persistKeys();
+    // ── Proxy API optionnel : app HÉBERGÉE + aucune clé locale + Worker configuré → les appels passent par lui
+    //    (il détient les clés) → clés jamais exposées, marche pour tout le monde. En local (keys.local.js), appels directs. Voir maz-proxy/README.md.
+    const PROXY_URL='https://maz-proxy.maz-chaban.workers.dev';   // Worker déployé (clés OpenRouter+SiliconFlow en secrets Cloudflare). En ligne sans clé locale → passe par lui.
+    // une clé mal collée (espace, retour à la ligne, caractère non-ASCII) casserait l'en-tête HTTP (« non ISO-8859-1 ») → on ne garde que l'ASCII imprimable. Appliqué au boot ET à chaque saisie.
+    const cleanKey=v=>(typeof v==='string'?v:'').replace(/[^\x21-\x7E]/g,'');
+    ['openrouter','siliconflow','kling_ak','kling_sk'].forEach(k=>{KEYS[k]=cleanKey(KEYS[k]);});
+    // Proxy actif dès qu'il n'y a PAS de fichier keys.local.js (= app hébergée), MÊME si l'utilisateur a saisi des clés dans Réglages : le proxy prime, ses clés sont ignorées. Le Worker fournit les vraies. En local (keys.local.js présent) → appels directs.
+    const _keyFile=!!(window.MZAI_KEYS && ((window.MZAI_KEYS.openrouter||'').trim()||(window.MZAI_KEYS.siliconflow||'').trim()));
+    const VIA_PROXY=!!PROXY_URL && !_keyFile;
+    if(VIA_PROXY){KEYS.openrouter='via-proxy';KEYS.siliconflow='via-proxy';}  // placeholders ASCII : le Worker remplace l'Authorization par la vraie clé
+    const _PB=(PROXY_URL||'').replace(/\/$/,'');
+    return Object.freeze({
+      viaProxy:VIA_PROXY,                       // vrai : tout passe par le Worker, qui détient les clés
+      base:_PB,                                 // adresse du Worker (comptes, synchro, agents)
+      orHost:VIA_PROXY?_PB+'/or':'https://openrouter.ai',
+      sfHost:VIA_PROXY?_PB+'/sf':'https://api.siliconflow.com',
+      showApiSettings:!!window.MZAI_DEV_SETTINGS,   // saisie des clés visible dans les réglages
+      cle:nom=>Object.prototype.hasOwnProperty.call(KEYS,nom)&&typeof KEYS[nom]==='string'?KEYS[nom]:'',
+      poserCle(nom,valeur){KEYS[String(nom)]=cleanKey(valeur);persistKeys()},
+      nettoyerCle:cleanKey,
+    });
+  })();
 
   /* ══ CLOUD (mode hébergé uniquement) : compte par code d'accès + historique synchronisé + médias permanents ══
      Sécurité : le code n'est jamais loggé ; injecté en en-tête UNIQUEMENT vers notre Worker (interceptor ciblé) ;
      le serveur re-vérifie tout (defense-in-depth : contourner l'écran ne donne accès à rien). */
   const _acode=()=>{try{return localStorage.getItem('mzai:acode')||''}catch(e){return''}};
-  if(VIA_PROXY){
+  if(Relais.viaProxy){
     const _f=window.fetch.bind(window);
-    window.fetch=function(u,init){try{const s=typeof u==='string'?u:(u&&u.url)||'';if(s.indexOf(_PB)===0){init=init||{};const h=new Headers(init.headers||{});const c=_acode();if(c)h.set('X-Maz-Code',c);init.headers=h;}}catch(e){}return _f(u,init)};
+    window.fetch=function(u,init){try{const s=typeof u==='string'?u:(u&&u.url)||'';if(s.indexOf(Relais.base)===0){init=init||{};const h=new Headers(init.headers||{});const c=_acode();if(c)h.set('X-Maz-Code',c);init.headers=h;}}catch(e){}return _f(u,init)};
   }
   let CLOUD_ON=false,_lastPush=0,_cpT=null;
   async function cloudPushSoon(){if(!CLOUD_ON)return;clearTimeout(_cpT);_cpT=setTimeout(async()=>{
@@ -2757,17 +2770,17 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const dirty=CONVOS.filter(c=>(c.ts||0)>_lastPush).sort((a,b)=>(a.ts||0)-(b.ts||0));if(!dirty.length)return;
     const batch=dirty.slice(0,12);let last=_lastPush,ok=true;
     for(const c of batch){try{
-      const r=await fetch(_PB+'/sync/convo',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:c.id,data:_stripConvo(c),updated_at:c.ts||Date.now()})});
+      const r=await fetch(Relais.base+'/sync/convo',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:c.id,data:_stripConvo(c),updated_at:c.ts||Date.now()})});
       if(!r.ok){ok=false;break}   // panne : on s'arrête, _lastPush reste au dernier succès, re-tentera au prochain save/pull
       last=c.ts||last;
     }catch(e){ok=false;break}}
     _lastPush=last;
     if(ok&&dirty.length>batch.length)cloudPushSoon();   // lot complet + reste → nouveau tick jusqu'à épuisement (pas de boucle si échec)
   },1200)}
-  function cloudDelete(id){if(!CLOUD_ON)return;fetch(_PB+'/sync/convo?id='+encodeURIComponent(id),{method:'DELETE'}).catch(()=>{})}
+  function cloudDelete(id){if(!CLOUD_ON)return;fetch(Relais.base+'/sync/convo?id='+encodeURIComponent(id),{method:'DELETE'}).catch(()=>{})}
   async function cloudPull(){
     try{
-      const r=await fetch(_PB+'/sync/convos');if(!r.ok)return;
+      const r=await fetch(Relais.base+'/sync/convos');if(!r.ok)return;
       const rows=await r.json();let changed=false;
       rows.forEach(row=>{
         const li=CONVOS.findIndex(c=>c.id===row.id);
@@ -2780,7 +2793,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(changed){CONVOS.sort((a,b)=>(b.ts||0)-(a.ts||0));saveConvos();renderRecents()}
       // push de ce que le cloud n'a pas (ou a en plus vieux)
       const seen=new Map(rows.map(r2=>[r2.id,r2.updated_at]));
-      for(const c of CONVOS){const rts=seen.get(c.id);if(rts===undefined||(c.ts||0)>rts){try{await fetch(_PB+'/sync/convo',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:c.id,data:_stripConvo(c),updated_at:c.ts||Date.now()})})}catch(e){break}}}
+      for(const c of CONVOS){const rts=seen.get(c.id);if(rts===undefined||(c.ts||0)>rts){try{await fetch(Relais.base+'/sync/convo',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:c.id,data:_stripConvo(c),updated_at:c.ts||Date.now()})})}catch(e){break}}}
       _lastPush=Date.now();CLOUD_ON=true;
     }catch(e){try{console.warn('[MAZ] sync',e)}catch(_){}}
   }
@@ -2798,7 +2811,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const go=async()=>{const inp=g.querySelector('#gateIn'),err=g.querySelector('#gateErr'),btn=g.querySelector('#gateGo');
       const code=(inp.value||'').replace(/[^\x21-\x7E]/g,'').trim();if(!code){err.textContent='Colle ton code d’accès.';return}
       btn.disabled=true;btn.textContent='Vérification…';err.textContent='';
-      try{const r=await fetch(_PB+'/auth/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
+      try{const r=await fetch(Relais.base+'/auth/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
         if(r.ok){const d=await r.json();try{localStorage.setItem('mzai:acode',code)}catch(e){}g.remove();onAuthed(d);return}
         err.textContent=r.status===401?'Code non reconnu — vérifie-le auprès de Mazen.':'Service indisponible — réessaie dans un instant.';
       }catch(e){err.textContent='Connexion impossible — vérifie ton réseau.'}
@@ -2837,8 +2850,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   const eur2=c=>(Number(c||0)/100).toFixed(2).replace('.',',')+' €';
   async function chargerAlertes(){
     const e=document.getElementById('alEmail'),h=document.getElementById('alHook');
-    if(!e||!VIA_PROXY)return;
-    try{const r=await fetch(_PB+'/alertes');if(!r.ok)return;const d=await r.json();
+    if(!e||!Relais.viaProxy)return;
+    try{const r=await fetch(Relais.base+'/alertes');if(!r.ok)return;const d=await r.json();
       e.value=d.email||'';h.value=d.webhook||'';
       const s=document.getElementById('alSucces');
       if(s){s.classList.toggle('on',!!d.succes);s.setAttribute('aria-checked',d.succes?'true':'false')}
@@ -2864,7 +2877,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       sw.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();bascule()}});}
     bs.addEventListener('click',async()=>{
       bs.disabled=true;dire('Enregistrement…');
-      try{const r=await fetch(_PB+'/alertes',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(lire())});
+      try{const r=await fetch(Relais.base+'/alertes',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(lire())});
         const d=await r.json().catch(()=>({}));
         if(r.ok){dire('Enregistré.');toast('Alertes enregistrées');chargerAlertes()}
         else dire(HINTS[d.error]||'Refusé — vérifie les champs.',true);
@@ -2876,8 +2889,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const v=lire();if(!v.email&&!v.webhook){dire('Renseigne d’abord une adresse ou une URL.',true);return}
       bt.disabled=true;dire('Envoi…');
       try{
-        await fetch(_PB+'/alertes',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(v)});
-        const r=await fetch(_PB+'/alertes/test',{method:'POST'});const d=await r.json().catch(()=>({}));
+        await fetch(Relais.base+'/alertes',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(v)});
+        const r=await fetch(Relais.base+'/alertes/test',{method:'POST'});const d=await r.json().catch(()=>({}));
         if(!r.ok){dire('Test impossible pour l’instant.',true)}
         else{const p=[];if(d.email)p.push('mail');if(d.webhook)p.push('notification');
           dire(p.length?'Envoyé par '+p.join(' et ')+' — regarde d’ici une minute.':'Rien n’est parti : aucun canal actif côté serveur.',!p.length)}
@@ -2914,7 +2927,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const box=document.getElementById('admList');if(!box)return;
     box.innerHTML='<div style="padding:12px;font-size:13px;color:var(--ink-soft)">Chargement…</div>';
     try{
-      const r=await fetch(_PB+'/admin/users');if(!r.ok)throw 0;
+      const r=await fetch(Relais.base+'/admin/users');if(!r.ok)throw 0;
       const us=await r.json();
       box.innerHTML=us.map(u=>{
         const seen=u.last_seen?new Date(u.last_seen).toLocaleDateString('fr-FR',{day:'numeric',month:'short'}):'jamais';
@@ -2932,7 +2945,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         const code=window.prompt('Nouveau code pour « '+b.dataset.nm+' » — 12 caractères minimum, lettres ET chiffres (insensible aux majuscules).\n\n⚠️ Il remplace l\'ancien immédiatement.');
         if(code===null)return;
         try{
-          const r=await fetch(_PB+'/admin/setcode',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.dataset.admCode,code:code.trim()})});
+          const r=await fetch(Relais.base+'/admin/setcode',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.dataset.admCode,code:code.trim()})});
           if(r.ok){toast('Code de '+b.dataset.nm+' remplacé');if(b.dataset.admCode===localStorage.getItem('mzai:cloud_uid')){localStorage.setItem('mzai:acode',code.trim())}}   // si on change SON propre code, la session suit
           else{const d=await r.json().catch(()=>({}));toast(d.error==='code_taken'?'Ce code est déjà pris — choisis-en un autre':'Code refusé : '+(d.hint||'12+ caractères, lettres et chiffres'))}
         }catch(e){toast('Impossible pour l\'instant — réessaie')}
@@ -2942,7 +2955,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       box.querySelectorAll('[data-adm-nom]').forEach(b=>b.addEventListener('click',async()=>{
         const v=window.prompt('Nom de cette personne — c’est ce que tu liras à côté de ce qu’elle consomme.',b.dataset.nm);
         if(v===null)return;const name=v.trim();if(!name||name===b.dataset.nm)return;
-        try{const r=await fetch(_PB+'/admin/rename',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.dataset.admNom,name})});
+        try{const r=await fetch(Relais.base+'/admin/rename',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.dataset.admNom,name})});
           if(r.ok){toast('Renommé : '+name);admRefresh()}else toast('Renommage refusé')}
         catch(e){toast('Impossible pour l\'instant — réessaie')}
       }));
@@ -2950,7 +2963,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
          un accès qui a servi se révoque, il ne s'efface pas avec son historique. */
       box.querySelectorAll('[data-adm-sup]').forEach(b=>b.addEventListener('click',async()=>{
         if(!window.confirm('Supprimer définitivement l’accès de « '+b.dataset.nm+' » ?\n\nIl n’a jamais servi, rien ne sera perdu. Son code cessera de fonctionner.'))return;
-        try{const r=await fetch(_PB+'/admin/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.dataset.admSup})});
+        try{const r=await fetch(Relais.base+'/admin/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.dataset.admSup})});
           const d=await r.json().catch(()=>({}));
           if(r.ok){toast('Accès supprimé');admRefresh()}
           else toast(d.hint||'Suppression refusée')}
@@ -2959,7 +2972,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       box.querySelectorAll('[data-adm-toggle]').forEach(b=>b.addEventListener('click',async()=>{
         const en=b.dataset.en==='1';
         if(!en&&!window.confirm('Révoquer cet accès ? La personne ne pourra plus utiliser MAZ (son historique est conservé).'))return;
-        await fetch(_PB+'/admin/disable',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.dataset.admToggle,enable:en})}).catch(()=>{});
+        await fetch(Relais.base+'/admin/disable',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.dataset.admToggle,enable:en})}).catch(()=>{});
         admRefresh();
       }));
     }catch(e){box.innerHTML='<div style="padding:12px;font-size:13px;color:#E8686D">Impossible de charger les comptes — réessaie.</div>'}
@@ -2968,7 +2981,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const inp=document.getElementById('admName'),name=(inp.value||'').trim().slice(0,60);
     if(!name){toast('Donne un nom (prénom du collègue ou du client)');return}
     try{
-      const r=await fetch(_PB+'/admin/user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})});
+      const r=await fetch(Relais.base+'/admin/user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})});
       if(!r.ok)throw 0;
       const d=await r.json();
       inp.value='';
@@ -2979,9 +2992,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       admRefresh();
     }catch(e){toast('Création impossible — réessaie')}
   }
-  if(VIA_PROXY)(async()=>{
+  if(Relais.viaProxy)(async()=>{
     const saved=_acode();
-    if(saved){try{const r=await fetch(_PB+'/auth/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:saved})});
+    if(saved){try{const r=await fetch(Relais.base+'/auth/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:saved})});
       if(r.ok){onAuthed(await r.json());return}
       if(r.status===401){try{localStorage.removeItem('mzai:acode')}catch(e){}}   // code révoqué → on redemande
       else{CLOUD_ON=false;toast&&toast('Service momentanément indisponible — mode hors-ligne');return}   // 5xx : le code est connu, on laisse l'app en local (pas de mur), la sync reprendra
@@ -3003,8 +3016,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     return (ctx.includes('m')||ctx.includes('auto'))?400000:parseInt(ctx)>=256?240000:parseInt(ctx)>=128?140000:60000;}
   const provOf=m=>PROVIDERS[(typeof m==='string'?modelById(m):m||{}).provider||'mz'];
   const acOf=m=>provOf(m).ac;
-  const hasKey=p=>p==='mz'||(p==='kling'?(!!(KEYS.kling_ak&&KEYS.kling_ak.trim())&&!!(KEYS.kling_sk&&KEYS.kling_sk.trim())):!!(KEYS[p]&&KEYS[p].trim()));
-  const klingUsable=()=>hasKey('kling')||!!(KEYS.kling_proxy&&KEYS.kling_proxy.trim());   // Kling ne marche qu'avec ses 2 clés OU son proxy → sinon on masque ses modèles (pas de menu mort)
+  const hasKey=p=>p==='mz'||(p==='kling'?(!!(Relais.cle('kling_ak')&&Relais.cle('kling_ak').trim())&&!!(Relais.cle('kling_sk')&&Relais.cle('kling_sk').trim())):!!(Relais.cle(p)&&Relais.cle(p).trim()));
+  const klingUsable=()=>hasKey('kling')||!!(Relais.cle('kling_proxy')&&Relais.cle('kling_proxy').trim());   // Kling ne marche qu'avec ses 2 clés OU son proxy → sinon on masque ses modèles (pas de menu mort)
 
   const LIC={chat:'<path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/>',code:'<path d="m8 6-6 6 6 6M16 6l6 6-6 6"/>',doc:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>',img:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>'};
   /* jeu d'icônes vectorielles (remplace les emojis) */
@@ -3255,7 +3268,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       ms.forEach(m=>{const pr=PROVIDERS[m.provider];const ok=hasKey(m.provider);html+=`<div class="pi${ok?'':' nokey'}" data-model="${m.id}" style="--ac:${pr.ac}"><div class="pi-i acc">${brandLogo(m)}</div><div class="pi-main"><div class="pi-t">${m.id}${m.tag?` <span class="tagm" style="background:var(--surface-2);color:var(--ink-soft);border:1px solid var(--line)">${m.tag}</span>`:''}${ok?'':'<span class="keyhint">clé requise</span>'}</div><div class="pi-d">${m.d}</div><div class="pi-cap">${spdDots(m.spd)}${m.ctx&&m.ctx!=='-'?`<span class="ctxchip">${m.ctx} ctx</span>`:''}</div></div>${CHK}</div>`})});
     html+=`<div class="pfoot"><button class="pf-btn" id="popPersona"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.sliders}</svg>Personnaliser mon IA</button></div>`;
     $('#popModel').innerHTML=html;
-    $$('#popModel .pi').forEach(p=>p.addEventListener('click',()=>{const id=p.dataset.model,m=modelById(id);const _cat=m&&m.kind?(m.kind==='audio'?'voice':m.kind):'text';if(typeof setMode==='function'&&_cat!==MODE_CAT[currentMode])setMode(_cat);currentModel=id;syncModel();closePop();if(!hasKey(m.provider)){if(VIA_PROXY){toast('Modèle indisponible pour l\'instant')}else{toast('Ajoute ta clé '+PROVIDERS[m.provider].name);openSettingsAt('api')}}else{const mp=$('#modelPill');if(mp){mp.classList.remove('m-flash');void mp.offsetWidth;mp.classList.add('m-flash')}}}));   // le retour vit dans la pill elle-même, pas dans un toast à l'autre bout
+    $$('#popModel .pi').forEach(p=>p.addEventListener('click',()=>{const id=p.dataset.model,m=modelById(id);const _cat=m&&m.kind?(m.kind==='audio'?'voice':m.kind):'text';if(typeof setMode==='function'&&_cat!==MODE_CAT[currentMode])setMode(_cat);currentModel=id;syncModel();closePop();if(!hasKey(m.provider)){if(Relais.viaProxy){toast('Modèle indisponible pour l\'instant')}else{toast('Ajoute ta clé '+PROVIDERS[m.provider].name);openSettingsAt('api')}}else{const mp=$('#modelPill');if(mp){mp.classList.remove('m-flash');void mp.offsetWidth;mp.classList.add('m-flash')}}}));   // le retour vit dans la pill elle-même, pas dans un toast à l'autre bout
     const _pk=$('#popKeys');if(_pk)_pk.addEventListener('click',()=>{closePop();openSettingsAt('api')});
     $('#popPersona').addEventListener('click',()=>{closePop();openPersona()});
   }
@@ -3286,7 +3299,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       `<div class="pi sel"><div class="pi-i" style="background:var(--accent);color:var(--ink-on-accent);border-color:transparent;font-family:var(--font-display);font-weight:600">${esc(ini)}</div><div class="pi-main"><div class="pi-t">${esc(USER.name||'Mon espace')}</div><div class="pi-d">${esc(email)}</div></div></div><div class="sep"></div>`
       +items.map(([pf,t,svg])=>`<div class="pi" data-pf="${pf}">${pfIco(svg)}<div class="pi-main"><div class="pi-t">${t}</div></div>${pf==='theme'?`<span class="pi-tail">${themeLabel()}</span>`:''}</div>`).join('')
       +'<div class="sep"></div>'
-      +(VIA_PROXY?`<div class="pi" data-pf="logout">${pfIco('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>')}<div class="pi-main"><div class="pi-t">Se déconnecter</div></div></div>`:'')
+      +(Relais.viaProxy?`<div class="pi" data-pf="logout">${pfIco('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>')}<div class="pi-main"><div class="pi-t">Se déconnecter</div></div></div>`:'')
       +`<div class="pi danger" data-pf="clear">${pfIco(GLYPH.trash)}<div class="pi-main"><div class="pi-t">Effacer les données locales</div></div></div>`;
     $$('#popProfile .pi[data-pf]').forEach(p=>p.addEventListener('click',()=>{
       const a=p.dataset.pf;
@@ -3351,11 +3364,11 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function openHelp(){showView('help')}            // ex-modale → vue in-place
   function renderHelp(){
     // Mode hébergé : rien sur les fournisseurs, les clés ou le « statut des services » (infra interne).
-    const hl=HELP_LINKS.filter(l=>!(VIA_PROXY&&l[0]==='Statut des services')).map(l=>{
-      if(VIA_PROXY&&l[0]==='Confidentialité')return[l[0],'Tes conversations te suivent sur tous tes appareils, chiffrées en transit. Personne d’autre n’y a accès.',l[2]];
+    const hl=HELP_LINKS.filter(l=>!(Relais.viaProxy&&l[0]==='Statut des services')).map(l=>{
+      if(Relais.viaProxy&&l[0]==='Confidentialité')return[l[0],'Tes conversations te suivent sur tous tes appareils, chiffrées en transit. Personne d’autre n’y a accès.',l[2]];
       return l;});
-    const faq=FAQ.filter(([q,a])=>!/cl[ée]s?\s*api/i.test(q)&&!((VIA_PROXY||!SHOW_API_SETTINGS)&&(/cl[ée]|openrouter|siliconflow|kling/i.test(q)||/openrouter|siliconflow|kling|ta propre clé/i.test(a)))).map(([q,a])=>{
-      if(VIA_PROXY&&/priv[ée]e?s?\b/i.test(q))return[q,'Oui. Tes conversations, projets et persona sont synchronisés de façon chiffrée sur ton espace privé et te suivent sur tous tes appareils. Personne d’autre n’y a accès.'];
+    const faq=FAQ.filter(([q,a])=>!/cl[ée]s?\s*api/i.test(q)&&!((Relais.viaProxy||!Relais.showApiSettings)&&(/cl[ée]|openrouter|siliconflow|kling/i.test(q)||/openrouter|siliconflow|kling|ta propre clé/i.test(a)))).map(([q,a])=>{
+      if(Relais.viaProxy&&/priv[ée]e?s?\b/i.test(q))return[q,'Oui. Tes conversations, projets et persona sont synchronisés de façon chiffrée sur ton espace privé et te suivent sur tous tes appareils. Personne d’autre n’y a accès.'];
       return[q,a];});
     $('#helpLinks').innerHTML=hl.map((l,i)=>`<div class="help-link" data-h="${i}"><div class="hl-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH[l[2]]||GLYPH.spark}</svg></div><div style="min-width:0"><div class="hl-t">${l[0]}</div><div class="hl-d">${l[1]}</div></div></div>`).join('');
     $('#faqList').innerHTML='<button class="help-cta" id="helpAssistant"><span class="hc-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/></svg></span><div class="min0"><div class="hc-t">Demander à l\'assistant MAZ</div><div class="hc-d">Une question précise ? L\'IA te guide pas à pas, en direct.</div></div><svg class="hc-go" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></button>'
@@ -3378,7 +3391,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   /* Aide : lance l'assistant « Aide MAZ » dans une nouvelle conversation */
   function launchAide(){const a=ASSISTANTS.find(x=>x.id==='aide');if(!a){openHelp();return}const c=createConvo();c.title=a.name;c.assistant=a.id;saveConvos();openConvo(c.id);if(window.innerWidth<=1024){$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show')}}
   /* Efface toutes les données locales puis recharge */
-  function clearLocalData(){const scope=SHOW_API_SETTINGS?'conversations, réglages, mémoire et clés API':'conversations, réglages et mémoire';if(!window.confirm('Effacer toutes les données locales ('+scope+') ? Cette action est irréversible.'))return;try{Object.keys(localStorage).filter(k=>k.indexOf('mzai:')===0).forEach(k=>localStorage.removeItem(k))}catch(e){}try{MEDIA.clear&&MEDIA.clear()}catch(e){}try{indexedDB.deleteDatabase('maz-media')}catch(e){}setTimeout(()=>location.reload(),60)}
+  function clearLocalData(){const scope=Relais.showApiSettings?'conversations, réglages, mémoire et clés API':'conversations, réglages et mémoire';if(!window.confirm('Effacer toutes les données locales ('+scope+') ? Cette action est irréversible.'))return;try{Object.keys(localStorage).filter(k=>k.indexOf('mzai:')===0).forEach(k=>localStorage.removeItem(k))}catch(e){}try{MEDIA.clear&&MEDIA.clear()}catch(e){}try{indexedDB.deleteDatabase('maz-media')}catch(e){}setTimeout(()=>location.reload(),60)}
 
   /* comparateur de modèles retiré (V2) — voir renderModelPicker pour le choix du modèle */
 
@@ -3495,23 +3508,23 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function renderApiList(){
     // Mode hébergé (accès par code) : les clés vivent côté serveur (Worker). Un collègue/client
     // n'a rien à configurer ni à connaître des fournisseurs → on masque toute la section.
-    if(!SHOW_API_SETTINGS){const sa=$('#set-api');if(sa)sa.style.display='none';const pp=$('#privacyProviders');if(pp)pp.style.display='none';const st=$('#setSubtitle');if(st)st.textContent='Modèle et préférences';return;}
+    if(!Relais.showApiSettings){const sa=$('#set-api');if(sa)sa.style.display='none';const pp=$('#privacyProviders');if(pp)pp.style.display='none';const st=$('#setSubtitle');if(st)st.textContent='Modèle et préférences';return;}
     const order=['openrouter','siliconflow'];
-    let rows=order.map(pk=>{const pr=PROVIDERS[pk],ok=hasKey(pk);return `<div class="api-row" data-key="${pk}"><span class="api-logo" style="color:${pr.ac}">${pr.logo}</span><div class="api-meta"><div class="api-name">${pr.name}</div><div class="api-sub">${pr.site}</div></div><input class="api-in" name="api-${pk}" type="password" autocomplete="off" spellcheck="false" placeholder="Coller la clé API…" aria-label="Clé API ${pr.name}" value="${esc(KEYS[pk]||'')}"><span class="api-st${ok?' on':''}" data-tip="${ok?'Connecté':'Non connecté'}"></span></div>`}).join('');
+    let rows=order.map(pk=>{const pr=PROVIDERS[pk],ok=hasKey(pk);return `<div class="api-row" data-key="${pk}"><span class="api-logo" style="color:${pr.ac}">${pr.logo}</span><div class="api-meta"><div class="api-name">${pr.name}</div><div class="api-sub">${pr.site}</div></div><input class="api-in" name="api-${pk}" type="password" autocomplete="off" spellcheck="false" placeholder="Coller la clé API…" aria-label="Clé API ${pr.name}" value="${esc(Relais.cle(pk)||'')}"><span class="api-st${ok?' on':''}" data-tip="${ok?'Connecté':'Non connecté'}"></span></div>`}).join('');
     const klingOk=hasKey('kling');
-    rows+=`<div class="api-row api-kling" data-key="kling"><span class="api-logo" style="color:#ff5c28">${PROVIDERS.kling.logo}</span><div class="api-meta"><div class="api-name">Kling AI</div><div class="api-sub">kling.ai · vidéo</div></div><div class="kling-fields"><input class="api-in" data-kf="kling_ak" name="kling_ak" type="password" autocomplete="off" placeholder="Access Key…" aria-label="Access Key Kling" value="${esc(KEYS.kling_ak||'')}"><input class="api-in" data-kf="kling_sk" name="kling_sk" type="password" autocomplete="off" placeholder="Secret Key…" aria-label="Secret Key Kling" value="${esc(KEYS.kling_sk||'')}"></div><span class="api-st${klingOk?' on':''}" data-tip="${klingOk?'Connecté':'2 clés requises'}"></span></div>`;
+    rows+=`<div class="api-row api-kling" data-key="kling"><span class="api-logo" style="color:#ff5c28">${PROVIDERS.kling.logo}</span><div class="api-meta"><div class="api-name">Kling AI</div><div class="api-sub">kling.ai · vidéo</div></div><div class="kling-fields"><input class="api-in" data-kf="kling_ak" name="kling_ak" type="password" autocomplete="off" placeholder="Access Key…" aria-label="Access Key Kling" value="${esc(Relais.cle('kling_ak')||'')}"><input class="api-in" data-kf="kling_sk" name="kling_sk" type="password" autocomplete="off" placeholder="Secret Key…" aria-label="Secret Key Kling" value="${esc(Relais.cle('kling_sk')||'')}"></div><span class="api-st${klingOk?' on':''}" data-tip="${klingOk?'Connecté':'2 clés requises'}"></span></div>`;
     $('#apiList').innerHTML=rows;
     $$('#apiList .api-row:not(.api-kling)').forEach(row=>{const pk=row.dataset.key,inp=row.querySelector('.api-in'),st=row.querySelector('.api-st');
-      inp.addEventListener('input',()=>{KEYS[pk]=cleanKey(inp.value);persistKeys();st.classList.toggle('on',hasKey(pk));st.setAttribute('data-tip',hasKey(pk)?'Connecté':'Non connecté');renderModelPicker();syncModel()});
+      inp.addEventListener('input',()=>{Relais.poserCle(pk,inp.value);st.classList.toggle('on',hasKey(pk));st.setAttribute('data-tip',hasKey(pk)?'Connecté':'Non connecté');renderModelPicker();syncModel()});
     });
-    $$('#apiList [data-kf]').forEach(inp=>{inp.addEventListener('input',()=>{KEYS[inp.dataset.kf]=cleanKey(inp.value);persistKeys();const st=$('#apiList .api-kling .api-st'),ok=hasKey('kling');if(st){st.classList.toggle('on',ok);st.setAttribute('data-tip',ok?'Connecté':'2 clés requises')}renderModelPicker();syncModel()})});
+    $$('#apiList [data-kf]').forEach(inp=>{inp.addEventListener('input',()=>{Relais.poserCle(inp.dataset.kf,inp.value);const st=$('#apiList .api-kling .api-st'),ok=hasKey('kling');if(st){st.classList.toggle('on',ok);st.setAttribute('data-tip',ok?'Connecté':'2 clés requises')}renderModelPicker();syncModel()})});
   }
   renderApiList();
   $('#setExport').addEventListener('click',()=>{buildExport().then(data=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='mzai-export.json';a.click();URL.revokeObjectURL(u);toast('Données exportées')}).catch(()=>toast('Export impossible — réessaie'))});
   /* Effacer n'effaçait QUE le local : le premier cloudPull() rapatriait tout
      depuis le serveur et les conversations « supprimées » réapparaissaient.
      On prévient donc le serveur, conversation par conversation, avant de vider. */
-  $('#setClear').addEventListener('click',()=>{const keep=SHOW_API_SETTINGS?'Tes clés API et réglages sont conservés.':'Tes préférences d’affichage sont conservées.';if(!window.confirm('Effacer TOUTES les conversations, la corbeille et la mémoire de l\'IA — ici ET sur le serveur ? ('+keep+') Action irréversible.'))return;
+  $('#setClear').addEventListener('click',()=>{const keep=Relais.showApiSettings?'Tes clés API et réglages sont conservés.':'Tes préférences d’affichage sont conservées.';if(!window.confirm('Effacer TOUTES les conversations, la corbeille et la mémoire de l\'IA — ici ET sur le serveur ? ('+keep+') Action irréversible.'))return;
     const ids=[...CONVOS,...TRASH].map(c=>c.id);
     CONVOS=[];activeId=null;TRASH=[];saveTrash();setMemory('');MEDIA.clear&&MEDIA.clear();SESSION_TOKENS=0;SESSION_COST=0;try{localStorage.removeItem('mzai:stok');localStorage.removeItem('mzai:scost')}catch(e){}_renderTok(false);saveConvos();renderRecents();renderLibrary('');typeof renderTrash==='function'&&renderTrash();chat.innerHTML='';goHome();
     ids.forEach(id=>{try{cloudDelete(id)}catch(e){}});
@@ -3716,12 +3729,12 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     };
   }
   async function autoTitle(c){
-    if(!KEYS.openrouter)return;
+    if(!Relais.cle('openrouter'))return;
     const userMsg=(c.msgs.find(m=>m.role==='user')||{}).text||'';
     const aiMsg=(c.msgs.find(m=>m.role==='ai')||{}).text||'';
     try{
-      const res=await fetch(OR_HOST+'/api/v1/chat/completions',{method:'POST',
-        headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MAZ'},
+      const res=await fetch(Relais.orHost+'/api/v1/chat/completions',{method:'POST',
+        headers:{'Authorization':'Bearer '+Relais.cle('openrouter'),'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MAZ'},
         body:JSON.stringify({model:'deepseek/deepseek-v4-flash',max_tokens:20,temperature:0.3,
           messages:[{role:'system',content:'Génère un titre de 3-5 mots (sans ponctuation ni guillemets) qui résume cette conversation. Réponds UNIQUEMENT avec le titre.'},
             {role:'user',content:'Question : '+userMsg.slice(0,200)+'\nRéponse : '+aiMsg.slice(0,200)}]})});
@@ -3813,11 +3826,11 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function getProfile(){try{return localStorage.getItem(PROFILE_KEY)||''}catch(e){return''}}
   function setProfile(txt){try{localStorage.setItem(PROFILE_KEY,txt)}catch(e){}}
   async function updateMemory(c){
-    if(!KEYS.openrouter||c.msgs.length<4)return;
+    if(!Relais.cle('openrouter')||c.msgs.length<4)return;
     const recent=c.msgs.slice(-6).map(m=>(m.role==='user'?'User: ':'IA: ')+(m.text||(m.media?'['+m.media.type+']':'')).slice(0,300)).join('\n');
     try{
-      const res=await fetch(OR_HOST+'/api/v1/chat/completions',{method:'POST',
-        headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MAZ'},
+      const res=await fetch(Relais.orHost+'/api/v1/chat/completions',{method:'POST',
+        headers:{'Authorization':'Bearer '+Relais.cle('openrouter'),'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MAZ'},
         body:JSON.stringify({model:'deepseek/deepseek-v4-flash',max_tokens:120,temperature:0.2,
           messages:[{role:'system',content:"Synthétise en 2-3 phrases les préférences, style et besoins clés de l'utilisateur à retenir pour les prochaines sessions. Concis, factuel, sans intro."},
             {role:'user',content:recent}]})});
@@ -3871,7 +3884,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(injTotal>0){const b=injBadge(injUsed,injTotal);if(b)col.appendChild(b);}                          // transparence : X / Y caractères de document injectés
       if(currentMode==='doc'&&toolCfg.docAction==='Extraction')addJsonDownload(col,text);                  // export .json structuré
       if(meta.usage||meta.ms){const s=statsEl(wasAuto?'MAZ Auto → '+resolvedModel:resolvedModel,meta.ms,meta.usage,true);if(s)col.appendChild(s);}
-      if(VIA_PROXY&&meta.usage){try{fetch(_PB+'/usage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tokens:+meta.usage.total_tokens||0,cost:+meta.usage.cost||0})}).catch(()=>{})}catch(e){}}   // consommation par compte (préparé facturation)
+      if(Relais.viaProxy&&meta.usage){try{fetch(Relais.base+'/usage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tokens:+meta.usage.total_tokens||0,cost:+meta.usage.cost||0})}).catch(()=>{})}catch(e){}}   // consommation par compte (préparé facturation)
       scrollDown();
       opts.onDone&&opts.onDone(text,{reasonText,sources:meta.sources,usage:meta.usage,ms:meta.ms,resolved:resolvedModel,auto:wasAuto,error:meta.error});
     };
@@ -3882,7 +3895,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       const c = convoById(activeId);
       const qcMode=(currentMode==='translate'&&toolCfg.trCheck);  // mode vérification : on masque le JSON brut pendant le stream
       let mData = modelById(opts.model);
-      if(mData.provider==='mz' && KEYS.openrouter){  // MAZ Auto → routage selon la demande (transparent : modèle réel révélé sous la réponse)
+      if(mData.provider==='mz' && Relais.cle('openrouter')){  // MAZ Auto → routage selon la demande (transparent : modèle réel révélé sous la réponse)
         const lastMsg=(c.msgs.filter(m=>m.role==='user'&&!m.fs).pop())||{};   // le routage se cale sur la vraie question, pas sur l'injection de fichiers
         const lastUser=lastMsg.text||'';
         const t=lastUser.toLowerCase();
@@ -3913,8 +3926,8 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         return finish(REPLIES[ri++%REPLIES.length],{demo:true});  // vrai cas « sans clé » → réponse simulée, désormais explicitement badgée
       }
 
-      const apiKey = isOR ? KEYS['openrouter'] : KEYS['siliconflow'];
-      if(!apiKey){ bubble.classList.remove('md'); return finish(VIA_PROXY?'⚠️ **Service momentanément indisponible.** Réessaie dans un moment.':'⚠️ Clé API manquante pour '+(isOR?'OpenRouter':'SiliconFlow')+'. Ajoute-la dans Paramètres › Connexions API.',{error:true}); }
+      const apiKey = isOR ? Relais.cle('openrouter') : Relais.cle('siliconflow');
+      if(!apiKey){ bubble.classList.remove('md'); return finish(Relais.viaProxy?'⚠️ **Service momentanément indisponible.** Réessaie dans un moment.':'⚠️ Clé API manquante pour '+(isOR?'OpenRouter':'SiliconFlow')+'. Ajoute-la dans Paramètres › Connexions API.',{error:true}); }
 
       // Truncation intelligente : garde les 24 derniers messages, tronque les longs
       const allMsgs=c.msgs.filter(m=>m.text);
@@ -3934,12 +3947,16 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
           let txt=m.text.length>4000?m.text.slice(0,4000)+'…[tronqué]':m.text;
           if(docs.length)txt+='\n\n'+docs.map(f=>{const cut=f.textContent.slice(0,cap).replace(/```/g,'`​`​`');injTotal+=f.textContent.length;injUsed+=cut.length;return '**Fichier : '+f.name+'**\n```\n'+cut+'\n```'}).join('\n\n');
           if(ocr.length)txt+='\n\n[Document scanné joint en images — lis-les directement pour répondre.]';
+          // Fichier dont rien n'a pu être lu (format non géré, image illisible) : le dire au modèle, sinon il répond comme si rien n'était joint.
+          // `_mid` écarté : le contenu existe, il est seulement rangé ailleurs ou resté sur un autre appareil.
+          const muets=(m.files||[]).filter(f=>f&&!f._mid&&!f.textContent&&!f.b64&&!(f.ocrPages&&f.ocrPages.length));
+          if(muets.length)txt+='\n\n'+muets.map(f=>'[Fichier joint « '+String(f.name||'sans nom').slice(0,120)+' » : illisible dans le navigateur, son contenu ne t’a pas été transmis.]').join('\n');
           const imgParts=[...imgs.map(f=>({type:'image_url',image_url:{url:f.b64}})),...ocr.map(u=>({type:'image_url',image_url:{url:u}}))];
           if(imgParts.length)return{role:m.role==='ai'?'assistant':'user',content:[{type:'text',text:txt},...imgParts]};
           return{role:m.role==='ai'?'assistant':'user',content:txt};
         })
       );
-      const endpoint = isOR ? OR_HOST+"/api/v1/chat/completions" : SF_HOST+"/v1/chat/completions";
+      const endpoint = isOR ? Relais.orHost+"/api/v1/chat/completions" : Relais.sfHost+"/v1/chat/completions";
       const headers={'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'};
       if(isOR){headers['HTTP-Referer']=location.origin||'https://mzai.app';headers['X-Title']='MAZ';}
       bubble.innerHTML=qcMode?'<div class="gen-loading"><div class="gl-ring"></div>Traduction + contrôle qualité…</div>':'<span class="caret"></span>';
@@ -3959,7 +3976,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
 
       if(!res.ok){
         const raw = await res.text(); let msg;
-        if(VIA_PROXY){
+        if(Relais.viaProxy){
           // mode hébergé : jamais de nom de fournisseur ni de « clé/Connexions API » (le collègue ne gère rien de tout ça)
           if(res.status===402) msg="⚠️ **Service momentanément indisponible.** Réessaie dans un moment.";
           else if(res.status===401||res.status===403) msg="🔒 **Ta session a expiré.** Reconnecte-toi pour continuer.";
@@ -4061,7 +4078,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   async function blobToB64(blobUrl){const r=await fetch(blobUrl),b=await r.blob();return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=rej;fr.readAsDataURL(b)})}
   let _kJwt=null,_kExp=0,_kKeys='';   // cache du JWT Kling (valide 30min) — évite 40-80 signatures crypto par vidéo
   async function klingJWT(){
-    const proxy=(KEYS.kling_proxy||'').trim();
+    const proxy=(Relais.cle('kling_proxy')||'').trim();
     const now=Math.floor(Date.now()/1000);
     if(proxy){   // signature côté serveur (Cloudflare Worker) : la clé secrète ne touche JAMAIS le navigateur
       if(_kJwt && _kKeys==='px:'+proxy && _kExp-now>120) return _kJwt;
@@ -4072,7 +4089,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       _kJwt=d.token;_kExp=d.exp||(now+1800);_kKeys='px:'+proxy;
       return _kJwt;
     }
-    const ak=KEYS.kling_ak||'',sk=KEYS.kling_sk||'';
+    const ak=Relais.cle('kling_ak')||'',sk=Relais.cle('kling_sk')||'';
     if(!ak||!sk)throw new Error('Clés Kling manquantes — configure Access Key + Secret Key dans Paramètres › Connexions API (kling.ai), ou renseigne kling_proxy (recommandé).');
     if(_kJwt && _kKeys===ak+'|'+sk && _kExp-now>120) return _kJwt;   // réutilise tant qu'il reste >2min
     const b64u=obj=>btoa(JSON.stringify(obj)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
@@ -4101,9 +4118,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   })();
   function hydrateMedia(scope){(scope||document).querySelectorAll('[data-mid]').forEach(el=>{if(el.dataset._hy)return;el.dataset._hy='1';MEDIA.get(el.dataset.mid).then(u=>{if(u)el.src=u})});}
   async function stashRemoteMedia(media){   // le média généré (URL de livraison qui expire en ~2 min) est rapatrié PAR LE SERVEUR dans le stockage permanent → suit l'utilisateur sur tous ses appareils, pour toujours
-    if(!media||!media.url||media.r2||/^data:/.test(media.url)||!VIA_PROXY)return;
+    if(!media||!media.url||media.r2||/^data:/.test(media.url)||!Relais.viaProxy)return;
     try{
-      const r=await fetch(_PB+'/media/stash',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:media.url})});
+      const r=await fetch(Relais.base+'/media/stash',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:media.url})});
       if(!r.ok)return;
       const d=await r.json();
       if(d.mid){media.r2=d.mid;saveConvos();}   // mediaBubbleHTML sert /media/<r2> (permanent) en priorité sur l'URL expirante
@@ -4113,12 +4130,12 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     const badge=`<span class="gm-badge"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">${GLYPH.spark}</svg>${esc(m.model||currentModel)}</span>`;
     const acts=`<div class="gm-acts"><span class="gm-b" data-gm="dl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH.import}</svg>Télécharger</span><span class="gm-b" data-gm="regen"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7M21 4v4h-4"/></svg>Régénérer</span></div>`;
     if(m.type==='audio'){
-      return `<div class="gen-audio"><span class="ga-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/></svg></span><audio controls ${m.mid?`data-mid="${esc(m.mid)}"`:''} src="${esc(m.r2?_PB+'/media/'+encodeURIComponent(m.r2):safeMediaUrl(m.url))}"></audio></div><div class="gm-cap">« ${esc(m.prompt)} »</div>${acts}`;
+      return `<div class="gen-audio"><span class="ga-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a9 9 0 0 1 0 14"/></svg></span><audio controls ${m.mid?`data-mid="${esc(m.mid)}"`:''} src="${esc(m.r2?Relais.base+'/media/'+encodeURIComponent(m.r2):safeMediaUrl(m.url))}"></audio></div><div class="gm-cap">« ${esc(m.prompt)} »</div>${acts}`;
     }
     const vid=m.type==='video';
     let art;
     const demo=(!m.url&&!m.mid&&!m.r2)?'<span class="gm-demo">Démo — ajoute ta clé pour générer</span>':'';
-    const _md=m.mid?`data-mid="${esc(m.mid)}"`:'';const _src=m.r2?_PB+'/media/'+encodeURIComponent(m.r2):safeMediaUrl(m.url);   // r2 = stockage permanent (prioritaire) ; sinon URL fournisseur ; data-mid = repli IndexedDB local
+    const _md=m.mid?`data-mid="${esc(m.mid)}"`:'';const _src=m.r2?Relais.base+'/media/'+encodeURIComponent(m.r2):safeMediaUrl(m.url);   // r2 = stockage permanent (prioritaire) ; sinon URL fournisseur ; data-mid = repli IndexedDB local
     if(vid&&(_src||m.mid)) art=`<video class="gm-art" ${_md} ${_src?`src="${esc(_src)}"`:''} controls playsinline style="width:100%;height:100%;object-fit:cover;background:#000"></video>`;
     else if(_src||m.mid) art=`<img ${_md} ${_src?`src="${esc(_src)}"`:''} alt="${esc(m.prompt||'Image générée')}" loading="lazy" decoding="async" class="gm-art" style="width:100%;height:100%;object-fit:cover">`;
     else{const [a,b,d,e]=hashColors(m.prompt+'·'+(m.seed||0)),uid='gm'+(mediaUID++);art=`<svg class="gm-art" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice"><defs><radialGradient id="${uid}" cx="32%" cy="28%" r="90%"><stop offset="0%" stop-color="${a}"/><stop offset="100%" stop-color="${b}"/></radialGradient></defs><rect width="100" height="100" fill="url(#${uid})"/><circle cx="74" cy="66" r="42" fill="${d}" opacity=".5"/><circle cx="22" cy="82" r="30" fill="${e}" opacity=".45"/><circle cx="58" cy="30" r="16" fill="${a}" opacity=".5"/></svg><div class="gm-grain"></div>`}
@@ -4126,7 +4143,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   }
   function wireMedia(bubble,m,node){
     bubble.querySelector('.gm-play')&&bubble.querySelector('.gm-play').addEventListener('click',()=>toast('Lecture de la vidéo (aperçu)'));
-    bubble.querySelector('[data-gm=dl]').addEventListener('click',()=>{const dl=(href)=>{const ext=m.type==='video'?'mp4':m.type==='audio'?'mp3':'png';const a=document.createElement('a');a.href=href;a.download='maz-'+m.type+'-'+(m.seed||'')+'.'+ext;a.target='_blank';a.click();toast('Téléchargement')};if(m.r2){dl(_PB+'/media/'+encodeURIComponent(m.r2));return;}if(m.url){dl(m.url);return;}if(m.mid){MEDIA.get(m.mid).then(u=>u?dl(u):toast('Audio indisponible'));return;}const svg=bubble.querySelector('.gm-art');if(!svg)return;const s=new XMLSerializer().serializeToString(svg),blob=new Blob([s],{type:'image/svg+xml'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='mzai-'+m.type+'-'+m.seed+'.svg';a.click();URL.revokeObjectURL(u);toast('Visuel téléchargé')});
+    bubble.querySelector('[data-gm=dl]').addEventListener('click',()=>{const dl=(href)=>{const ext=m.type==='video'?'mp4':m.type==='audio'?'mp3':'png';const a=document.createElement('a');a.href=href;a.download='maz-'+m.type+'-'+(m.seed||'')+'.'+ext;a.target='_blank';a.click();toast('Téléchargement')};if(m.r2){dl(Relais.base+'/media/'+encodeURIComponent(m.r2));return;}if(m.url){dl(m.url);return;}if(m.mid){MEDIA.get(m.mid).then(u=>u?dl(u):toast('Audio indisponible'));return;}const svg=bubble.querySelector('.gm-art');if(!svg)return;const s=new XMLSerializer().serializeToString(svg),blob=new Blob([s],{type:'image/svg+xml'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='mzai-'+m.type+'-'+m.seed+'.svg';a.click();URL.revokeObjectURL(u);toast('Visuel téléchargé')});
     bubble.querySelector('[data-gm=regen]').addEventListener('click',()=>{if(generating)return;const c=convoById(activeId);if(!c)return;for(let k=c.msgs.length-1;k>=0;k--){if(c.msgs[k].role==='ai'){c.msgs.splice(k,1);break}}node&&node.remove();if(m.type==='audio')genVoice(c,m.prompt);else genMedia(c,m.prompt,m.type)});
   }
   async function genMedia(c,promptText,type){
@@ -4138,7 +4155,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     
     const place=(media)=>{bubble.classList.add('media-b');bubble.innerHTML=mediaBubbleHTML(media);wireMedia(bubble,media,node);c.msgs.push({role:'ai',media,model});c.ts=now();saveConvos();renderRecents();setGenerating(false);curStop=null;scrollDown();stashRemoteMedia(media);};   // rapatrie en IndexedDB (survit à l'expiration de l'URL)
     const seed=()=>Math.floor(performance.now()*1000)%99999;
-    const H={'Authorization':'Bearer '+KEYS.siliconflow,'Content-Type':'application/json'};
+    const H={'Authorization':'Bearer '+Relais.cle('siliconflow'),'Content-Type':'application/json'};
     try {
       const mm=modelById(model);
       // Image source = b64 persistant du dernier message user (ATTACH est déjà vidé/révoqué par send())
@@ -4148,7 +4165,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         const imgModel=(mm.provider==='siliconflow'&&mm.kind==='image')?mm.api:'Qwen/Qwen-Image';
         const body={model:imgModel,prompt:promptText,image_size:'1024x1024',batch_size:1};
         if(mm.editImg){if(srcImgB64){body.image=srcImgB64}else throw new Error('Ce modèle édite une image existante.\nAttache une image source via le trombone 📎 avant de générer.')}
-        const res = await fetch(SF_HOST+'/v1/images/generations',{method:'POST',headers:H,body:JSON.stringify(body)});
+        const res = await fetch(Relais.sfHost+'/v1/images/generations',{method:'POST',headers:H,body:JSON.stringify(body)});
         if(!res.ok) throw new Error('HTTP '+res.status+' · '+(await res.text().catch(()=>'')).slice(0,200));
         const data = await res.json();const url = data.images?.[0]?.url || data.data?.[0]?.url;
         if(!url) throw new Error("Aucune image renvoyée par l'API");
@@ -4185,14 +4202,14 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         if(mm.needImg && !srcImgB64)throw new Error('Wan I2V nécessite une image source.\nAttache une image via le trombone 📎');
         const vBody={model:vidModel,prompt:promptText,image_size:'1280x720'};
         if(mm.needImg){vBody.image=srcImgB64}
-        const sub=await fetch(SF_HOST+'/v1/video/submit',{method:'POST',headers:H,body:JSON.stringify(vBody)});
+        const sub=await fetch(Relais.sfHost+'/v1/video/submit',{method:'POST',headers:H,body:JSON.stringify(vBody)});
         if(!sub.ok) throw new Error('HTTP '+sub.status+' · '+(await sub.text().catch(()=>'')).slice(0,200));
         const reqId=(await sub.json()).requestId;if(!reqId)throw new Error('Pas de requestId renvoyé');
         let url=null;
         for(let i=0;i<100 && !done;i++){
           await new Promise(r=>setTimeout(r,3000));if(done)return;
           bubble.innerHTML='<div class="gen-loading"><div class="gl-ring"></div>Vidéo en cours… '+((i+1)*3)+'s <span style="opacity:.6">(Wan met 2-5 min)</span></div>';
-          const st=await fetch(SF_HOST+'/v1/video/status',{method:'POST',headers:H,body:JSON.stringify({requestId:reqId})});
+          const st=await fetch(Relais.sfHost+'/v1/video/status',{method:'POST',headers:H,body:JSON.stringify({requestId:reqId})});
           const sj=await st.json().catch(()=>({}));
           if(sj.status==='Succeed'){url=sj.results?.videos?.[0]?.url||sj.videos?.[0]?.url;break}
           if(sj.status==='Failed')throw new Error('Génération vidéo échouée côté serveur');
@@ -4214,11 +4231,11 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     try{
       if(!hasKey('siliconflow'))throw new Error('Clé SiliconFlow manquante');
       if(text.length>2000){text=text.slice(0,2000);toast('Texte long : seuls les 2000 premiers caractères sont lus.');}   // garde-fou CosyVoice
-      const res=await fetch(SF_HOST+'/v1/audio/speech',{method:'POST',headers:{'Authorization':'Bearer '+KEYS.siliconflow,'Content-Type':'application/json'},body:JSON.stringify({model:'FunAudioLLM/CosyVoice2-0.5B',input:text,voice:'FunAudioLLM/CosyVoice2-0.5B:alex',response_format:'mp3'})});
+      const res=await fetch(Relais.sfHost+'/v1/audio/speech',{method:'POST',headers:{'Authorization':'Bearer '+Relais.cle('siliconflow'),'Content-Type':'application/json'},body:JSON.stringify({model:'FunAudioLLM/CosyVoice2-0.5B',input:text,voice:'FunAudioLLM/CosyVoice2-0.5B:alex',response_format:'mp3'})});
       if(!res.ok)throw new Error('HTTP '+res.status+' · '+(await res.text().catch(()=>'')).slice(0,200));
       const _blob=await res.blob();if(done)return;
       let media=null;
-      if(VIA_PROXY){try{const up=await fetch(_PB+'/media/upload',{method:'PUT',headers:{'Content-Type':'audio/mpeg'},body:_blob});if(up.ok){const d=await up.json();if(d.mid)media={type:'audio',prompt:text,model,r2:d.mid};}}catch(e){}}   // hébergé : audio dans le stockage permanent → suit l'utilisateur partout
+      if(Relais.viaProxy){try{const up=await fetch(Relais.base+'/media/upload',{method:'PUT',headers:{'Content-Type':'audio/mpeg'},body:_blob});if(up.ok){const d=await up.json();if(d.mid)media={type:'audio',prompt:text,model,r2:d.mid};}}catch(e){}}   // hébergé : audio dans le stockage permanent → suit l'utilisateur partout
       if(!media){
         const url=await new Promise((rs,rj)=>{const fr=new FileReader();fr.onload=()=>rs(fr.result);fr.onerror=()=>rj(new Error('lecture audio'));fr.readAsDataURL(_blob)});
         const mid='m'+newId();const okIdb=await MEDIA.put(mid,url);   // local : audio en IndexedDB (hors localStorage), persiste au reload
@@ -4246,10 +4263,10 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   }
 
   async function genSuggestions(col,aiText,userText){
-    if(!KEYS.openrouter)return;
+    if(!Relais.cle('openrouter'))return;
     try{
-      const res=await fetch(OR_HOST+'/api/v1/chat/completions',{method:'POST',
-        headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MAZ'},
+      const res=await fetch(Relais.orHost+'/api/v1/chat/completions',{method:'POST',
+        headers:{'Authorization':'Bearer '+Relais.cle('openrouter'),'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MAZ'},
         body:JSON.stringify({model:'deepseek/deepseek-v4-flash',max_tokens:80,temperature:0.7,
           messages:[{role:'system',content:'Génère exactement 3 questions de suivi courtes (max 8 mots chacune) basées sur cette conversation. Retourne UNIQUEMENT les 3 questions séparées par des sauts de ligne, sans numérotation ni ponctuation finale.'},
             {role:'user',content:'Question : '+userText.slice(0,200)+'\nRéponse : '+aiText.slice(0,300)}]})});
@@ -4609,9 +4626,9 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function downloadText(name,txt,mime){const b=new Blob([txt],{type:mime||'text/plain'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;a.click();URL.revokeObjectURL(u)}
   /* wrapper OpenRouter réutilisable (post-traitement, etc.) */
   async function chatOR(messages,model,opt){
-    if(!KEYS.openrouter)throw new Error('Clé OpenRouter manquante — ajoute-la dans Réglages › Clés API');
-    const res=await fetch(OR_HOST+'/api/v1/chat/completions',{method:'POST',
-      headers:{'Authorization':'Bearer '+KEYS.openrouter,'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MAZ'},
+    if(!Relais.cle('openrouter'))throw new Error('Clé OpenRouter manquante — ajoute-la dans Réglages › Clés API');
+    const res=await fetch(Relais.orHost+'/api/v1/chat/completions',{method:'POST',
+      headers:{'Authorization':'Bearer '+Relais.cle('openrouter'),'Content-Type':'application/json','HTTP-Referer':location.origin||'https://mzai.app','X-Title':'MAZ'},
       body:JSON.stringify(Object.assign({model:model||'deepseek/deepseek-v4-flash',messages},opt||{}))});
     if(!res.ok)throw new Error('HTTP '+res.status+' · '+(await res.text().catch(()=>'')).slice(0,160));
     const d=await res.json();return (d.choices?.[0]?.message?.content||'').trim();
@@ -4626,7 +4643,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
       if(!hasKey('siliconflow'))throw new Error('Clé SiliconFlow manquante — ajoute-la dans Réglages › Clés API');
       if(file.size>30*1024*1024)throw new Error('Fichier trop lourd ('+(file.size/1048576).toFixed(1)+' Mo). Limite ≈ 30 Mo.');
       const fd=new FormData();fd.append('model','FunAudioLLM/SenseVoiceSmall');fd.append('file',file);
-      const res=await fetch(SF_HOST+'/v1/audio/transcriptions',{method:'POST',headers:{'Authorization':'Bearer '+KEYS.siliconflow},body:fd});
+      const res=await fetch(Relais.sfHost+'/v1/audio/transcriptions',{method:'POST',headers:{'Authorization':'Bearer '+Relais.cle('siliconflow')},body:fd});
       if(!res.ok)throw new Error('HTTP '+res.status+' · '+(await res.text().catch(()=>'')).slice(0,200));
       const data=await res.json();const text=((data.text||'')+'').trim()||'(aucune parole détectée dans l\'audio)';
       if(done)return;
@@ -4653,7 +4670,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         try{
           const body={model:'Qwen/Qwen3-Omni-30B-A3B-Instruct',stream:true,max_tokens:4096,
             messages:[{role:'user',content:[{type:'text',text:sys},part]}]};
-          const res=await fetch(SF_HOST+'/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+KEYS.siliconflow,'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctrl.signal});
+          const res=await fetch(Relais.sfHost+'/v1/chat/completions',{method:'POST',headers:{'Authorization':'Bearer '+Relais.cle('siliconflow'),'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctrl.signal});
           if(!res.ok){lastErr='HTTP '+res.status+' · '+(await res.text().catch(()=>'')).slice(0,180);continue;}
           text='';const reader=res.body.getReader(),dec=new TextDecoder();let buf='';
           while(!stopped){const{done,value}=await reader.read();if(done)break;buf+=dec.decode(value,{stream:true});const lines=buf.split('\n');buf=lines.pop();
@@ -4798,7 +4815,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
         if(/\.xlsx$/.test(name)){if(file.size>5*1024*1024)return'[« '+file.name+' » trop lourd — colle le tableau.]';const t=await xlsxText(await file.arrayBuffer());return t?t.slice(0,CAP):'[XLSX « '+file.name+' » : aucune donnée extraite — colle le tableau.]'}
         if(/\.pdf$/.test(name)){const t=await pdfText(await file.arrayBuffer());return t?t.slice(0,CAP):'[PDF « '+file.name+' » : aucun texte sélectionnable — probablement un PDF scanné (image). L\'extraction sans OCR est impossible côté navigateur. Fournis un PDF texte ou colle le contenu.]'}
       }catch(e){return'[Impossible de lire « '+file.name+' » côté navigateur ('+(e.message||'erreur')+'). Colle le texte directement.]'}
-      return null;  // format non géré → rien n'est extrait : à l'appelant de dire que le fichier n'a pas été lu
+      return null;  // format non géré → rien n'est extrait ; le modèle est prévenu au moment de l'envoi (generation.js)
     }
     return {extractFileText,pdfToImages};
   })();
@@ -4809,7 +4826,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     if(!PROMPTS){PROMPTS=SEED;DB.set('prompts',PROMPTS);DB.set('promptsSeedV',2);}
     else if(v<2){const customs=PROMPTS.filter(p=>!OLD.includes(p.cmd)&&!SEED.some(d=>d.cmd===p.cmd));PROMPTS=SEED.concat(customs);DB.set('prompts',PROMPTS);DB.set('promptsSeedV',2);}
   })();
-  if(!SHOW_API_SETTINGS){const aide=PROMPTS.find(p=>p.cmd==='aide');if(aide&&/cl[ée]e?\s*api|openrouter|siliconflow|kling/i.test(aide.text)){aide.text='Tu es l’assistant d’aide intégré de MAZ. Guide l’utilisateur pas à pas dans l’interface : modèle, modes Image, Vidéo et Voix, Projets, Discussions, Mon IA et réglages. Réponds de façon claire, concrète et bienveillante, en indiquant toujours où cliquer. Si une fonction n’est pas disponible, explique-le simplement et propose une alternative.';DB.set('prompts',PROMPTS)}}
+  if(!Relais.showApiSettings){const aide=PROMPTS.find(p=>p.cmd==='aide');if(aide&&/cl[ée]e?\s*api|openrouter|siliconflow|kling/i.test(aide.text)){aide.text='Tu es l’assistant d’aide intégré de MAZ. Guide l’utilisateur pas à pas dans l’interface : modèle, modes Image, Vidéo et Voix, Projets, Discussions, Mon IA et réglages. Réponds de façon claire, concrète et bienveillante, en indiquant toujours où cliquer. Si une fonction n’est pas disponible, explique-le simplement et propose une alternative.';DB.set('prompts',PROMPTS)}}
   const savePrompts=()=>DB.set('prompts',PROMPTS);
   let slashItems=[],slashK=0;
   function updateSlash(){const m=/^\/(\S*)$/.exec(prompt.value);if(!m){closeSlash();return}const q=m[1].toLowerCase();slashItems=PROMPTS.filter(p=>p.cmd.toLowerCase().includes(q)||p.title.toLowerCase().includes(q));slashK=0;renderSlash()}
@@ -4960,10 +4977,10 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     toast('Amélioration du prompt...');
     try {
       const msgs=[{role:'system',content:"Tu es un expert mondial en Prompt Engineering. Ta tâche est de réécrire le brouillon de l'utilisateur pour en faire un prompt clair, détaillé, avec du contexte, des contraintes et un format de sortie attendu. Renvoie UNIQUEMENT le prompt amélioré, sans introduction ni conclusion."},{role:'user',content:p}];
-      const apiKey=KEYS['openrouter']||KEYS['siliconflow'];
+      const apiKey=Relais.cle('openrouter')||Relais.cle('siliconflow');
       if(!apiKey)throw new Error('no key');
-      const provider=KEYS['openrouter']?'openrouter':'siliconflow';
-      const endpoint=provider==='openrouter'?OR_HOST+'/api/v1/chat/completions':SF_HOST+'/v1/chat/completions';
+      const provider=Relais.cle('openrouter')?'openrouter':'siliconflow';
+      const endpoint=provider==='openrouter'?Relais.orHost+'/api/v1/chat/completions':Relais.sfHost+'/v1/chat/completions';
       const model=provider==='openrouter'?'deepseek/deepseek-v4-flash':'deepseek-ai/DeepSeek-V3';
       const res=await fetch(endpoint,{method:'POST',headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({model,messages:msgs,temperature:0.3,max_tokens:600})});
       if(!res.ok)throw new Error('api');
@@ -5017,20 +5034,20 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     if(SESSION_TOKENS>0||SESSION_COST>0)_renderTok(false);
     autoLabelAll();a11yButtons();
     // En mode hébergé, l'onboarding est lancé par onAuthed (après l'écran de code), jamais derrière lui.
-    if(!VIA_PROXY&&!DB.get('onboarded',false))setTimeout(startOnboarding,400);
+    if(!Relais.viaProxy&&!DB.get('onboarded',false))setTimeout(startOnboarding,400);
   })();
 
   /* ===== onboarding première visite ===== */
   // En mode hébergé (accès par code) les clés vivent côté serveur → on saute l'étape « connecte ta clé ».
   let obSteps=[0,1,2],obIdx=0,obTheme=normTheme(DB.get('theme','dark'));
-  const obStepList=()=>SHOW_API_SETTINGS&&!VIA_PROXY?[0,1,2]:[0,2];
+  const obStepList=()=>Relais.showApiSettings&&!Relais.viaProxy?[0,1,2]:[0,2];
   const curStep=()=>obSteps[obIdx];
   function startOnboarding(){obSteps=obStepList();obIdx=0;obTheme=normTheme(DB.get('theme','dark'));
     $('#obDots').innerHTML=obSteps.map((s,i)=>`<span class="ob-dot${i===0?' on':''}"></span>`).join('');
     $('#obThemes').innerHTML=[['light','Clair','#FAF8F3'],['dark','Sombre','#08080A']].map(([k,n,bg])=>`<div class="ob-theme${k===obTheme?' on':''}" data-th="${k}" role="button" tabindex="0" aria-label="Thème ${n}"><div class="ob-sw" style="background:${bg};border:1px solid var(--line-strong);border-radius:var(--r-sm);height:34px"></div><div class="ob-nm">${n}</div></div>`).join('');
     $$('#obThemes .ob-theme').forEach(el=>el.onclick=()=>{$$('#obThemes .ob-theme').forEach(x=>x.classList.remove('on'));el.classList.add('on');obTheme=el.dataset.th;applyTheme(obTheme,true);renderThemePicker()});
     $('#obTools').innerHTML=[['Assistant','persona'],['Image','eye'],['Documents','note'],['Traduction','globe'],['Voix','spark'],['Code','code']].map(([n,g])=>`<span class="ob-tool"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH[g]||GLYPH.spark}</svg>${n}</span>`).join('');
-    const ok=$('#obKey');if(ok)ok.value=VIA_PROXY?'':(KEYS.openrouter||'');$('#obKeyStat').textContent='';$('#obKeyStat').className='ob-keystat';
+    const ok=$('#obKey');if(ok)ok.value=Relais.viaProxy?'':(Relais.cle('openrouter')||'');$('#obKeyStat').textContent='';$('#obKeyStat').className='ob-keystat';
     obShow();$('#onboard').classList.add('show');
   }
   function obShow(){
@@ -5043,12 +5060,12 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
     if(st===1)setTimeout(()=>{const k=$('#obKey');k&&k.focus()},80);
   }
   async function obTest(){
-    const k=cleanKey($('#obKey').value),st=$('#obKeyStat');
+    const k=Relais.nettoyerCle($('#obKey').value),st=$('#obKeyStat');
     if(!k){st.className='ob-keystat warn';st.textContent='Colle d\'abord ta clé OpenRouter.';return;}
     st.className='ob-keystat';st.textContent='Vérification…';
     try{
       const r=await fetch('https://openrouter.ai/api/v1/auth/key',{headers:{'Authorization':'Bearer '+k}});
-      if(r.ok){KEYS.openrouter=k;persistKeys();renderApiList();syncModel();
+      if(r.ok){Relais.poserCle('openrouter',k);renderApiList();syncModel();
         let d=null;try{d=(await r.json()).data}catch(e){}
         const noCredit=d&&((d.limit_remaining!=null&&d.limit_remaining<=0)||(d.limit!=null&&typeof d.usage==='number'&&d.usage>=d.limit));
         if(noCredit){st.className='ob-keystat warn';st.textContent='Clé valide, mais ton crédit OpenRouter semble épuisé — ajoute quelques € sur openrouter.ai, sinon les réponses échoueront.';}
@@ -5061,7 +5078,7 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
   function obNext(){if(obIdx<obSteps.length-1){obIdx++;obShow();}else obFinish();}
   function obBack(){if(obIdx>0){obIdx--;obShow();}}
   function obFinish(){
-    const k=$('#obKey')?$('#obKey').value.trim():'';if(k&&k!==KEYS.openrouter){KEYS.openrouter=k;persistKeys();renderApiList();syncModel();}
+    const k=$('#obKey')?Relais.nettoyerCle($('#obKey').value):'';if(k&&k!==Relais.cle('openrouter')){Relais.poserCle('openrouter',k);renderApiList();syncModel();}
     DB.set('theme',obTheme);DB.set('onboarded',true);$('#onboard').classList.remove('show');
     prompt&&prompt.focus();
   }
@@ -5110,11 +5127,11 @@ button.opt:hover,label.opt:hover{border-color:var(--accent);color:var(--ink);bac
      Tout l'état vit côté serveur : ici, on affiche et on signe.
      ═══════════════════════════════════════════════════════════════════════ */
   const AT=(function(){
-    const base=()=>_PB;                       // même Worker que la synchro
+    const base=()=>Relais.base;                       // même Worker que la synchro
     let etat={postes:[],journee:[],controles:[],mois_cents:0,seq:0};
     let ouvriers=[],chantiers=[],charge=false,perime=false,sansAcces=false,posteOuvert=null;
 
-    /* Le code d'accès n'est injecté par l'intercepteur que si VIA_PROXY ;
+    /* Le code d'accès n'est injecté par l'intercepteur que si l'app passe par le Worker ;
        l'atelier parle au Worker dans tous les cas, il pose donc son en-tête. */
     async function api(chemin,opt){
       opt=opt||{};const h=new Headers(opt.headers||{});

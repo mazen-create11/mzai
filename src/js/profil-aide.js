@@ -18,7 +18,7 @@
       `<div class="pi sel"><div class="pi-i" style="background:var(--accent);color:var(--ink-on-accent);border-color:transparent;font-family:var(--font-display);font-weight:600">${esc(ini)}</div><div class="pi-main"><div class="pi-t">${esc(USER.name||'Mon espace')}</div><div class="pi-d">${esc(email)}</div></div></div><div class="sep"></div>`
       +items.map(([pf,t,svg])=>`<div class="pi" data-pf="${pf}">${pfIco(svg)}<div class="pi-main"><div class="pi-t">${t}</div></div>${pf==='theme'?`<span class="pi-tail">${themeLabel()}</span>`:''}</div>`).join('')
       +'<div class="sep"></div>'
-      +(VIA_PROXY?`<div class="pi" data-pf="logout">${pfIco('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>')}<div class="pi-main"><div class="pi-t">Se déconnecter</div></div></div>`:'')
+      +(Relais.viaProxy?`<div class="pi" data-pf="logout">${pfIco('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/>')}<div class="pi-main"><div class="pi-t">Se déconnecter</div></div></div>`:'')
       +`<div class="pi danger" data-pf="clear">${pfIco(GLYPH.trash)}<div class="pi-main"><div class="pi-t">Effacer les données locales</div></div></div>`;
     $$('#popProfile .pi[data-pf]').forEach(p=>p.addEventListener('click',()=>{
       const a=p.dataset.pf;
@@ -83,11 +83,11 @@
   function openHelp(){showView('help')}            // ex-modale → vue in-place
   function renderHelp(){
     // Mode hébergé : rien sur les fournisseurs, les clés ou le « statut des services » (infra interne).
-    const hl=HELP_LINKS.filter(l=>!(VIA_PROXY&&l[0]==='Statut des services')).map(l=>{
-      if(VIA_PROXY&&l[0]==='Confidentialité')return[l[0],'Tes conversations te suivent sur tous tes appareils, chiffrées en transit. Personne d’autre n’y a accès.',l[2]];
+    const hl=HELP_LINKS.filter(l=>!(Relais.viaProxy&&l[0]==='Statut des services')).map(l=>{
+      if(Relais.viaProxy&&l[0]==='Confidentialité')return[l[0],'Tes conversations te suivent sur tous tes appareils, chiffrées en transit. Personne d’autre n’y a accès.',l[2]];
       return l;});
-    const faq=FAQ.filter(([q,a])=>!/cl[ée]s?\s*api/i.test(q)&&!((VIA_PROXY||!SHOW_API_SETTINGS)&&(/cl[ée]|openrouter|siliconflow|kling/i.test(q)||/openrouter|siliconflow|kling|ta propre clé/i.test(a)))).map(([q,a])=>{
-      if(VIA_PROXY&&/priv[ée]e?s?\b/i.test(q))return[q,'Oui. Tes conversations, projets et persona sont synchronisés de façon chiffrée sur ton espace privé et te suivent sur tous tes appareils. Personne d’autre n’y a accès.'];
+    const faq=FAQ.filter(([q,a])=>!/cl[ée]s?\s*api/i.test(q)&&!((Relais.viaProxy||!Relais.showApiSettings)&&(/cl[ée]|openrouter|siliconflow|kling/i.test(q)||/openrouter|siliconflow|kling|ta propre clé/i.test(a)))).map(([q,a])=>{
+      if(Relais.viaProxy&&/priv[ée]e?s?\b/i.test(q))return[q,'Oui. Tes conversations, projets et persona sont synchronisés de façon chiffrée sur ton espace privé et te suivent sur tous tes appareils. Personne d’autre n’y a accès.'];
       return[q,a];});
     $('#helpLinks').innerHTML=hl.map((l,i)=>`<div class="help-link" data-h="${i}"><div class="hl-ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH[l[2]]||GLYPH.spark}</svg></div><div style="min-width:0"><div class="hl-t">${l[0]}</div><div class="hl-d">${l[1]}</div></div></div>`).join('');
     $('#faqList').innerHTML='<button class="help-cta" id="helpAssistant"><span class="hc-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/></svg></span><div class="min0"><div class="hc-t">Demander à l\'assistant MAZ</div><div class="hc-d">Une question précise ? L\'IA te guide pas à pas, en direct.</div></div><svg class="hc-go" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg></button>'
@@ -110,7 +110,7 @@
   /* Aide : lance l'assistant « Aide MAZ » dans une nouvelle conversation */
   function launchAide(){const a=ASSISTANTS.find(x=>x.id==='aide');if(!a){openHelp();return}const c=createConvo();c.title=a.name;c.assistant=a.id;saveConvos();openConvo(c.id);if(window.innerWidth<=1024){$('#sidebar').classList.remove('open');$('#scrim').classList.remove('show')}}
   /* Efface toutes les données locales puis recharge */
-  function clearLocalData(){const scope=SHOW_API_SETTINGS?'conversations, réglages, mémoire et clés API':'conversations, réglages et mémoire';if(!window.confirm('Effacer toutes les données locales ('+scope+') ? Cette action est irréversible.'))return;try{Object.keys(localStorage).filter(k=>k.indexOf('mzai:')===0).forEach(k=>localStorage.removeItem(k))}catch(e){}try{MEDIA.clear&&MEDIA.clear()}catch(e){}try{indexedDB.deleteDatabase('maz-media')}catch(e){}setTimeout(()=>location.reload(),60)}
+  function clearLocalData(){const scope=Relais.showApiSettings?'conversations, réglages, mémoire et clés API':'conversations, réglages et mémoire';if(!window.confirm('Effacer toutes les données locales ('+scope+') ? Cette action est irréversible.'))return;try{Object.keys(localStorage).filter(k=>k.indexOf('mzai:')===0).forEach(k=>localStorage.removeItem(k))}catch(e){}try{MEDIA.clear&&MEDIA.clear()}catch(e){}try{indexedDB.deleteDatabase('maz-media')}catch(e){}setTimeout(()=>location.reload(),60)}
 
   /* comparateur de modèles retiré (V2) — voir renderModelPicker pour le choix du modèle */
 

@@ -1,14 +1,14 @@
   /* ===== onboarding première visite ===== */
   // En mode hébergé (accès par code) les clés vivent côté serveur → on saute l'étape « connecte ta clé ».
   let obSteps=[0,1,2],obIdx=0,obTheme=normTheme(DB.get('theme','dark'));
-  const obStepList=()=>SHOW_API_SETTINGS&&!VIA_PROXY?[0,1,2]:[0,2];
+  const obStepList=()=>Relais.showApiSettings&&!Relais.viaProxy?[0,1,2]:[0,2];
   const curStep=()=>obSteps[obIdx];
   function startOnboarding(){obSteps=obStepList();obIdx=0;obTheme=normTheme(DB.get('theme','dark'));
     $('#obDots').innerHTML=obSteps.map((s,i)=>`<span class="ob-dot${i===0?' on':''}"></span>`).join('');
     $('#obThemes').innerHTML=[['light','Clair','#FAF8F3'],['dark','Sombre','#08080A']].map(([k,n,bg])=>`<div class="ob-theme${k===obTheme?' on':''}" data-th="${k}" role="button" tabindex="0" aria-label="Thème ${n}"><div class="ob-sw" style="background:${bg};border:1px solid var(--line-strong);border-radius:var(--r-sm);height:34px"></div><div class="ob-nm">${n}</div></div>`).join('');
     $$('#obThemes .ob-theme').forEach(el=>el.onclick=()=>{$$('#obThemes .ob-theme').forEach(x=>x.classList.remove('on'));el.classList.add('on');obTheme=el.dataset.th;applyTheme(obTheme,true);renderThemePicker()});
     $('#obTools').innerHTML=[['Assistant','persona'],['Image','eye'],['Documents','note'],['Traduction','globe'],['Voix','spark'],['Code','code']].map(([n,g])=>`<span class="ob-tool"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${GLYPH[g]||GLYPH.spark}</svg>${n}</span>`).join('');
-    const ok=$('#obKey');if(ok)ok.value=VIA_PROXY?'':(KEYS.openrouter||'');$('#obKeyStat').textContent='';$('#obKeyStat').className='ob-keystat';
+    const ok=$('#obKey');if(ok)ok.value=Relais.viaProxy?'':(Relais.cle('openrouter')||'');$('#obKeyStat').textContent='';$('#obKeyStat').className='ob-keystat';
     obShow();$('#onboard').classList.add('show');
   }
   function obShow(){
@@ -21,12 +21,12 @@
     if(st===1)setTimeout(()=>{const k=$('#obKey');k&&k.focus()},80);
   }
   async function obTest(){
-    const k=cleanKey($('#obKey').value),st=$('#obKeyStat');
+    const k=Relais.nettoyerCle($('#obKey').value),st=$('#obKeyStat');
     if(!k){st.className='ob-keystat warn';st.textContent='Colle d\'abord ta clé OpenRouter.';return;}
     st.className='ob-keystat';st.textContent='Vérification…';
     try{
       const r=await fetch('https://openrouter.ai/api/v1/auth/key',{headers:{'Authorization':'Bearer '+k}});
-      if(r.ok){KEYS.openrouter=k;persistKeys();renderApiList();syncModel();
+      if(r.ok){Relais.poserCle('openrouter',k);renderApiList();syncModel();
         let d=null;try{d=(await r.json()).data}catch(e){}
         const noCredit=d&&((d.limit_remaining!=null&&d.limit_remaining<=0)||(d.limit!=null&&typeof d.usage==='number'&&d.usage>=d.limit));
         if(noCredit){st.className='ob-keystat warn';st.textContent='Clé valide, mais ton crédit OpenRouter semble épuisé — ajoute quelques € sur openrouter.ai, sinon les réponses échoueront.';}
@@ -39,7 +39,7 @@
   function obNext(){if(obIdx<obSteps.length-1){obIdx++;obShow();}else obFinish();}
   function obBack(){if(obIdx>0){obIdx--;obShow();}}
   function obFinish(){
-    const k=$('#obKey')?$('#obKey').value.trim():'';if(k&&k!==KEYS.openrouter){KEYS.openrouter=k;persistKeys();renderApiList();syncModel();}
+    const k=$('#obKey')?Relais.nettoyerCle($('#obKey').value):'';if(k&&k!==Relais.cle('openrouter')){Relais.poserCle('openrouter',k);renderApiList();syncModel();}
     DB.set('theme',obTheme);DB.set('onboarded',true);$('#onboard').classList.remove('show');
     prompt&&prompt.focus();
   }

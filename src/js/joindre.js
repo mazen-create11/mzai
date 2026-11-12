@@ -88,10 +88,10 @@
     toast('Amélioration du prompt...');
     try {
       const msgs=[{role:'system',content:"Tu es un expert mondial en Prompt Engineering. Ta tâche est de réécrire le brouillon de l'utilisateur pour en faire un prompt clair, détaillé, avec du contexte, des contraintes et un format de sortie attendu. Renvoie UNIQUEMENT le prompt amélioré, sans introduction ni conclusion."},{role:'user',content:p}];
-      const apiKey=KEYS['openrouter']||KEYS['siliconflow'];
+      const apiKey=Relais.cle('openrouter')||Relais.cle('siliconflow');
       if(!apiKey)throw new Error('no key');
-      const provider=KEYS['openrouter']?'openrouter':'siliconflow';
-      const endpoint=provider==='openrouter'?OR_HOST+'/api/v1/chat/completions':SF_HOST+'/v1/chat/completions';
+      const provider=Relais.cle('openrouter')?'openrouter':'siliconflow';
+      const endpoint=provider==='openrouter'?Relais.orHost+'/api/v1/chat/completions':Relais.sfHost+'/v1/chat/completions';
       const model=provider==='openrouter'?'deepseek/deepseek-v4-flash':'deepseek-ai/DeepSeek-V3';
       const res=await fetch(endpoint,{method:'POST',headers:{'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'},body:JSON.stringify({model,messages:msgs,temperature:0.3,max_tokens:600})});
       if(!res.ok)throw new Error('api');

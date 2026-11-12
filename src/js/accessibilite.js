@@ -31,6 +31,6 @@
     if(SESSION_TOKENS>0||SESSION_COST>0)_renderTok(false);
     autoLabelAll();a11yButtons();
     // En mode hébergé, l'onboarding est lancé par onAuthed (après l'écran de code), jamais derrière lui.
-    if(!VIA_PROXY&&!DB.get('onboarded',false))setTimeout(startOnboarding,400);
+    if(!Relais.viaProxy&&!DB.get('onboarded',false))setTimeout(startOnboarding,400);
   })();
 

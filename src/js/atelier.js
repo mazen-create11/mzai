@@ -6,11 +6,11 @@
      Tout l'état vit côté serveur : ici, on affiche et on signe.
      ═══════════════════════════════════════════════════════════════════════ */
   const AT=(function(){
-    const base=()=>_PB;                       // même Worker que la synchro
+    const base=()=>Relais.base;                       // même Worker que la synchro
     let etat={postes:[],journee:[],controles:[],mois_cents:0,seq:0};
     let ouvriers=[],chantiers=[],charge=false,perime=false,sansAcces=false,posteOuvert=null;
 
-    /* Le code d'accès n'est injecté par l'intercepteur que si VIA_PROXY ;
+    /* Le code d'accès n'est injecté par l'intercepteur que si l'app passe par le Worker ;
        l'atelier parle au Worker dans tous les cas, il pose donc son en-tête. */
     async function api(chemin,opt){
       opt=opt||{};const h=new Headers(opt.headers||{});

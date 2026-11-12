@@ -74,7 +74,7 @@
         if(/\.xlsx$/.test(name)){if(file.size>5*1024*1024)return'[« '+file.name+' » trop lourd — colle le tableau.]';const t=await xlsxText(await file.arrayBuffer());return t?t.slice(0,CAP):'[XLSX « '+file.name+' » : aucune donnée extraite — colle le tableau.]'}
         if(/\.pdf$/.test(name)){const t=await pdfText(await file.arrayBuffer());return t?t.slice(0,CAP):'[PDF « '+file.name+' » : aucun texte sélectionnable — probablement un PDF scanné (image). L\'extraction sans OCR est impossible côté navigateur. Fournis un PDF texte ou colle le contenu.]'}
       }catch(e){return'[Impossible de lire « '+file.name+' » côté navigateur ('+(e.message||'erreur')+'). Colle le texte directement.]'}
-      return null;  // format non géré → rien n'est extrait : à l'appelant de dire que le fichier n'a pas été lu
+      return null;  // format non géré → rien n'est extrait ; le modèle est prévenu au moment de l'envoi (generation.js)
     }
     return {extractFileText,pdfToImages};
   })();

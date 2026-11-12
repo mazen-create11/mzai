@@ -74,10 +74,14 @@ test('une archive abîmée ne casse rien : le modèle est prévenu que le fichie
   assert.deepEqual(m.erreurs, []);
 });
 
-test('un format non géré ne casse rien : la question part, sans contenu inventé', async (t) => {
-  const { m, envoye } = await envoyerAvec(t, [{ name: 'maquette.sketch', mimeType: 'application/octet-stream', buffer: Buffer.from([1, 2, 3, 4]) }]);
-  assert.match(envoye, /Résume ce document/);
-  assert.ok(!envoye.includes('```'), 'aucun bloc de fichier ne doit être fabriqué');
+test('un format non géré : le modèle est prévenu que le fichier n’a pas pu être lu, sans contenu inventé', async (t) => {
+  const { m, envoye } = await envoyerAvec(t, [
+    { name: 'maquette.sketch', mimeType: 'application/octet-stream', buffer: Buffer.from([1, 2, 3, 4]) },
+    { name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('Le texte, lui, est lu.') },
+  ]);
+  assert.match(envoye, /\[Fichier joint « maquette\.sketch » : illisible dans le navigateur, son contenu ne t’a pas été transmis\.\]/);
+  assert.match(envoye, /Le texte, lui, est lu\./);
+  assert.ok(!/illisible[^\]]*notes\.txt|notes\.txt » : illisible/.test(envoye), 'un fichier lu n’est pas annoncé illisible');
   assert.match(await m.page.textContent('#chat .msg.user'), /maquette\.sketch/, 'le fichier reste visible dans le message de l’utilisateur');
   assert.deepEqual(m.erreurs, []);
 });

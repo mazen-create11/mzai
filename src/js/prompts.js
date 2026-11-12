@@ -4,7 +4,7 @@
     if(!PROMPTS){PROMPTS=SEED;DB.set('prompts',PROMPTS);DB.set('promptsSeedV',2);}
     else if(v<2){const customs=PROMPTS.filter(p=>!OLD.includes(p.cmd)&&!SEED.some(d=>d.cmd===p.cmd));PROMPTS=SEED.concat(customs);DB.set('prompts',PROMPTS);DB.set('promptsSeedV',2);}
   })();
-  if(!SHOW_API_SETTINGS){const aide=PROMPTS.find(p=>p.cmd==='aide');if(aide&&/cl[ée]e?\s*api|openrouter|siliconflow|kling/i.test(aide.text)){aide.text='Tu es l’assistant d’aide intégré de MAZ. Guide l’utilisateur pas à pas dans l’interface : modèle, modes Image, Vidéo et Voix, Projets, Discussions, Mon IA et réglages. Réponds de façon claire, concrète et bienveillante, en indiquant toujours où cliquer. Si une fonction n’est pas disponible, explique-le simplement et propose une alternative.';DB.set('prompts',PROMPTS)}}
+  if(!Relais.showApiSettings){const aide=PROMPTS.find(p=>p.cmd==='aide');if(aide&&/cl[ée]e?\s*api|openrouter|siliconflow|kling/i.test(aide.text)){aide.text='Tu es l’assistant d’aide intégré de MAZ. Guide l’utilisateur pas à pas dans l’interface : modèle, modes Image, Vidéo et Voix, Projets, Discussions, Mon IA et réglages. Réponds de façon claire, concrète et bienveillante, en indiquant toujours où cliquer. Si une fonction n’est pas disponible, explique-le simplement et propose une alternative.';DB.set('prompts',PROMPTS)}}
   const savePrompts=()=>DB.set('prompts',PROMPTS);
   let slashItems=[],slashK=0;
   function updateSlash(){const m=/^\/(\S*)$/.exec(prompt.value);if(!m){closeSlash();return}const q=m[1].toLowerCase();slashItems=PROMPTS.filter(p=>p.cmd.toLowerCase().includes(q)||p.title.toLowerCase().includes(q));slashK=0;renderSlash()}

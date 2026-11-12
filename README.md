@@ -84,11 +84,12 @@ npx playwright install chromium   # once
 npm test
 ```
 
-23 tests. Eighteen open the published file in a headless browser and use it like a person would:
+29 tests. Twenty-four open the published file in a headless browser and use it like a person would:
 
 - the access gate: a wrong code, the right one, a code revoked in the meantime;
 - the conversation: sending a message, switching model, a conversation that comes back after a reload, one that arrives from another device and one that was deleted there;
-- attachments: a text file, a DOCX and an XLSX built by the test are read in the browser and sent with the question, a damaged archive is reported instead of breaking the app;
+- attachments: a text file, a DOCX and an XLSX built by the test are read in the browser and sent with the question, a damaged archive is reported instead of breaking the app, and the model is told when a file could not be read;
+- keys and routing: hosted, the browser holds no key and everything goes through the backend; opened locally with a key file, the app calls the provider itself, the access code never leaves for a provider, a key from the file is never copied to browser storage, and a key typed by the user is cleaned before it is kept;
 - the agents screen: it lists the account's jobs, a launched job stops at its checkpoint, and nothing is sent to the server but the decision the person clicks, approve or refuse.
 
 No request leaves the machine: a stand-in answers for the backend, and a test fails on any JavaScript error. PDF reading is not covered, since it loads a library from a CDN. The five remaining tests check the assembly: `mzai-v2.html` is byte for byte what `src/` produces, every source file is assembled exactly once, and no file was cut in the middle of a statement or a rule.
@@ -96,11 +97,10 @@ No request leaves the machine: a stand-in answers for the backend, and a test fa
 ## Known limits
 
 - Files attached by the user (PDFs, source images) stay on the device. The text of the conversation syncs, the source file does not.
-- A file in a format the browser cannot read (anything but text, DOCX, XLSX and PDF) shows in the message but is not mentioned to the model, which then answers as if nothing was attached.
 - Sync is last-write-wins: editing the same conversation on two devices at once keeps the most recent version.
 - A deleted conversation leaves a marker so other devices drop their copy. The 400 most recent markers are kept per account; a device that stayed offline through more deletions than that would bring an old conversation back.
 - Schedules are five-field cron with numbers only (no `MON` or `JAN`). When both day-of-month and day-of-week are set, both must match, where classic cron accepts either.
-- The app ships as one file on purpose (it also opens from disk, without a server), and its sources are split by area. But the scripts are joined end to end in a fixed order and share one global scope. Two of the 26 are closed modules that expose a small interface and hide the rest (`atelier.js`, `fichiers.js`); the other 24 are still plain files.
+- The app ships as one file on purpose (it also opens from disk, without a server), and its sources are split by area. But the scripts are joined end to end in a fixed order and share one global scope. Three of the 26 are closed modules that expose a small interface and hide the rest: `atelier.js`, `fichiers.js` and `relais.js`, which keeps the key store private behind one read and one write function. The other 23 are still plain files.
 
 ## What is next
 
@@ -108,7 +108,7 @@ No request leaves the machine: a stand-in answers for the backend, and a test fa
 - **Make the 400 limit atomic.** Two devices writing at the same instant can leave 401 conversations.
 - **Abort in-flight media requests** (API-06). The Stop button stops the interface and the polling, but the request to the provider keeps running and keeps billing.
 - **Remove duplicated code** (ARCH-04/05). The message bubble is rendered in four places and the chat request is written out four times although one helper already exists.
-- **Close the remaining scripts one by one**, the way `fichiers.js` was: a test first, then one public interface per file. `import` statements would need a bundler, which the single-file build does without so far. Split `worker.js` the same way.
+- **Close the remaining scripts one by one**, the way `fichiers.js` and `relais.js` were: a test first, then one public interface per file. `import` statements would need a bundler, which the single-file build does without so far. Split `worker.js` the same way.
 
 ## How this is built
 

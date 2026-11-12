@@ -2,9 +2,9 @@
      Sécurité : le code n'est jamais loggé ; injecté en en-tête UNIQUEMENT vers notre Worker (interceptor ciblé) ;
      le serveur re-vérifie tout (defense-in-depth : contourner l'écran ne donne accès à rien). */
   const _acode=()=>{try{return localStorage.getItem('mzai:acode')||''}catch(e){return''}};
-  if(VIA_PROXY){
+  if(Relais.viaProxy){
     const _f=window.fetch.bind(window);
-    window.fetch=function(u,init){try{const s=typeof u==='string'?u:(u&&u.url)||'';if(s.indexOf(_PB)===0){init=init||{};const h=new Headers(init.headers||{});const c=_acode();if(c)h.set('X-Maz-Code',c);init.headers=h;}}catch(e){}return _f(u,init)};
+    window.fetch=function(u,init){try{const s=typeof u==='string'?u:(u&&u.url)||'';if(s.indexOf(Relais.base)===0){init=init||{};const h=new Headers(init.headers||{});const c=_acode();if(c)h.set('X-Maz-Code',c);init.headers=h;}}catch(e){}return _f(u,init)};
   }
   let CLOUD_ON=false,_lastPush=0,_cpT=null;
   async function cloudPushSoon(){if(!CLOUD_ON)return;clearTimeout(_cpT);_cpT=setTimeout(async()=>{
@@ -13,17 +13,17 @@
     const dirty=CONVOS.filter(c=>(c.ts||0)>_lastPush).sort((a,b)=>(a.ts||0)-(b.ts||0));if(!dirty.length)return;
     const batch=dirty.slice(0,12);let last=_lastPush,ok=true;
     for(const c of batch){try{
-      const r=await fetch(_PB+'/sync/convo',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:c.id,data:_stripConvo(c),updated_at:c.ts||Date.now()})});
+      const r=await fetch(Relais.base+'/sync/convo',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:c.id,data:_stripConvo(c),updated_at:c.ts||Date.now()})});
       if(!r.ok){ok=false;break}   // panne : on s'arrête, _lastPush reste au dernier succès, re-tentera au prochain save/pull
       last=c.ts||last;
     }catch(e){ok=false;break}}
     _lastPush=last;
     if(ok&&dirty.length>batch.length)cloudPushSoon();   // lot complet + reste → nouveau tick jusqu'à épuisement (pas de boucle si échec)
   },1200)}
-  function cloudDelete(id){if(!CLOUD_ON)return;fetch(_PB+'/sync/convo?id='+encodeURIComponent(id),{method:'DELETE'}).catch(()=>{})}
+  function cloudDelete(id){if(!CLOUD_ON)return;fetch(Relais.base+'/sync/convo?id='+encodeURIComponent(id),{method:'DELETE'}).catch(()=>{})}
   async function cloudPull(){
     try{
-      const r=await fetch(_PB+'/sync/convos');if(!r.ok)return;
+      const r=await fetch(Relais.base+'/sync/convos');if(!r.ok)return;
       const rows=await r.json();let changed=false;
       rows.forEach(row=>{
         const li=CONVOS.findIndex(c=>c.id===row.id);
@@ -36,7 +36,7 @@
       if(changed){CONVOS.sort((a,b)=>(b.ts||0)-(a.ts||0));saveConvos();renderRecents()}
       // push de ce que le cloud n'a pas (ou a en plus vieux)
       const seen=new Map(rows.map(r2=>[r2.id,r2.updated_at]));
-      for(const c of CONVOS){const rts=seen.get(c.id);if(rts===undefined||(c.ts||0)>rts){try{await fetch(_PB+'/sync/convo',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:c.id,data:_stripConvo(c),updated_at:c.ts||Date.now()})})}catch(e){break}}}
+      for(const c of CONVOS){const rts=seen.get(c.id);if(rts===undefined||(c.ts||0)>rts){try{await fetch(Relais.base+'/sync/convo',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:c.id,data:_stripConvo(c),updated_at:c.ts||Date.now()})})}catch(e){break}}}
       _lastPush=Date.now();CLOUD_ON=true;
     }catch(e){try{console.warn('[MAZ] sync',e)}catch(_){}}
   }
@@ -54,7 +54,7 @@
     const go=async()=>{const inp=g.querySelector('#gateIn'),err=g.querySelector('#gateErr'),btn=g.querySelector('#gateGo');
       const code=(inp.value||'').replace(/[^\x21-\x7E]/g,'').trim();if(!code){err.textContent='Colle ton code d’accès.';return}
       btn.disabled=true;btn.textContent='Vérification…';err.textContent='';
-      try{const r=await fetch(_PB+'/auth/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
+      try{const r=await fetch(Relais.base+'/auth/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
         if(r.ok){const d=await r.json();try{localStorage.setItem('mzai:acode',code)}catch(e){}g.remove();onAuthed(d);return}
         err.textContent=r.status===401?'Code non reconnu — vérifie-le auprès de Mazen.':'Service indisponible — réessaie dans un instant.';
       }catch(e){err.textContent='Connexion impossible — vérifie ton réseau.'}

@@ -110,4 +110,12 @@
     // reste pas figée dans un coin.
     addEventListener('pointerleave',()=>{cx=0;cy=0;if(!anim)anim=requestAnimationFrame(boucle)},{passive:true});
   })();
+  // messages d'erreur propres pour l'utilisateur (le détail technique va en console) — un hoquet réseau ne doit pas ressembler à une app cassée
+  function friendlyErr(e){const m=((e&&e.message)||String(e||'')).trim();try{console.warn('[MAZ]',e);}catch(_){}
+    if(/Failed to fetch|NetworkError|Load failed|ERR_/i.test(m))return 'Connexion au service impossible — vérifie ta connexion et réessaie.';
+    if(/ISO-8859-1|code point/i.test(m))return 'Clé API invalide (caractère non autorisé) — elle a été nettoyée, réessaie.';
+    if(/Abort/i.test(m))return 'Requête annulée.';
+    if(/timeout|délai|timed?.?out/i.test(m))return 'Le service met trop de temps à répondre — réessaie.';
+    if(/quota|exceeded|insufficient|402|balance/i.test(m))return 'Crédit API épuisé côté serveur.';
+    return m.length>160?m.slice(0,160)+'…':(m||'Erreur inconnue');}
 

@@ -1,6 +1,6 @@
-  if(VIA_PROXY)(async()=>{
+  if(Relais.viaProxy)(async()=>{
     const saved=_acode();
-    if(saved){try{const r=await fetch(_PB+'/auth/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:saved})});
+    if(saved){try{const r=await fetch(Relais.base+'/auth/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:saved})});
       if(r.ok){onAuthed(await r.json());return}
       if(r.status===401){try{localStorage.removeItem('mzai:acode')}catch(e){}}   // code révoqué → on redemande
       else{CLOUD_ON=false;toast&&toast('Service momentanément indisponible — mode hors-ligne');return}   // 5xx : le code est connu, on laisse l'app en local (pas de mur), la sync reprendra
@@ -22,8 +22,8 @@
     return (ctx.includes('m')||ctx.includes('auto'))?400000:parseInt(ctx)>=256?240000:parseInt(ctx)>=128?140000:60000;}
   const provOf=m=>PROVIDERS[(typeof m==='string'?modelById(m):m||{}).provider||'mz'];
   const acOf=m=>provOf(m).ac;
-  const hasKey=p=>p==='mz'||(p==='kling'?(!!(KEYS.kling_ak&&KEYS.kling_ak.trim())&&!!(KEYS.kling_sk&&KEYS.kling_sk.trim())):!!(KEYS[p]&&KEYS[p].trim()));
-  const klingUsable=()=>hasKey('kling')||!!(KEYS.kling_proxy&&KEYS.kling_proxy.trim());   // Kling ne marche qu'avec ses 2 clés OU son proxy → sinon on masque ses modèles (pas de menu mort)
+  const hasKey=p=>p==='mz'||(p==='kling'?(!!(Relais.cle('kling_ak')&&Relais.cle('kling_ak').trim())&&!!(Relais.cle('kling_sk')&&Relais.cle('kling_sk').trim())):!!(Relais.cle(p)&&Relais.cle(p).trim()));
+  const klingUsable=()=>hasKey('kling')||!!(Relais.cle('kling_proxy')&&Relais.cle('kling_proxy').trim());   // Kling ne marche qu'avec ses 2 clés OU son proxy → sinon on masque ses modèles (pas de menu mort)
 
   const LIC={chat:'<path d="M21 11.5a8.5 8.5 0 0 1-12.5 7.5L3 21l2-5.5A8.5 8.5 0 1 1 21 11.5z"/>',code:'<path d="m8 6-6 6 6 6M16 6l6 6-6 6"/>',doc:'<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>',img:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>'};
   /* jeu d'icônes vectorielles (remplace les emojis) */

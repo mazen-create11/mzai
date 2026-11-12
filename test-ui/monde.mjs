@@ -10,6 +10,7 @@ import { chromium } from 'playwright';
 
 const RACINE = fileURLToPath(new URL('..', import.meta.url));
 const WORKER = 'https://maz-proxy.maz-chaban.workers.dev';
+const FOURNISSEURS = ['https://openrouter.ai', 'https://api.siliconflow.com'];
 export const CODE = 'maz-TEST-TEST-TEST-TEST';
 export const REPONSE = 'Bonjour Nadia, réponse de test.';
 
@@ -28,13 +29,35 @@ function servir() {
   return new Promise((ok) => serveur.listen(0, '127.0.0.1', () => ok(serveur)));
 }
 
+/** Ce qu'un fournisseur répond à une discussion, en flux ou d'un bloc. */
+function repondreDiscussion(route, corps) {
+  const entetes = { 'Access-Control-Allow-Origin': '*' };
+  if (corps && corps.stream) {
+    const morceaux = REPONSE.match(/.{1,9}/g).map((t) => `data: ${JSON.stringify({ choices: [{ delta: { content: t } }] })}\n\n`);
+    return route.fulfill({ status: 200, contentType: 'text/event-stream', headers: entetes, body: morceaux.join('') + `data: ${JSON.stringify({ choices: [{ delta: {}, finish_reason: 'stop' }], usage: { total_tokens: 12, cost: 0 } })}\n\ndata: [DONE]\n\n` });
+  }
+  return route.fulfill({ status: 200, contentType: 'application/json', headers: entetes, body: JSON.stringify({ choices: [{ message: { role: 'assistant', content: REPONSE }, finish_reason: 'stop' }], usage: { total_tokens: 12, cost: 0 } }) });
+}
+
+/** Un fournisseur appelé sans passer par le Worker (app ouverte en local avec un fichier de clés). */
+function fauxFournisseur(route, directs) {
+  const req = route.request();
+  const url = new URL(req.url());
+  if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Access-Control-Allow-Methods': '*' } });
+  let corps = null;
+  try { corps = req.postDataJSON(); } catch { /* pas du JSON */ }
+  directs.push({ method: req.method(), hote: url.host, chemin: url.pathname, autorisation: req.headers().authorization || null, code: req.headers()['x-maz-code'] || null, corps });
+  if (/\/chat\/completions$/.test(url.pathname)) return repondreDiscussion(route, corps);
+  return route.fulfill({ status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: '{}' });
+}
+
 /** Le faux Worker : il note chaque appel et répond ce que le vrai répondrait. */
 async function fauxWorker(route, appels, etat) {
   const req = route.request();
   const url = new URL(req.url());
   let corps = null;
   try { corps = req.postDataJSON(); } catch { /* pas du JSON */ }
-  appels.push({ method: req.method(), chemin: url.pathname, code: req.headers()['x-maz-code'] || null, corps });
+  appels.push({ method: req.method(), chemin: url.pathname, code: req.headers()['x-maz-code'] || null, autorisation: req.headers().authorization || null, corps });
   const json = (status, objet) => route.fulfill({ status, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify(objet) });
   if (req.method() === 'OPTIONS') return route.fulfill({ status: 204, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Access-Control-Allow-Methods': '*' } });
   if (url.pathname === '/auth/verify') return corps && corps.code === CODE ? json(200, { ok: true, uid: 'u1', name: 'Nadia', admin: false }) : json(401, { ok: false });
@@ -45,13 +68,7 @@ async function fauxWorker(route, appels, etat) {
     if (propre !== undefined) return json(propre.status || 200, propre.json);
   }
   if (url.pathname === '/sync/convos') return json(200, etat.convos);
-  if (/\/chat\/completions$/.test(url.pathname)) {
-    if (corps && corps.stream) {
-      const morceaux = REPONSE.match(/.{1,9}/g).map((t) => `data: ${JSON.stringify({ choices: [{ delta: { content: t } }] })}\n\n`);
-      return route.fulfill({ status: 200, contentType: 'text/event-stream', headers: { 'Access-Control-Allow-Origin': '*' }, body: morceaux.join('') + `data: ${JSON.stringify({ choices: [{ delta: {}, finish_reason: 'stop' }], usage: { total_tokens: 12, cost: 0 } })}\n\ndata: [DONE]\n\n` });
-    }
-    return json(200, { choices: [{ message: { role: 'assistant', content: REPONSE }, finish_reason: 'stop' }], usage: { total_tokens: 12, cost: 0 } });
-  }
+  if (/\/chat\/completions$/.test(url.pathname)) return repondreDiscussion(route, corps);
   return json(200, { ok: true });
 }
 
@@ -60,19 +77,27 @@ async function fauxWorker(route, appels, etat) {
  * `connecte` : le code est déjà enregistré sur l'appareil, et la prise en main déjà vue.
  * `routes` : ce que le faux Worker répond pour ce test, `({ method, chemin, corps }) => ({ status?, json })`,
  *            ou rien pour laisser la réponse par défaut.
+ * `cles`   : l'app est ouverte en local avec un fichier de clés. Ce fichier est fabriqué ici à partir
+ *            de cet objet ; le vrai `keys.local.js` du dossier n'est jamais lu.
+ * `reglagesCles` : avec `cles`, affiche aussi la saisie des clés dans les réglages.
  */
-export async function monde({ connecte = false, convos = [], routes = null } = {}) {
+export async function monde({ connecte = false, convos = [], routes = null, cles = null, reglagesCles = false } = {}) {
   const serveur = await servir();
   const origine = `http://127.0.0.1:${serveur.address().port}`;
   const navigateur = await chromium.launch();
   const contexte = await navigateur.newContext({ viewport: { width: 1280, height: 800 }, locale: 'fr-FR' });
-  const appels = [], erreurs = [], etat = { convos, routes };
+  const appels = [], directs = [], erreurs = [], etat = { convos, routes };
   await contexte.route((u) => u.origin !== origine, (route) => {
     const u = new URL(route.request().url());
     if (u.origin === WORKER) return fauxWorker(route, appels, etat);
+    if (FOURNISSEURS.includes(u.origin)) return fauxFournisseur(route, directs);
     // polices, bibliothèques distantes : l'app doit tenir sans elles
     return route.abort();
   });
+  if (cles) await contexte.route(origine + '/keys.local.js', (route) => route.fulfill({
+    status: 200, contentType: 'text/javascript',
+    body: `window.MZAI_KEYS=${JSON.stringify(cles)};${reglagesCles ? 'window.MZAI_DEV_SETTINGS=true;' : ''}`,
+  }));
   if (connecte) await contexte.addInitScript((code) => {
     try { localStorage.setItem('mzai:acode', code); localStorage.setItem('mzai:onboarded', 'true'); } catch { /* stockage fermé */ }
   }, CODE);
@@ -81,7 +106,7 @@ export async function monde({ connecte = false, convos = [], routes = null } = {
   page.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource|net::ERR_/.test(m.text())) erreurs.push('console : ' + m.text()); });
   await page.goto(origine + '/mzai-v2.html', { waitUntil: 'load' });
   return {
-    page, appels, erreurs, origine, etat,
+    page, appels, directs, erreurs, origine, etat,
     /** Les appels au relais de discussion, dans l'ordre. */
     discussions: () => appels.filter((a) => /\/chat\/completions$/.test(a.chemin)),
     fin: async () => { await navigateur.close(); await new Promise((ok) => serveur.close(ok)); },

@@ -14,7 +14,7 @@
       if(injTotal>0){const b=injBadge(injUsed,injTotal);if(b)col.appendChild(b);}                          // transparence : X / Y caractères de document injectés
       if(currentMode==='doc'&&toolCfg.docAction==='Extraction')addJsonDownload(col,text);                  // export .json structuré
       if(meta.usage||meta.ms){const s=statsEl(wasAuto?'MAZ Auto → '+resolvedModel:resolvedModel,meta.ms,meta.usage,true);if(s)col.appendChild(s);}
-      if(VIA_PROXY&&meta.usage){try{fetch(_PB+'/usage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tokens:+meta.usage.total_tokens||0,cost:+meta.usage.cost||0})}).catch(()=>{})}catch(e){}}   // consommation par compte (préparé facturation)
+      if(Relais.viaProxy&&meta.usage){try{fetch(Relais.base+'/usage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tokens:+meta.usage.total_tokens||0,cost:+meta.usage.cost||0})}).catch(()=>{})}catch(e){}}   // consommation par compte (préparé facturation)
       scrollDown();
       opts.onDone&&opts.onDone(text,{reasonText,sources:meta.sources,usage:meta.usage,ms:meta.ms,resolved:resolvedModel,auto:wasAuto,error:meta.error});
     };
@@ -25,7 +25,7 @@
       const c = convoById(activeId);
       const qcMode=(currentMode==='translate'&&toolCfg.trCheck);  // mode vérification : on masque le JSON brut pendant le stream
       let mData = modelById(opts.model);
-      if(mData.provider==='mz' && KEYS.openrouter){  // MAZ Auto → routage selon la demande (transparent : modèle réel révélé sous la réponse)
+      if(mData.provider==='mz' && Relais.cle('openrouter')){  // MAZ Auto → routage selon la demande (transparent : modèle réel révélé sous la réponse)
         const lastMsg=(c.msgs.filter(m=>m.role==='user'&&!m.fs).pop())||{};   // le routage se cale sur la vraie question, pas sur l'injection de fichiers
         const lastUser=lastMsg.text||'';
         const t=lastUser.toLowerCase();
@@ -56,8 +56,8 @@
         return finish(REPLIES[ri++%REPLIES.length],{demo:true});  // vrai cas « sans clé » → réponse simulée, désormais explicitement badgée
       }
 
-      const apiKey = isOR ? KEYS['openrouter'] : KEYS['siliconflow'];
-      if(!apiKey){ bubble.classList.remove('md'); return finish(VIA_PROXY?'⚠️ **Service momentanément indisponible.** Réessaie dans un moment.':'⚠️ Clé API manquante pour '+(isOR?'OpenRouter':'SiliconFlow')+'. Ajoute-la dans Paramètres › Connexions API.',{error:true}); }
+      const apiKey = isOR ? Relais.cle('openrouter') : Relais.cle('siliconflow');
+      if(!apiKey){ bubble.classList.remove('md'); return finish(Relais.viaProxy?'⚠️ **Service momentanément indisponible.** Réessaie dans un moment.':'⚠️ Clé API manquante pour '+(isOR?'OpenRouter':'SiliconFlow')+'. Ajoute-la dans Paramètres › Connexions API.',{error:true}); }
 
       // Truncation intelligente : garde les 24 derniers messages, tronque les longs
       const allMsgs=c.msgs.filter(m=>m.text);
@@ -77,12 +77,16 @@
           let txt=m.text.length>4000?m.text.slice(0,4000)+'…[tronqué]':m.text;
           if(docs.length)txt+='\n\n'+docs.map(f=>{const cut=f.textContent.slice(0,cap).replace(/```/g,'`​`​`');injTotal+=f.textContent.length;injUsed+=cut.length;return '**Fichier : '+f.name+'**\n```\n'+cut+'\n```'}).join('\n\n');
           if(ocr.length)txt+='\n\n[Document scanné joint en images — lis-les directement pour répondre.]';
+          // Fichier dont rien n'a pu être lu (format non géré, image illisible) : le dire au modèle, sinon il répond comme si rien n'était joint.
+          // `_mid` écarté : le contenu existe, il est seulement rangé ailleurs ou resté sur un autre appareil.
+          const muets=(m.files||[]).filter(f=>f&&!f._mid&&!f.textContent&&!f.b64&&!(f.ocrPages&&f.ocrPages.length));
+          if(muets.length)txt+='\n\n'+muets.map(f=>'[Fichier joint « '+String(f.name||'sans nom').slice(0,120)+' » : illisible dans le navigateur, son contenu ne t’a pas été transmis.]').join('\n');
           const imgParts=[...imgs.map(f=>({type:'image_url',image_url:{url:f.b64}})),...ocr.map(u=>({type:'image_url',image_url:{url:u}}))];
           if(imgParts.length)return{role:m.role==='ai'?'assistant':'user',content:[{type:'text',text:txt},...imgParts]};
           return{role:m.role==='ai'?'assistant':'user',content:txt};
         })
       );
-      const endpoint = isOR ? OR_HOST+"/api/v1/chat/completions" : SF_HOST+"/v1/chat/completions";
+      const endpoint = isOR ? Relais.orHost+"/api/v1/chat/completions" : Relais.sfHost+"/v1/chat/completions";
       const headers={'Authorization':'Bearer '+apiKey,'Content-Type':'application/json'};
       if(isOR){headers['HTTP-Referer']=location.origin||'https://mzai.app';headers['X-Title']='MAZ';}
       bubble.innerHTML=qcMode?'<div class="gen-loading"><div class="gl-ring"></div>Traduction + contrôle qualité…</div>':'<span class="caret"></span>';
@@ -102,7 +106,7 @@
 
       if(!res.ok){
         const raw = await res.text(); let msg;
-        if(VIA_PROXY){
+        if(Relais.viaProxy){
           // mode hébergé : jamais de nom de fournisseur ni de « clé/Connexions API » (le collègue ne gère rien de tout ça)
           if(res.status===402) msg="⚠️ **Service momentanément indisponible.** Réessaie dans un moment.";
           else if(res.status===401||res.status===403) msg="🔒 **Ta session a expiré.** Reconnecte-toi pour continuer.";

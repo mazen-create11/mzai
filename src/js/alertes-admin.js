@@ -4,8 +4,8 @@
   const eur2=c=>(Number(c||0)/100).toFixed(2).replace('.',',')+' €';
   async function chargerAlertes(){
     const e=document.getElementById('alEmail'),h=document.getElementById('alHook');
-    if(!e||!VIA_PROXY)return;
-    try{const r=await fetch(_PB+'/alertes');if(!r.ok)return;const d=await r.json();
+    if(!e||!Relais.viaProxy)return;
+    try{const r=await fetch(Relais.base+'/alertes');if(!r.ok)return;const d=await r.json();
       e.value=d.email||'';h.value=d.webhook||'';
       const s=document.getElementById('alSucces');
       if(s){s.classList.toggle('on',!!d.succes);s.setAttribute('aria-checked',d.succes?'true':'false')}
@@ -31,7 +31,7 @@
       sw.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();bascule()}});}
     bs.addEventListener('click',async()=>{
       bs.disabled=true;dire('Enregistrement…');
-      try{const r=await fetch(_PB+'/alertes',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(lire())});
+      try{const r=await fetch(Relais.base+'/alertes',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(lire())});
         const d=await r.json().catch(()=>({}));
         if(r.ok){dire('Enregistré.');toast('Alertes enregistrées');chargerAlertes()}
         else dire(HINTS[d.error]||'Refusé — vérifie les champs.',true);
@@ -43,8 +43,8 @@
       const v=lire();if(!v.email&&!v.webhook){dire('Renseigne d’abord une adresse ou une URL.',true);return}
       bt.disabled=true;dire('Envoi…');
       try{
-        await fetch(_PB+'/alertes',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(v)});
-        const r=await fetch(_PB+'/alertes/test',{method:'POST'});const d=await r.json().catch(()=>({}));
+        await fetch(Relais.base+'/alertes',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(v)});
+        const r=await fetch(Relais.base+'/alertes/test',{method:'POST'});const d=await r.json().catch(()=>({}));
         if(!r.ok){dire('Test impossible pour l’instant.',true)}
         else{const p=[];if(d.email)p.push('mail');if(d.webhook)p.push('notification');
           dire(p.length?'Envoyé par '+p.join(' et ')+' — regarde d’ici une minute.':'Rien n’est parti : aucun canal actif côté serveur.',!p.length)}
@@ -81,7 +81,7 @@
     const box=document.getElementById('admList');if(!box)return;
     box.innerHTML='<div style="padding:12px;font-size:13px;color:var(--ink-soft)">Chargement…</div>';
     try{
-      const r=await fetch(_PB+'/admin/users');if(!r.ok)throw 0;
+      const r=await fetch(Relais.base+'/admin/users');if(!r.ok)throw 0;
       const us=await r.json();
       box.innerHTML=us.map(u=>{
         const seen=u.last_seen?new Date(u.last_seen).toLocaleDateString('fr-FR',{day:'numeric',month:'short'}):'jamais';
@@ -99,7 +99,7 @@
         const code=window.prompt('Nouveau code pour « '+b.dataset.nm+' » — 12 caractères minimum, lettres ET chiffres (insensible aux majuscules).\n\n⚠️ Il remplace l\'ancien immédiatement.');
         if(code===null)return;
         try{
-          const r=await fetch(_PB+'/admin/setcode',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.dataset.admCode,code:code.trim()})});
+          const r=await fetch(Relais.base+'/admin/setcode',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.dataset.admCode,code:code.trim()})});
           if(r.ok){toast('Code de '+b.dataset.nm+' remplacé');if(b.dataset.admCode===localStorage.getItem('mzai:cloud_uid')){localStorage.setItem('mzai:acode',code.trim())}}   // si on change SON propre code, la session suit
           else{const d=await r.json().catch(()=>({}));toast(d.error==='code_taken'?'Ce code est déjà pris — choisis-en un autre':'Code refusé : '+(d.hint||'12+ caractères, lettres et chiffres'))}
         }catch(e){toast('Impossible pour l\'instant — réessaie')}
@@ -109,7 +109,7 @@
       box.querySelectorAll('[data-adm-nom]').forEach(b=>b.addEventListener('click',async()=>{
         const v=window.prompt('Nom de cette personne — c’est ce que tu liras à côté de ce qu’elle consomme.',b.dataset.nm);
         if(v===null)return;const name=v.trim();if(!name||name===b.dataset.nm)return;
-        try{const r=await fetch(_PB+'/admin/rename',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.dataset.admNom,name})});
+        try{const r=await fetch(Relais.base+'/admin/rename',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.dataset.admNom,name})});
           if(r.ok){toast('Renommé : '+name);admRefresh()}else toast('Renommage refusé')}
         catch(e){toast('Impossible pour l\'instant — réessaie')}
       }));
@@ -117,7 +117,7 @@
          un accès qui a servi se révoque, il ne s'efface pas avec son historique. */
       box.querySelectorAll('[data-adm-sup]').forEach(b=>b.addEventListener('click',async()=>{
         if(!window.confirm('Supprimer définitivement l’accès de « '+b.dataset.nm+' » ?\n\nIl n’a jamais servi, rien ne sera perdu. Son code cessera de fonctionner.'))return;
-        try{const r=await fetch(_PB+'/admin/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.dataset.admSup})});
+        try{const r=await fetch(Relais.base+'/admin/delete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.dataset.admSup})});
           const d=await r.json().catch(()=>({}));
           if(r.ok){toast('Accès supprimé');admRefresh()}
           else toast(d.hint||'Suppression refusée')}
@@ -126,7 +126,7 @@
       box.querySelectorAll('[data-adm-toggle]').forEach(b=>b.addEventListener('click',async()=>{
         const en=b.dataset.en==='1';
         if(!en&&!window.confirm('Révoquer cet accès ? La personne ne pourra plus utiliser MAZ (son historique est conservé).'))return;
-        await fetch(_PB+'/admin/disable',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.dataset.admToggle,enable:en})}).catch(()=>{});
+        await fetch(Relais.base+'/admin/disable',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:b.dataset.admToggle,enable:en})}).catch(()=>{});
         admRefresh();
       }));
     }catch(e){box.innerHTML='<div style="padding:12px;font-size:13px;color:#E8686D">Impossible de charger les comptes — réessaie.</div>'}
@@ -135,7 +135,7 @@
     const inp=document.getElementById('admName'),name=(inp.value||'').trim().slice(0,60);
     if(!name){toast('Donne un nom (prénom du collègue ou du client)');return}
     try{
-      const r=await fetch(_PB+'/admin/user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})});
+      const r=await fetch(Relais.base+'/admin/user',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name})});
       if(!r.ok)throw 0;
       const d=await r.json();
       inp.value='';
