@@ -57,7 +57,13 @@ cd maz-proxy
 npm test
 ```
 
-No dependency to install: the tests use Node's built-in runner (Node 20 or later) and call the Worker's `fetch` handler directly, with an in-memory stand-in for the database. They cover access control (personal codes: format, hashing, case, revocation; admin routes; rules for custom codes; account deletion; the origin check) and the provider relay (which paths, methods and models pass, which key leaves the server, and that an uploaded file is relayed byte for byte).
+No dependency to install: the tests use Node's built-in runner (Node 20 or later) and call the Worker's handlers directly, with an in-memory stand-in for the database and for the providers. 46 tests cover:
+
+- access control: personal codes (format, hashing, case, revocation), admin routes, rules for custom codes, account deletion, the origin check;
+- the provider relay: which paths, methods and models pass, which key leaves the server, that an uploaded file is relayed byte for byte, and that every model the app sends is on the server's list;
+- the scheduler: one job with an unreadable time zone does not stop the others, and jobs of a revoked account no longer run;
+- job settings: budget, automatic writes, time zone and schedule are checked before anything is written, and a job cannot be attached to another account's resources;
+- sync: updating a conversation at the 400 limit no longer evicts another one.
 
 ## Known limits
 
@@ -67,11 +73,11 @@ No dependency to install: the tests use Node's built-in runner (Node 20 or later
 
 ## What is next
 
-Taken from the open items of the July audit:
-
+- **A stricter schedule parser.** An unreadable field in a cron expression is read as "every", so a typo can turn a weekly job into one that runs every minute. Only the wrong number of fields is refused today.
+- **Deleted conversations still count toward the 400 limit**, and the sync list is not paginated. Both need one rule for purging deleted rows.
 - **Abort in-flight media requests** (API-06). The Stop button stops the interface and the polling, but the request to the provider keeps running and keeps billing.
 - **Remove duplicated code** (ARCH-04/05). The message bubble is rendered in four places and the chat request is written out four times although one helper already exists.
-- **Split `mzai-v2.html`** into modules once the tests above protect the backend contract.
+- **Split `worker.js` and `mzai-v2.html`** into modules, now that tests protect the backend contract.
 
 ## How this is built
 

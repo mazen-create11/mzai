@@ -2,6 +2,7 @@
 // Le fournisseur est remplacé par un faux `fetch` qui note ce qu'il reçoit.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import worker from '../worker.js';
 
 const BASE = 'https://maz.test';
@@ -165,4 +166,17 @@ test('le plafond quotidien coupe le relais', async (t) => {
   assert.equal(r.status, 429);
   assert.equal(r.json.error, 'daily_limit');
   assert.equal(m.sorties.length, 2);
+});
+
+test('l’application et le serveur s’accordent : chaque modèle que l’app envoie est accepté', async (t) => {
+  const m = await monde(); t.after(m.fin);
+  const app = readFileSync(new URL('../../mzai-v2.html', import.meta.url), 'utf8');
+  const declares = [...app.matchAll(/provider:'(openrouter|siliconflow)',api:'([^']+)'/g)].map((x) => [x[1], x[2]]);
+  const directs = [...app.matchAll(/model:'([A-Za-z0-9-]+\/[A-Za-z0-9._-]+)'/g)].map((x) => [/^(deepseek|qwen|moonshotai|z-ai|minimax)\//.test(x[1]) ? 'openrouter' : 'siliconflow', x[1]]);
+  assert.ok(declares.length >= 10, 'la liste des modèles de l’app n’a pas été trouvée');
+  for (const [fournisseur, modele] of [...declares, ...directs]) {
+    const chemin = fournisseur === 'openrouter' ? '/or/api/v1/chat/completions' : '/sf/v1/chat/completions';
+    const r = await m.appel(chemin, { corps: { model: modele, messages: [] } });
+    assert.equal(r.status, 200, `${modele} est envoyé par l’app mais refusé par le serveur`);
+  }
 });

@@ -42,13 +42,14 @@ const CHEMINS_OK = {
 const MODELES_OK = {
   '/or/': new Set(['deepseek/deepseek-v4-pro', 'deepseek/deepseek-v4-flash', 'qwen/qwen3-max-thinking',
     'qwen/qwen3-coder-plus', 'moonshotai/kimi-k2.7-code', 'z-ai/glm-5.2', 'minimax/minimax-m3',
-    'qwen/qwen3-vl-8b-instruct',
-    // modèles sans filtre (chat libre) — vérifiés sur l'API OpenRouter le 31/07/2026
-    'cognitivecomputations/dolphin-mistral-24b-venice-edition', 'nousresearch/hermes-4-70b', 'thedrummer/cydonia-24b-v4.1']),
+    'qwen/qwen3-vl-8b-instruct']),
   '/sf/': new Set(['black-forest-labs/FLUX.2-pro', 'black-forest-labs/FLUX-1.1-pro-Ultra',
     'black-forest-labs/FLUX.1-Kontext-max', 'black-forest-labs/FLUX.1-schnell', 'Qwen/Qwen-Image',
     'Tongyi-MAI/Z-Image-Turbo', 'Wan-AI/Wan2.2-T2V-A14B', 'Wan-AI/Wan2.2-I2V-A14B',
-    'FunAudioLLM/CosyVoice2-0.5B', 'FunAudioLLM/SenseVoiceSmall']),
+    'FunAudioLLM/CosyVoice2-0.5B', 'FunAudioLLM/SenseVoiceSmall',
+    // compréhension audio de l'outil Transcription : envoyé par l'app depuis juillet, oublié ici,
+    // donc refusé en production. Le test « l'application et le serveur s'accordent » évite que ça revienne.
+    'Qwen/Qwen3-Omni-30B-A3B-Instruct']),
 };
 /* Chemins dont le corps ne porte pas de modèle (suivi d'une génération déjà lancée). */
 const SANS_MODELE = /^\/v1\/video\/status$/;
@@ -58,6 +59,7 @@ const MEDIA_HOSTS = /(^|\.)(bfl\.ai|aliyuncs\.com|siliconflow\.com|klingai\.com|
 const MAX_MEDIA = 22 * 1024 * 1024;   // 22 Mo par média
 const MAX_CONVO = 1_500_000;          // 1,5 Mo par conversation (les blobs n'y sont jamais)
 const MAX_CONVOS = 400;               // par utilisateur
+const MAX_BUDGET_POSTE = 20000;       // 200 € par mois et par poste : la même borne que le plafond du compte
 
 /* ── helpers ── */
 function corsHeaders(req, allowed) {
@@ -154,7 +156,15 @@ export default {
       }
       if (path === '/admin/disable' && req.method === 'POST') {
         const b = await req.json().catch(() => ({}));
-        await env.maz_db.prepare('UPDATE users SET disabled=?2 WHERE id=?1').bind(String(b.id || ''), b.enable ? 0 : 1).run();
+        const id = String(b.id || '');
+        /* Même protection que la suppression : un clic (ou un compte admin qui
+           se trompe de ligne) ne doit pas pouvoir fermer la porte à un admin.
+           Réactiver reste permis, sinon on ne pourrait plus réparer. */
+        if (!b.enable) {
+          const u = id && await env.maz_db.prepare('SELECT id,is_admin FROM users WHERE id=?1').bind(id).first();
+          if (u && u.is_admin) return J({ error: 'admin_protege' }, 400, cors);
+        }
+        await env.maz_db.prepare('UPDATE users SET disabled=?2 WHERE id=?1').bind(id, b.enable ? 0 : 1).run();
         return J({ ok: true }, 200, cors);
       }
       /* Renommer : « Invité 2 · 4,80 $ » ne dit pas qui consomme. Le nom est le
@@ -298,9 +308,15 @@ export default {
       const id = String(b.id || '').slice(0, 64), data = JSON.stringify(b.data || null), ts = +b.updated_at || Date.now();
       if (!id || data === 'null') return J({ error: 'bad_convo' }, 400, cors);
       if (data.length > MAX_CONVO) return J({ error: 'convo_too_big' }, 413, cors);
-      const n = await env.maz_db.prepare('SELECT COUNT(*) c FROM convos WHERE user_id=?1').bind(user.id).first();
-      if (n.c >= MAX_CONVOS) {   // fenêtre glissante : on écrase la plus ancienne
-        await env.maz_db.prepare('DELETE FROM convos WHERE user_id=?1 AND id IN (SELECT id FROM convos WHERE user_id=?1 ORDER BY updated_at ASC LIMIT 1)').bind(user.id).run();
+      /* On ne fait de la place que pour une conversation NOUVELLE. Une mise à
+         jour n'ajoute aucune ligne : à 400, chaque message envoyé dans une
+         conversation existante en effaçait une autre, la plus ancienne. */
+      const deja = await env.maz_db.prepare('SELECT 1 x FROM convos WHERE user_id=?1 AND id=?2').bind(user.id, id).first();
+      if (!deja) {
+        const n = await env.maz_db.prepare('SELECT COUNT(*) c FROM convos WHERE user_id=?1').bind(user.id).first();
+        if (n.c >= MAX_CONVOS) {   // fenêtre glissante : on écrase la plus ancienne
+          await env.maz_db.prepare('DELETE FROM convos WHERE user_id=?1 AND id IN (SELECT id FROM convos WHERE user_id=?1 ORDER BY updated_at ASC LIMIT 1)').bind(user.id).run();
+        }
       }
       await env.maz_db.prepare(
         `INSERT INTO convos (user_id,id,data,updated_at,deleted) VALUES (?1,?2,?3,?4,0)
@@ -426,6 +442,18 @@ export default {
 
         /* ── postes ── */
         if (seg[0] === 'postes') {
+          /* Deux contrôles partagés par la création et la modification, pour
+             qu'elles ne divergent plus.
+             Le budget est le disjoncteur du poste : un nombre négatif le
+             désactivait sans le dire (la garde ne limite qu'un budget > 0), un
+             nombre à virgule ou démesuré n'a pas de sens pour des centimes.
+             Le rattachement : `lire` filtre par user_id, donc l'ouvrier ou le
+             chantier d'un autre compte est « introuvable ». Sans ça, le contexte
+             du chantier d'autrui partait dans la consigne de l'agent. */
+          const budgetOk = (v) => Number.isInteger(v) && v >= 0 && v <= MAX_BUDGET_POSTE;
+          const budgetRefuse = () => J({ error: 'budget_invalide', hint: `entier de 0 à ${MAX_BUDGET_POSTE} centimes (${MAX_BUDGET_POSTE / 100} €)` }, 400, cors);
+          const aMoi = async (table, id) => typeof id === 'string' && !!id && !!(await lire(table, id));
+
           if (req.method === 'GET' && seg.length === 1) {
             const rows = await db.prepare('SELECT * FROM postes WHERE user_id=?1 AND supprime=0 ORDER BY maj_at DESC').bind(user.id).all();
             return J(rows.results, 200, cors);
@@ -433,9 +461,14 @@ export default {
           if (req.method === 'POST' && seg.length === 1) {
             if (!String(corps.nom || '').trim()) return J({ error: 'nom_requis' }, 400, cors);
             if (!(await lire('ouvriers', String(corps.ouvrier_id || '')))) return J({ error: 'ouvrier_introuvable' }, 400, cors);
+            if (corps.chantier_id && !(await aMoi('chantiers', corps.chantier_id))) return J({ error: 'chantier_introuvable' }, 400, cors);
+            if (corps.budget_cents !== undefined && !budgetOk(corps.budget_cents)) return budgetRefuse();
             const id = crypto.randomUUID(), t = Date.now();
             const cadence = ['demande', 'cron', 'webhook', 'chaine'].includes(corps.cadence) ? corps.cadence : 'demande';
             const tz = String(corps.tz || 'Europe/Paris');
+            // Vérifié même hors cadence cron : un fuseau illisible en base attend
+            // seulement qu'on passe le poste en cron pour faire lever le battement.
+            if (!A.fuseauValide(tz)) return J({ error: 'tz_invalide', hint: tz.slice(0, 60) }, 400, cors);
             const decale = await A.decalageDe(id);
             const prochain = cadence === 'cron' && corps.cron ? A.prochaineCadence(corps.cron, tz, t, decale) : null;
             if (cadence === 'cron' && !prochain) return J({ error: 'cron_invalide', hint: corps.cron }, 400, cors);
@@ -446,7 +479,7 @@ export default {
             ).bind(id, user.id, corps.chantier_id || null, corps.ouvrier_id, String(corps.nom).slice(0, 120),
               String(corps.objectif || ''), cadence, corps.cron || null, tz, decale, prochain,
               String(corps.livrable_forme || 'note'), corps.destinataire || null,
-              Number.isFinite(+corps.budget_cents) ? +corps.budget_cents : 300, t, await A.seqNext(env, user.id)).run();
+              corps.budget_cents === undefined ? 300 : corps.budget_cents, t, await A.seqNext(env, user.id)).run();
             const b = corps.blocs || {};
             await db.prepare(`INSERT INTO consignes_versions (poste_id,version,blocs,modele,outillage,motif,cree_at)
                               VALUES (?1,1,?2,?3,?4,?5,?6)`)
@@ -460,6 +493,27 @@ export default {
           /* modifier la consigne CRÉE une version — jamais d'écrasement */
           if (req.method === 'PATCH' && seg.length === 2) {
             const t = Date.now();
+            /* Tout est contrôlé ICI, avant la première écriture. Ces champs
+               partaient tels quels dans l'UPDATE, et le cron n'était relu
+               qu'après : la valeur fautive était déjà en base quand le refus
+               (ou l'exception du fuseau) arrivait. */
+            if (corps.ecriture_auto !== undefined && corps.ecriture_auto !== 0 && corps.ecriture_auto !== 1)
+              return J({ error: 'ecriture_auto_invalide', hint: '0 ou 1' }, 400, cors);
+            if (corps.budget_cents !== undefined && !budgetOk(corps.budget_cents)) return budgetRefuse();
+            if (corps.ouvrier_id !== undefined && !(await aMoi('ouvriers', corps.ouvrier_id)))
+              return J({ error: 'ouvrier_introuvable' }, 400, cors);
+            if (corps.chantier_id !== undefined && corps.chantier_id !== null && !(await aMoi('chantiers', corps.chantier_id)))
+              return J({ error: 'chantier_introuvable' }, 400, cors);   // null = détacher le poste de son chantier
+            // La cadence telle qu'elle serait APRÈS ce PATCH : c'est elle que le battement lira.
+            const vise = {};
+            for (const c of ['cadence', 'cron', 'tz']) vise[c] = corps[c] !== undefined ? corps[c] : p[c];
+            if ((corps.tz !== undefined || vise.cadence === 'cron') && !A.fuseauValide(vise.tz))
+              return J({ error: 'tz_invalide', hint: String(vise.tz).slice(0, 60) }, 400, cors);
+            let prochain = null;
+            if (vise.cadence === 'cron') {
+              prochain = typeof vise.cron === 'string' ? A.prochaineCadence(vise.cron, vise.tz, t, p.decale_s) : null;
+              if (!prochain) return J({ error: 'cron_invalide', hint: String(vise.cron).slice(0, 60) }, 400, cors);
+            }
             if (corps.blocs) {
               const v = p.consigne_ver + 1;
               await db.prepare(`INSERT INTO consignes_versions (poste_id,version,blocs,modele,outillage,motif,cree_at)
@@ -486,11 +540,9 @@ export default {
                 .bind(p.id, user.id, ...maj.map(c => corps[c]), t, await A.seqNext(env, user.id)).run();
             }
             const apres = await lire('postes', p.id);
-            if (apres.cadence === 'cron' && apres.cron) {
-              const pr = A.prochaineCadence(apres.cron, apres.tz, t, apres.decale_s);
-              if (!pr) return J({ error: 'cron_invalide', hint: apres.cron }, 400, cors);
-              await db.prepare('UPDATE postes SET prochain_at=?2 WHERE id=?1').bind(p.id, pr).run();
-              apres.prochain_at = pr;
+            if (prochain) {   // calculée plus haut, avant d'écrire : plus de refus possible à ce stade
+              await db.prepare('UPDATE postes SET prochain_at=?2 WHERE id=?1').bind(p.id, prochain).run();
+              apres.prochain_at = prochain;
             } else if (apres.cadence !== 'cron') {
               await db.prepare('UPDATE postes SET prochain_at=NULL WHERE id=?1').bind(p.id).run();
             }

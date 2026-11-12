@@ -87,6 +87,14 @@ function partsIn(tz, ms) {
   };
 }
 
+/** Le fuseau est-il lisible par le moteur ? `Intl` LÈVE sur un nom inconnu :
+ *  c'est cette exception, une fois le fuseau en base, qui arrêtait le battement.
+ *  Les routes qui écrivent un poste posent donc la question avant d'écrire. */
+export function fuseauValide(tz) {
+  if (typeof tz !== 'string' || !tz) return false;   // `undefined` ne lève pas : Intl prend alors le fuseau de la machine
+  try { partsIn(tz, 0); return true; } catch (_) { return false; }
+}
+
 /** Heure murale locale → epoch. Deux passes suffisent, y compris aux bascules d'heure. */
 function localToEpoch(tz, y, mo, d, h, mi) {
   let t = Date.UTC(y, mo - 1, d, h, mi, 0);
@@ -893,24 +901,61 @@ export async function appliquerCorrectif(env, userId, correctif) {
  */
 export async function battement(env, ctx) {
   const t = jNow();
+  /* Les comptes révoqués sont écartés DANS la requête, pas dans la boucle :
+     filtrés après coup, leurs postes dus resteraient les plus anciens et
+     occuperaient les six places à chaque minute, devant ceux des autres. */
   const dus = await env.maz_db.prepare(
     `SELECT * FROM postes WHERE etat='actif' AND supprime=0 AND cadence='cron'
-       AND prochain_at IS NOT NULL AND prochain_at<=?1 ORDER BY prochain_at ASC LIMIT 6`
+       AND prochain_at IS NOT NULL AND prochain_at<=?1
+       AND user_id IN (SELECT id FROM users WHERE disabled=0)
+     ORDER BY prochain_at ASC LIMIT 6`
   ).bind(t).all();
 
   for (const poste of (dus.results || [])) {
-    const suivant = prochaineCadence(poste.cron, poste.tz, t, poste.decale_s);
+    /* Garde PAR POSTE. Un fuseau illisible fait lever le calcul de l'échéance ;
+       sans garde, l'exception sortait de la boucle avant la replanification, le
+       poste fautif restait donc le plus ancien dû et revenait en tête à chaque
+       minute : plus aucun poste, d'aucun compte, ne partait. */
+    let suivant;
+    try { suivant = prochaineCadence(poste.cron, poste.tz, t, poste.decale_s); }
+    catch (e) { await horsCadence(env, ctx, poste, e); continue; }
     // On replanifie AVANT d'exécuter : si l'exécution échoue, le poste ne se
     // rejoue pas en boucle à chaque battement.
-    await env.maz_db.prepare('UPDATE postes SET prochain_at=?2 WHERE id=?1').bind(poste.id, suivant).run();
+    // Une base qui ne répond pas n'est PAS une faute du poste : on le laisse dû,
+    // il repartira au prochain battement, et on passe au suivant.
+    try { await env.maz_db.prepare('UPDATE postes SET prochain_at=?2 WHERE id=?1').bind(poste.id, suivant).run(); }
+    catch (_) { continue; }
     const user = { id: poste.user_id };
     ctx.waitUntil(
       lancer(env, user, poste, { declencheur: 'cadence' })
-        .catch(e => env.maz_db.prepare(
-          `INSERT INTO passages (id,user_id,poste_id,consigne_ver,mode,declencheur,statut,erreur,debut_at,seq)
-           VALUES (?1,?2,?3,?4,'reel','cadence','echec',?5,?6,0)`
-        ).bind(uid(), poste.user_id, poste.id, poste.consigne_ver, String(e.message).slice(0, 300), jNow()).run().catch(() => {}))
+        .catch(e => echecCadence(env, poste, (e && e.message) || e))
     );
   }
   return (dus.results || []).length;
+}
+
+/** Trace au journal un passage planifié qui n'a pas eu lieu : sans elle,
+    l'échec ne se verrait nulle part. Ne lève jamais. */
+async function echecCadence(env, poste, message) {
+  try {
+    await env.maz_db.prepare(
+      `INSERT INTO passages (id,user_id,poste_id,consigne_ver,mode,declencheur,statut,erreur,debut_at,seq)
+       VALUES (?1,?2,?3,?4,'reel','cadence','echec',?5,?6,0)`
+    ).bind(uid(), poste.user_id, poste.id, poste.consigne_ver, String(message).slice(0, 300), jNow()).run();
+  } catch (_) {}
+}
+
+/** Sort de la file un poste que le battement ne sait pas planifier, et le dit.
+    En pause plutôt qu'« actif sans échéance » : l'écran montre un agent arrêté,
+    et le remettre en marche repasse par les contrôles du PATCH. L'échec au
+    journal donne la raison, le X de santé prévient le propriétaire.
+    La mise hors file passe en premier et seule : c'est elle qui libère les
+    autres postes, rien de ce qui suit ne doit pouvoir l'empêcher. */
+async function horsCadence(env, ctx, poste, e) {
+  const motif = `Planification impossible : ${String((e && e.message) || e).slice(0, 200)}`;
+  try {
+    await env.maz_db.prepare('UPDATE postes SET prochain_at=NULL,etat=?2 WHERE id=?1').bind(poste.id, 'pause').run();
+  } catch (_) {}   // base indisponible : le poste reviendra au prochain battement, sans bloquer celui-ci
+  await echecCadence(env, poste, motif);
+  ctx.waitUntil(sante(env, poste, 'X', motif).catch(() => {}));
 }
