@@ -47,6 +47,15 @@ The provider keys and the admin key are Worker secrets (`npx wrangler secret put
 
 Account management commands are in [`maz-proxy/README.md`](maz-proxy/README.md).
 
+## Tests
+
+```bash
+cd maz-proxy
+npm test
+```
+
+No dependency to install: the tests use Node's built-in runner (Node 20 or later) and call the Worker's `fetch` handler directly, with an in-memory stand-in for the database. They cover access control: personal codes (format, hashing, case, revocation), admin routes (key or admin account), rules for custom codes, account deletion, and the origin check.
+
 ## Known limits
 
 - Files attached by the user (PDFs, source images) stay on the device. The text of the conversation syncs, the source file does not.
@@ -60,5 +69,5 @@ Taken from the open items of the July audit:
 - **Media proxy in the Worker** (API-02). Some generated media is still saved as a remote URL that expires. A client-side fix was tried and reverted: the delivery CDNs send no CORS headers. The fetch has to happen in the Worker.
 - **Abort in-flight media requests** (API-06). The Stop button stops the interface and the polling, but the request to the provider keeps running and keeps billing.
 - **Remove duplicated code** (ARCH-04/05). The message bubble is rendered in four places and the chat request is written out four times although one helper already exists.
-- **Tests for the Worker.** There are none yet. First targets: access-code checks, the Mistral path allow-list, and conversation sync.
+- **More tests for the Worker.** Access control is covered (see below). Next targets: the provider path and model allow-lists, then conversation sync.
 - **Split `mzai-v2.html`** into modules once the tests above protect the backend contract.
