@@ -15,20 +15,8 @@
 
 const MI = 'https://api.mistral.ai';
 
-/* ── Ce que le navigateur a le droit de demander au proxy Mistral ────────────
-   Sans cette liste, /mi/* rejouerait le trou de /or/ : n'importe quel chemin,
-   n'importe quel modèle, avec la vraie clé. */
-export const MI_CHEMINS = [
-  /^\/v1\/chat\/completions$/,
-  /^\/v1\/conversations$/,
-  /^\/v1\/conversations\/[\w-]+$/,
-  /^\/v1\/conversations\/[\w-]+\/history$/,
-  /^\/v1\/agents$/,
-  /^\/v1\/agents\/[\w-]+$/,
-  /^\/v1\/models$/,
-  /^\/v1\/files\/[\w-]+\/content$/,
-  /^\/v1\/ocr$/,
-];
+/* Les modèles qu'un ouvrier peut porter. Mistral n'est appelé que d'ici, côté
+   serveur : le navigateur n'a aucune route vers lui (voir worker.js). */
 export const MI_MODELES = new Set([
   'mistral-large-latest', 'mistral-medium-latest', 'mistral-small-latest',
   'magistral-medium-latest', 'magistral-small-latest',

@@ -1,7 +1,7 @@
 /**
  * MAZ — Backend (Cloudflare Worker) : proxy API + comptes + sync + médias
  * ------------------------------------------------------------------------
- * 1. PROXY   /or/* → openrouter.ai · /sf/* → api.siliconflow.com
+ * 1. PROXY   /or/* → openrouter.ai · /sf/* → api.siliconflow.com   (Mistral : serveur seulement)
  *            Clés détenues en secrets serveur, jamais côté client.
  *            Accès réservé aux porteurs d'un code valide (X-Maz-Code).
  * 2. COMPTES POST /auth/verify — un code d'accès par personne (hashé en base).
@@ -24,17 +24,19 @@
 
 import * as A from './atelier.js';
 
-const UPSTREAMS = { '/or/': 'https://openrouter.ai', '/sf/': 'https://api.siliconflow.com', '/mi/': 'https://api.mistral.ai' };
+/* Mistral n'est PAS relayé : seul l'atelier l'appelle, côté serveur (atelier.js).
+   Une route /mi/ ouverte au navigateur donnerait à tout porteur de code les
+   conversations et les agents de tous les comptes, qui partagent la même clé. */
+const UPSTREAMS = { '/or/': 'https://openrouter.ai', '/sf/': 'https://api.siliconflow.com' };
 
 /* Liste blanche des chemins relayables, par fournisseur.
    Sans elle, le proxy relaie N'IMPORTE QUEL chemin avec la vraie clé : un porteur
    de code appelle alors le modèle qu'il veut, lit le solde du compte, et les
    compteurs restent à zéro puisqu'ils sont alimentés par le navigateur.
-   Relevé sur mzai-v2.html : l'app n'appelle que ces sept chemins. */
+   Relevé sur mzai-v2.html : l'app n'appelle que ces sept chemins, tous en POST. */
 const CHEMINS_OK = {
   '/or/': [/^\/api\/v1\/chat\/completions$/],
   '/sf/': [/^\/v1\/(chat\/completions|images\/generations|audio\/speech|audio\/transcriptions|video\/submit|video\/status)$/],
-  '/mi/': A.MI_CHEMINS,
 };
 /* Liste blanche des modèles. `:online` est le suffixe de recherche web d'OpenRouter. */
 const MODELES_OK = {
@@ -46,9 +48,12 @@ const MODELES_OK = {
   '/sf/': new Set(['black-forest-labs/FLUX.2-pro', 'black-forest-labs/FLUX-1.1-pro-Ultra',
     'black-forest-labs/FLUX.1-Kontext-max', 'black-forest-labs/FLUX.1-schnell', 'Qwen/Qwen-Image',
     'Tongyi-MAI/Z-Image-Turbo', 'Wan-AI/Wan2.2-T2V-A14B', 'Wan-AI/Wan2.2-I2V-A14B',
-    'FunAudioLLM/CosyVoice2-0.5B']),
-  '/mi/': A.MI_MODELES,
+    'FunAudioLLM/CosyVoice2-0.5B', 'FunAudioLLM/SenseVoiceSmall']),
 };
+/* Chemins dont le corps ne porte pas de modèle (suivi d'une génération déjà lancée). */
+const SANS_MODELE = /^\/v1\/video\/status$/;
+/* Champs par lesquels OpenRouter accepte d'AUTRES modèles que `model`. */
+const CHAMPS_DETOUR = ['models', 'fallbacks', 'route'];
 const MEDIA_HOSTS = /(^|\.)(bfl\.ai|aliyuncs\.com|siliconflow\.com|klingai\.com|kling\.ai)$/i;
 const MAX_MEDIA = 22 * 1024 * 1024;   // 22 Mo par média
 const MAX_CONVO = 1_500_000;          // 1,5 Mo par conversation (les blobs n'y sont jamais)
@@ -628,21 +633,32 @@ export default {
     if (!(CHEMINS_OK[prefix] || []).some(re => re.test(sousChemin)))
       return J({ error: 'chemin_refuse', hint: sousChemin }, 403, cors);
 
-    let corpsBrut = null;
-    if (req.method !== 'GET' && req.method !== 'HEAD') {
-      corpsBrut = await req.text();
-      if (corpsBrut.length > 8_000_000) return J({ error: 'corps_trop_gros' }, 413, cors);
-      if (corpsBrut) {
-        let b = null; try { b = JSON.parse(corpsBrut); } catch (_) {}
-        const demande = b && typeof b.model === 'string' ? b.model.replace(/:online$/, '') : null;
-        if (demande && !MODELES_OK[prefix].has(demande))
-          return J({ error: 'modele_refuse', hint: demande }, 403, cors);
-      }
+    if (req.method !== 'POST') return J({ error: 'methode_refusee' }, 405, cors);
+
+    /* Le modèle est contrôlé là où il se trouve vraiment : dans le JSON, ou dans
+       le champ `model` d'un envoi multipart (transcription audio). Un corps qu'on
+       ne sait pas lire n'est pas relayé : « illisible » ne veut pas dire « permis ». */
+    const multipart = /^multipart\/form-data/i.test(req.headers.get('Content-Type') || '');
+    const corpsBrut = multipart ? await req.arrayBuffer() : await req.text();
+    if ((multipart ? corpsBrut.byteLength : corpsBrut.length) > (multipart ? 32_000_000 : 8_000_000))
+      return J({ error: 'corps_trop_gros' }, 413, cors);
+    let demande = null;
+    if (multipart) {
+      const tete = new TextDecoder('latin1').decode(corpsBrut.slice(0, 4096));
+      const m = tete.match(/name="model"\r?\n\r?\n([^\r\n]+)/);
+      demande = m ? m[1].trim() : null;
+    } else {
+      let b = null; try { b = JSON.parse(corpsBrut); } catch (_) {}
+      if (!b || typeof b !== 'object' || Array.isArray(b)) return J({ error: 'corps_invalide' }, 400, cors);
+      if (CHAMPS_DETOUR.some(c => b[c] !== undefined)) return J({ error: 'modele_refuse', hint: 'un seul modèle par requête' }, 403, cors);
+      demande = typeof b.model === 'string' ? b.model.replace(/:online$/, '') : null;
+    }
+    if (!SANS_MODELE.test(sousChemin) || demande !== null) {
+      if (!demande || !MODELES_OK[prefix].has(demande))
+        return J({ error: 'modele_refuse', hint: demande || 'modèle absent' }, 403, cors);
     }
 
-    const key = prefix === '/or/' ? env.OPENROUTER_KEY
-              : prefix === '/mi/' ? env.MISTRAL_KEY
-              : env.SILICONFLOW_KEY;
+    const key = prefix === '/or/' ? env.OPENROUTER_KEY : env.SILICONFLOW_KEY;
     if (!key) return J({ error: 'proxy_unconfigured' }, 500, cors);
     if (user) {
       // plafond quotidien par compte (garde-fou anti-drain si un code fuite) — désactivable via DAILY_REQ_CAP=0
@@ -664,8 +680,8 @@ export default {
     h.set('Authorization', 'Bearer ' + key);
     h.delete('Host'); h.delete('Origin'); h.delete('Referer'); h.delete('X-Maz-Code'); h.delete('X-Admin-Key');
     if (prefix === '/or/') { h.set('HTTP-Referer', allowed[0] || 'https://mazen-create11.github.io'); h.set('X-Title', 'MAZ'); }
-    const init = { method: req.method, headers: h };
-    if (corpsBrut !== null) { init.body = corpsBrut; h.delete('Content-Length'); }
+    h.delete('Content-Length');
+    const init = { method: 'POST', headers: h, body: corpsBrut };
     let upstream;
     try { upstream = await fetch(target, init); }
     catch (e) { try { console.warn('[MAZ] upstream fail', String(e).slice(0, 200)); } catch (_) {} return J({ error: 'upstream_fetch_failed' }, 502, cors); }   // détail loggé côté serveur, pas renvoyé au client
