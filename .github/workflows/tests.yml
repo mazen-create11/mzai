@@ -13,10 +13,10 @@ jobs:
     name: Serveur (Worker)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
       - name: Tests du Worker
         working-directory: maz-proxy
         run: npm test
@@ -25,10 +25,10 @@ jobs:
     name: Interface (navigateur)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 24
       - name: Le fichier publié correspond aux sources
         run: node build.mjs --check
       - name: Installer le navigateur de test
