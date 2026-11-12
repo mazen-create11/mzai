@@ -1,6 +1,6 @@
 # MAZ (ex-MZai) — App chat IA premium (modèles chinois)
 
-## ⛔ FICHIER ACTIF = `mzai-v2.html` — `index.html` est l'ANCIENNE version : ne JAMAIS l'éditer.
+## ⛔ FICHIER ACTIF = `mzai-v2.html` — `index.html` n'est plus qu'une redirection vers lui (l'ancienne version reste dans l'historique git, remplacée le 12/11/2026).
 - Live : mazen-create11.github.io/mzai/mzai-v2.html · deploy = `git push origin main` (GitHub Pages).
 
 ## Règles

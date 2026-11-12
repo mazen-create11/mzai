@@ -14,12 +14,12 @@ Live app: https://mazen-create11.github.io/mzai/mzai-v2.html (an access code is 
 | `maz-proxy/atelier.js` | The agent engine ("l'atelier"): jobs, runs, steps, deliverables and approval checkpoints. |
 | `maz-proxy/migrations/` | D1 schema, one numbered SQL file per change. |
 | `kling-proxy/` | A separate Worker for Kling video generation. Not deployed yet. |
-| `index.html` | The previous version of the app, kept for reference. Do not edit. |
+| `index.html` | A redirect to `mzai-v2.html`. |
 | `AUDIT-2026-07-12.md`, `FIXES-2026-07-12.md` | A full audit of the app and the log of what was fixed, with what was left open and why. |
 
 ## How it works
 
-**Keys stay on the server.** In the deployed app the Worker holds the provider keys as secrets. It relays only an allow-list of paths per provider (`CHEMINS_OK` in `worker.js`, `MI_CHEMINS` in `atelier.js`) and checks the requested model against an allow-list. The checks are on the path and on the `model` field of a JSON body; they are not yet per HTTP method.
+**Keys stay on the server.** In the deployed app the Worker holds the provider keys as secrets. For the two providers the browser talks to, it relays only `POST` requests on an allow-list of paths (`CHEMINS_OK` in `worker.js`), and only for a model on the allow-list: the model is read from the JSON body or from the multipart form, a body it cannot read is refused, and the fields through which a provider accepts alternative models are refused too. Mistral, which runs the agents, is never relayed: only the Worker calls it. All accounts share one provider key, so a browser route to it would expose every account's agent conversations.
 
 **One access code per person.** The app asks for the code once. Codes are stored hashed (SHA-256, unsalted). Generated codes carry about 80 bits of entropy; a custom code chosen by the admin is only as strong as what was typed. An admin can create, rename or disable an account, and delete one that was never used.
 
@@ -57,7 +57,7 @@ cd maz-proxy
 npm test
 ```
 
-No dependency to install: the tests use Node's built-in runner (Node 20 or later) and call the Worker's `fetch` handler directly, with an in-memory stand-in for the database. They cover access control: personal codes (format, hashing, case, revocation), admin routes (key or admin account), rules for custom codes, account deletion, and the origin check.
+No dependency to install: the tests use Node's built-in runner (Node 20 or later) and call the Worker's `fetch` handler directly, with an in-memory stand-in for the database. They cover access control (personal codes: format, hashing, case, revocation; admin routes; rules for custom codes; account deletion; the origin check) and the provider relay (which paths, methods and models pass, which key leaves the server, and that an uploaded file is relayed byte for byte).
 
 ## Known limits
 
@@ -71,5 +71,12 @@ Taken from the open items of the July audit:
 
 - **Abort in-flight media requests** (API-06). The Stop button stops the interface and the polling, but the request to the provider keeps running and keeps billing.
 - **Remove duplicated code** (ARCH-04/05). The message bubble is rendered in four places and the chat request is written out four times although one helper already exists.
-- **More tests for the Worker.** Access control is covered (see below). Next targets: the provider path and model allow-lists, then conversation sync.
 - **Split `mzai-v2.html`** into modules once the tests above protect the backend contract.
+
+## How this is built
+
+I build this project with an AI coding assistant (Claude Code). Most commits are co-authored with it, and `CLAUDE.md` holds the standing instructions I give it. I decide what gets built and why, read what it produces, and test it in the running app. The audit and fix logs in this repository were produced with the assistant as well.
+
+## License
+
+All rights reserved. The code is public to be read and reviewed; see [`LICENSE`](LICENSE).
